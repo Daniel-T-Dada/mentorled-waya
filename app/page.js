@@ -5,10 +5,10 @@ const Home = () => {
         Waya | Financial literacy for your kids
       </h1>
 
-      <p className="text-white text-lg md:text-2xl font-semibold text-center mt-4">
+      {/* <p className="text-white text-lg md:text-2xl font-semibold text-center mt-4">
         A digital solution to help parents assign chores and track task
         completion by children in a gamified way
-      </p>
+      </p> */}
       <br /><br />
       <p className="text-white text-lg md:text-xl font-semibold text-center mt-4">
         🚧 This App is Under Construction 🚧
