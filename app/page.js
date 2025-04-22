@@ -1,19 +1,43 @@
+import { Button } from "@/components/ui/button"
+import Image from "next/image"
+
 const Home = () => {
   return (
-    <div className=" min-h-screen bg-purple-700 flex flex-col items-center justify-center">
-      <h1 className="text-white text-3xl md:text-5xl font-bold text-center">
-        Waya | Financial literacy for your kids
-      </h1>
+    <>
+      <div className="flex flex-col min-h-screen border-amber-400">
 
-      {/* <p className="text-white text-lg md:text-2xl font-semibold text-center mt-4">
-        A digital solution to help parents assign chores and track task
-        completion by children in a gamified way
-      </p> */}
-      <br /><br />
-      <p className="text-white text-lg md:text-xl font-semibold text-center mt-4">
-        🚧 This App is Under Construction 🚧
-      </p>
-    </div>
+        {/* Hero Section */}
+        <section>
+          <div className="container mx-auto px-4 md:px-8 lg:px-16 xl:px-24 top-[700px] md:top-[500px] lg:top-[0px] xl:top-[0px] border-amber-900">
+            <div className="flex flex-row items-center justify-center gap-[100px] h-screen text-center">
+              <div>
+                <Image
+                  src="/assets/amico.png"
+                  alt="Logo"
+                  width={500}
+                  height={495}
+                  className="mx-auto mb-4 top-[200px] md:top-[100px] lg:top-[0px] xl:top-[0px] w-full h-auto"
+                  style={{ maxWidth: "100%", height: "auto" }}
+                />
+              </div>
+              <div className="flex flex-col items-center justify-center ">
+                <h1 className="text-5xl md:text-6xl font-bold text-primary mb-4 border">
+                  Turn Chores Into Cheers!
+                </h1>
+                <p className="text-lg md:text-xl text-gray-700 mb-8">
+                  Help your kids learn money smarts and have a blast doing it
+                </p>
+                <Button href="#login" className="bg-[#500061] hover:bg-[#9514b7] text-white font-semibold py-2 px-4 rounded mt-4 w-[238px] h-10">
+                  Get Started
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+    </>
   )
 }
 export default Home

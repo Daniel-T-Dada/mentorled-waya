@@ -1,5 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,17 +14,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Waya | Financial literacy for your kids",
-  description: "A digital solution to help parents assign chores and track task completion by children in a gamified way",
+  title: "Waya - Family Finance & Learning Platform",
+  description: "Teach your kids financial literacy in a fun and interactive way",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <Navbar />
+        <main className="min-h-screen pt-16">
+          {children}
+        </main>
       </body>
     </html>
   );
