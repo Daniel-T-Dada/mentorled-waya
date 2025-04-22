@@ -21,7 +21,7 @@ const Home = () => {
                 />
               </div>
               <div className="flex flex-col items-center justify-center ">
-                <h1 className="text-5xl md:text-6xl font-bold text-primary mb-4 border">
+                <h1 className="text-5xl md:text-6xl font-bold text-primary mb-4">
                   Turn Chores Into Cheers!
                 </h1>
                 <p className="text-lg md:text-xl text-gray-700 mb-8">
