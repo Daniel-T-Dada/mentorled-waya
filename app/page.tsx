@@ -1,5 +1,7 @@
 import { FadeIn } from "@/components/animations/fade-in"
 import { ScaleIn } from "@/components/animations/scale-in"
+import { StaggerChildren } from "@/components/animations/stagger-children"
+import { FeatureCard } from "@/components/feature-card"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 
@@ -19,7 +21,7 @@ const Home = () => {
                     alt="Logo"
                     width={500}
                     height={495}
-                    className="mx-auto mb-4 top-[200px] md:top-[100px] lg:top-[0px] xl:top-[0px] w-full h-auto"
+                    className="mx-auto mb-4 top-[100px] md:top-[100px] lg:top-[0px] xl:top-[0px] w-full h-auto"
                     style={{ maxWidth: "100%", height: "auto" }}
                   />
                 </ScaleIn>
@@ -82,8 +84,8 @@ const Home = () => {
 
         {/* Why WE Built Waya Section */}
         <section className="container mx-auto px-4 md:px-8 lg:px-16 xl:px-24 top-[100px] md:top-[500px] lg:top-[0px] xl:top-[0px] ">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row items-center gap-8">
+          <div className="container mx-auto px-4 ">
+            <div className="flex flex-col md:flex-row items-center gap-8  mx-28">
               <div className="w-full md:w-1/2 text-center md:text-left">
                 <FadeIn delay={0.2} direction="left">
                   <h2 className="text-2xl md:text-3xl font-bold text-brand dark:text-brand-light mb-4">Why we Built Waya</h2>
@@ -115,6 +117,55 @@ const Home = () => {
 
           </div>
 
+        </section>
+
+        {/* feature section */}
+        <section className="w-full py-12 md:py-16">
+          <div className="container mx-auto px-4">
+            <FadeIn delay={0.2} direction="up">
+              <h2 className="text-2xl md:text-3xl font-bold text-brand dark:text-brand-light text-center mb-4">
+                What You&apos;ll Love About Waya
+              </h2>
+            </FadeIn>
+            <FadeIn delay={0.3} direction="up">
+              <p className="text-lg text-gray-600 dark:text-gray-300 text-center mb-12">
+                Explore how Waya makes saving, spending, and earning feel like an adventure.
+              </p>
+            </FadeIn>
+
+            <StaggerChildren className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              <FeatureCard
+                title="Chore and Allowance Management"
+                description="Assign tasks and set allowance rules, teaching responsibility and reward the smart way."
+                imageSrc="/assets/mobile-testing.svg"
+                svgImage={true}
+              />
+              <FeatureCard
+                title="Gamified Learning"
+                description="Kids unlock badges, complete challenges, and master money concepts through interactive games and quizzes."
+                imageSrc="/assets/game-analytics.png"
+              />
+              <FeatureCard
+                title="Visual Wallets"
+                description="Let kids track their savings and spending goals visually, helping them build smart habits early."
+                imageSrc="/assets/e-wallet.png"
+              />
+            </StaggerChildren>
+
+            <StaggerChildren className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8 mt-14">
+              <FeatureCard
+                title="Financial Literacy Quizzes"
+                description="Fun, bite-sized quizzes make complex money concepts easy and relatable for kids."
+                imageSrc="/assets/financial-quiz.png"
+              />
+              <FeatureCard
+                title="Family Dashboard"
+                description="Stay connected, track each child's progress, savings, and learning achievements at a glance."
+                imageSrc="/assets/analytics-dashboard.svg"
+                svgImage={true}
+              />
+            </StaggerChildren>
+          </div>
         </section>
 
 
