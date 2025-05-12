@@ -45,7 +45,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <Navbar />
-          <main className="min-h-screen pt-16">
+          <main className="min-h-screen">
             {children}
           </main>
         </ThemeProvider>
