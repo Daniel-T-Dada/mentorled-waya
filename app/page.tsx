@@ -138,7 +138,7 @@ const Home = () => {
                 title="Chore and Allowance Management"
                 description="Assign tasks and set allowance rules, teaching responsibility and reward the smart way."
                 imageSrc="/assets/mobile-testing.svg"
-                svgImage={true}
+                
                 
               />
               <FeatureCard
@@ -163,7 +163,7 @@ const Home = () => {
                 title="Family Dashboard"
                 description="Stay connected, track each child's progress, savings, and learning achievements at a glance."
                 imageSrc="/assets/analytics-dashboard.svg"
-                svgImage={true}
+                
                 
               />
             </StaggerChildren>

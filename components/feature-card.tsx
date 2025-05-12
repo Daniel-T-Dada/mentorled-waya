@@ -1,27 +1,28 @@
-import { ThemeAwareImage } from "@/components/theme-aware-image"
+
 import { HoverScale } from "@/components/animations/hover-scale"
 import { StaggerItem } from "@/components/animations/stagger-item"
+import Image from "next/image"
 
 
 interface FeatureCardProps {
   title: string
   description: string
   imageSrc: string
-  svgImage?: boolean
+  
 }
 
-export function FeatureCard({ title, description, imageSrc, svgImage = false }: FeatureCardProps) {
+export function FeatureCard({ title, description, imageSrc }: FeatureCardProps) {
   return (
     <StaggerItem>
       <HoverScale className="flex flex-col items-center text-center p-4 hover:shadow-md dark:hover:shadow-gray-800 transition-shadow duration-300 rounded-lg bg-white dark:bg-gray-900 h-full">
         <div className="mb-4 h-32 w-32 relative">
-          <ThemeAwareImage
-            lightSrc={imageSrc}
+          <Image
+            src={imageSrc}
             alt={title}
             fill
             className="object-contain"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            svgImage={true}
+            
             
           />
         </div>
