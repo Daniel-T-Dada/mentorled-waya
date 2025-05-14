@@ -14,7 +14,7 @@ const Navbar = () => {
         return [
             { name: "Home", path: "/" },
             { name: "About Us", path: "/about" },
-            { name: "Features", path: "/feature" },
+            { name: "Features", path: "/features" },
             { name: "Contact Us", path: "/contact" },
         ]
     }
@@ -34,8 +34,7 @@ const Navbar = () => {
                             <Link
                                 key={item.name}
                                 href={item.path}
-                                onClick={(e) => e.preventDefault()}
-                                className="text-[#500061] hover:text-[#9514b7] font-semibold">
+                                className="text-[#500061] dark:text-[#9333EA] hover:text-[#9514b7] font-semibold">
                                 {item.name}
                             </Link>
                         ))}
@@ -45,12 +44,12 @@ const Navbar = () => {
                     <div className="hidden md:flex space-x-4">
                         <ThemeToggle />
                         <Link href="/login" onClick={(e) => e.preventDefault()}>
-                            <Button className="bg-[#500061] hover:bg-[#9514b7] text-white hover:text-secondary font-semibold mr-4">
+                            <Button className="bg-[#500061] dark:bg-[#9333EA] hover:bg-[#9514b7] text-white hover:text-secondary font-semibold mr-4">
                                 Sign Up
                             </Button>
                         </Link>
                         <Link href="/register" onClick={(e) => e.preventDefault()}>
-                            <Button variant="outline" className="text-primary hover:bg-[#ffe7fe] outline-[#500061] outline-offset-2 font-semibold">
+                            <Button variant="outline" className="text-primary hover:bg-[#ffe7fe] outline-[#500061] dark:outline-[#9333EA] outline-offset-2 font-semibold">
                                 Sign In
                             </Button>
                         </Link>

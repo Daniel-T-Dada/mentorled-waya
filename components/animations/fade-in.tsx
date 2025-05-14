@@ -14,7 +14,7 @@ interface FadeInProps {
   distance?: number
 }
 
-export function FadeIn({
+export function FadeInOld({
   children,
   delay = 0,
   duration = 0.5,

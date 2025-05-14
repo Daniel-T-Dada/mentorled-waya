@@ -14,20 +14,20 @@ interface FeatureCardProps {
 export function FeatureCard({ title, description, imageSrc }: FeatureCardProps) {
   return (
     <StaggerItem>
-      <HoverScale className="flex flex-col items-center text-center p-4 hover:shadow-md dark:hover:shadow-gray-800 transition-shadow duration-300 rounded-lg bg-white dark:bg-gray-900 h-full">
-        <div className="mb-4 h-32 w-32 relative">
+      <HoverScale className="flex flex-col items-center text-center p-6 hover:shadow-md dark:hover:shadow-gray-800 transition-shadow duration-300 rounded-lg bg-white dark:bg-gray-900 h-full">
+        <div className="mb-4 h-60 w-60 sm:h-32 sm:w-32 md:h-60 md:w-60 relative">
           <Image
             src={imageSrc}
             alt={title}
             fill
             className="object-contain"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             
             
           />
         </div>
-        <h3 className="text-lg font-semibold mb-2 text-[#500061] dark:text-[#9333EA]">{title}</h3>
-        <p className="text-gray-600 dark:text-gray-300 text-sm">{description}</p>
+        <h3 className="text-lg sm:text-lg lg:text-2xl font-semibold mb-2 text-[#500061] dark:text-[#9333EA]">{title}</h3>
+        <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-lg">{description}</p>
       </HoverScale>
     </StaggerItem>
   )

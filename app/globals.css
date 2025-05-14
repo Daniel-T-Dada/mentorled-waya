@@ -47,8 +47,10 @@
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
-  --brand: 80, 0, 97; /* #500061 */
-   --brand-light: 147, 51, 234; /* #9333EA - lighter purple for dark mode */
+  --brand: 80, 0, 97;
+  /* #500061 */
+  --brand-light: 147, 51, 234;
+  /* #9333EA - lighter purple for dark mode */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
@@ -119,9 +121,11 @@
   0% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-10px);
   }
+
   100% {
     transform: translateY(0px);
   }
@@ -131,19 +135,23 @@
   0% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-15px);
   }
+
   100% {
     transform: translateY(0px);
   }
 }
 
 @keyframes pulse-slow {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.8;
   }
@@ -169,7 +177,51 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+
+@layer utilities {
+  .animate-delay-75 {
+    animation-delay: 75ms;
+  }
+
+  .animate-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animate-delay-150 {
+    animation-delay: 150ms;
+  }
+
+  .animate-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animate-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .animate-delay-500 {
+    animation-delay: 500ms;
+  }
+
+  .animate-duration-1000 {
+    animation-duration: 1000ms;
+  }
+
+  .animate-duration-2000 {
+    animation-duration: 2000ms;
+  }
+
+  .animate-duration-3000 {
+    animation-duration: 3000ms;
+  }
+
+  .animate-duration-\[3000ms\] {
+    animation-duration: 3000ms;
   }
 }
