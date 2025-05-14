@@ -1,7 +1,7 @@
 import { FadeInOld } from "@/components/animations/fade-in"
 import { ScaleIn } from "@/components/animations/scale-in"
 import { StaggerChildren } from "@/components/animations/stagger-children"
-import { FadeIn, FadeInUp, FadeInStagger, ScrollFadeIn, ScrollFadeInUp } from "@/components/animations/animate";
+import { ScrollFadeIn, ScrollFadeInUp } from "@/components/animations/animate";
 import { FeatureCard } from "@/components/feature-card"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
