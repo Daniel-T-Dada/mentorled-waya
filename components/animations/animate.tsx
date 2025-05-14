@@ -3,6 +3,11 @@
 import React from "react";
 import { motion, type MotionProps } from "motion/react";
 import { cn } from "@/lib/utils";
+
+type AnimationWithInteractions = {
+    hover?: MotionProps["animate"];
+    tap?: MotionProps["animate"];
+};
 import { InView } from "react-intersection-observer";
 
 type AnimateProps = {
@@ -96,10 +101,10 @@ export function Animate({
         motionProps.animate = selectedAnimation.animate;
     } else if (type === "hover") {
         motionProps.whileHover = selectedAnimation.animate ||
-            (selectedAnimation as any).hover; // Type assertion for hover/tap props
+            (selectedAnimation as AnimationWithInteractions).hover;
     } else if (type === "tap") {
         motionProps.whileTap = selectedAnimation.animate ||
-            (selectedAnimation as any).tap; // Type assertion for hover/tap props
+            (selectedAnimation as AnimationWithInteractions).tap;
     }
 
     // For scroll animations, use InView to trigger when scrolled into view
