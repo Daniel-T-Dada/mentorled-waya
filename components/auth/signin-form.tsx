@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import CardWrapper from "./card-wrapper"
 import { ParentSignInSchema, KidSignInSchema } from "@/schemas"
 import { signIn } from "next-auth/react";
+import { Eye, EyeOff } from "lucide-react";
 
 
 
@@ -31,17 +32,10 @@ const SignInForm = () => {
     const [userType, setUserType] = useState<"parent" | "kid">("parent");
     const [success, setSuccess] = useState<string | undefined>("")
     const [error, setError] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPin, setShowPin] = useState(false);
 
 
-
-    // const form = useForm<z.infer<typeof SignInSchema>>({
-    //     resolver: zodResolver(SignInSchema),
-    //     defaultValues: {
-    //         email: "",
-    //         password: "",
-    //     },
-    //     mode: "onChange"
-    // })
     const parentForm = useForm<ParentFormValues>({
         resolver: zodResolver(ParentSignInSchema),
         defaultValues: {
@@ -50,6 +44,8 @@ const SignInForm = () => {
         },
         mode: "onChange"
     })
+
+    // The Kid Login Form Implementation
     const kidForm = useForm<KidFormValues>({
         resolver: zodResolver(KidSignInSchema),
         defaultValues: {
@@ -75,10 +71,10 @@ const SignInForm = () => {
 
     // Parent login submission
     async function onParentSubmit(values: ParentFormValues) {
-        // console.log("Parent Form Values:", {
-        //     email: values.email,
-        //     password: values.password
-        // });
+        console.log("Parent Form Values:", {
+            email: values.email,
+            password: values.password
+        });
         setIsLoading(true);
         setError(null);
         setSuccess("");
@@ -157,7 +153,13 @@ const SignInForm = () => {
     //     })
     // }
 
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
 
+    const togglePinVisibility = () => {
+        setShowPin(!showPin);
+    };
 
     return (
         <CardWrapper
@@ -183,6 +185,7 @@ const SignInForm = () => {
                     {error}
                 </div>
             )}
+            {/* Parent Form */}
             {userType === "parent" && (
                 <Form {...parentForm}>
                     <form onSubmit={parentForm.handleSubmit(onParentSubmit)}
@@ -213,11 +216,20 @@ const SignInForm = () => {
                                     <FormItem>
                                         <FormLabel className="text-sm sm:text-base">Password</FormLabel>
                                         <FormControl>
-                                            <Input {...field}
-                                                placeholder="******"
-                                                type="password"
-                                                className="h-9 sm:h-10 text-sm sm:text-base"
-                                            />
+                                            <div className="relative">
+                                                <Input {...field}
+                                                    placeholder="******"
+                                                    type={showPassword ? "text" : "password"}
+                                                    className="h-9 sm:h-10 text-sm sm:text-base"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={togglePasswordVisibility}
+                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                                                >
+                                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                </button>
+                                            </div>
                                         </FormControl>
                                         <FormMessage className="text-xs sm:text-sm" />
                                     </FormItem>
@@ -236,6 +248,11 @@ const SignInForm = () => {
                     </form>
                 </Form>
             )}
+
+
+
+
+            {/* Kid Form */}
             {userType === "kid" && (
                 <Form {...kidForm}>
                     <form onSubmit={kidForm.handleSubmit(onKidSubmit)}
@@ -266,12 +283,21 @@ const SignInForm = () => {
                                     <FormItem>
                                         <FormLabel className="text-sm sm:text-base">Pin</FormLabel>
                                         <FormControl>
-                                            <Input {...field}
-                                                placeholder="******"
-                                                type="password"
-                                                maxLength={4}
-                                                className="h-9 sm:h-10 text-sm sm:text-base"
-                                            />
+                                            <div className="relative">
+                                                <Input {...field}
+                                                    placeholder="******"
+                                                    type={showPin ? "text" : "password"}
+                                                    maxLength={4}
+                                                    className="h-9 sm:h-10 text-sm sm:text-base"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={togglePinVisibility}
+                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                                                >
+                                                    {showPin ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                </button>
+                                            </div>
                                         </FormControl>
                                         <FormMessage className="text-xs sm:text-sm" />
                                     </FormItem>

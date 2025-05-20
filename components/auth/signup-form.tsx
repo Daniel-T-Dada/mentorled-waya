@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
 import Link from "next/link"
 import { Checkbox } from "../ui/checkbox"
+import { Eye, EyeOff } from "lucide-react"
 
 
 
@@ -33,6 +34,8 @@ const SignUpForm = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [success, setSuccess] = useState<string | undefined>("")
     const [error, setError] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
 
 
@@ -74,17 +77,30 @@ const SignUpForm = () => {
                 name: values.fullName,
                 email: values.email,
                 password: values.password,
+                confirmPassword: values.confirmPassword,
                 redirect: false,
-                callbackUrl: `/auth/verify-email?email=${encodeURIComponent(values.email)}`
+                // TODO: Temporarily commented out email verification redirect
+                // callbackUrl: `/auth/verify-email?email=${encodeURIComponent(values.email)}`
+                callbackUrl: "/auth/signin"
             });
 
+            console.log("SignIn result:", result);
+
             if (result?.error) {
+                console.error("Signup error:", result.error);
                 setError(result.error);
                 return;
             }
 
-            // Redirect to verification page
-            router.push(`/auth/verify-email?email=${encodeURIComponent(values.email)}`);
+            if (!result?.ok) {
+                console.error("Signup failed:", result);
+                setError("Failed to create account. Please try again.");
+                return;
+            }
+
+            // TODO: Temporarily commented out email verification redirect
+            // router.push(`/auth/verify-email?email=${encodeURIComponent(values.email)}`);
+            router.push("/auth/signin");
         } catch (error) {
             setError("Something went wrong. Please try again.");
             console.error("Registration failed:", error);
@@ -100,6 +116,14 @@ const SignUpForm = () => {
     //     })
     // }
 
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
+    const toggleConfirmPasswordVisibility = () => {
+        setShowConfirmPassword(!showConfirmPassword);
+    };
 
 
     return (
@@ -159,14 +183,28 @@ const SignUpForm = () => {
                             name="password"
                             render={({ field }) => (
                                 <FormItem>
+
+
                                     <FormLabel className="text-sm sm:text-base">Password</FormLabel>
                                     <FormControl>
-                                        <Input {...field}
-                                            placeholder="******"
-                                            type="password"
-                                            className="h-9 sm:h-10 text-sm sm:text-base"
-                                        />
+                                        <div className="relative">
+                                            <Input {...field}
+                                                placeholder="******"
+                                                type={showPassword ? "text" : "password"}
+                                                className="h-9 sm:h-10 text-sm sm:text-base"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={togglePasswordVisibility}
+                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                                            >
+                                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
                                     </FormControl>
+
+
+
                                     <FormMessage className="text-xs sm:text-sm" />
                                 </FormItem>
                             )}
@@ -178,11 +216,20 @@ const SignUpForm = () => {
                                 <FormItem>
                                     <FormLabel className="text-sm sm:text-base">Confirm Password</FormLabel>
                                     <FormControl>
-                                        <Input {...field}
-                                            placeholder="******"
-                                            type="password"
-                                            className="h-9 sm:h-10 text-sm sm:text-base"
-                                        />
+                                        <div className="relative">
+                                            <Input {...field}
+                                                placeholder="******"
+                                                type={showConfirmPassword ? "text" : "password"}
+                                                className="h-9 sm:h-10 text-sm sm:text-base"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={toggleConfirmPasswordVisibility}
+                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                                            >
+                                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
                                     </FormControl>
                                     <FormMessage className="text-xs sm:text-sm" />
                                 </FormItem>
