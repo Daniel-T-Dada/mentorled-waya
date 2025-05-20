@@ -162,46 +162,47 @@ const SignInForm = () => {
     return (
         <CardWrapper
             headerLabel="Welcome to Waya!"
+            titleLabel="Welcome back!"
             backButtonLabel="Don't have an account? Sign up"
             backButtonHref="/auth/signup"
             showSocial
         >
             <Tabs
                 defaultValue="parent"
-                className="w-full mb-6  dark:rounded-md"
+                className="w-full mb-4 sm:mb-6"
                 onValueChange={handleTabChange}
             >
-                <TabsList className="w-full grid grid-cols-2 h-12 dark:bg-secondary rounded-md dark:border ">
-                    <TabsTrigger value="parent" className="rounded-l-md">Parent</TabsTrigger>
-                    <TabsTrigger value="kid" className="rounded-r-md">Kid</TabsTrigger>
+                <TabsList className="w-full grid grid-cols-2 h-10 sm:h-12 dark:bg-secondary rounded-md dark:border">
+                    <TabsTrigger value="parent" className="rounded-l-md text-sm sm:text-base">Parent</TabsTrigger>
+                    <TabsTrigger value="kid" className="rounded-r-md text-sm sm:text-base">Kid</TabsTrigger>
                 </TabsList>
             </Tabs>
 
             {error && (
-                <div className="p-3 text-sm bg-destructive/15 text-destructive rounded-md mb-4">
+                <div className="p-2 sm:p-3 text-xs sm:text-sm bg-destructive/15 text-destructive rounded-md mb-3 sm:mb-4">
                     {error}
                 </div>
             )}
             {userType === "parent" && (
                 <Form {...parentForm}>
                     <form onSubmit={parentForm.handleSubmit(onParentSubmit)}
-                        className="space-y-6"
+                        className="space-y-4 sm:space-y-6"
                     >
-                        <div className="space-y-4">
+                        <div className="space-y-3 sm:space-y-4">
                             <FormField
                                 control={parentForm.control}
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Email</FormLabel>
+                                        <FormLabel className="text-sm sm:text-base">Email</FormLabel>
                                         <FormControl>
                                             <Input {...field}
                                                 placeholder="Enter your email"
                                                 type="email"
-
+                                                className="h-9 sm:h-10 text-sm sm:text-base"
                                             />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="text-xs sm:text-sm" />
                                     </FormItem>
                                 )}
                             />
@@ -210,25 +211,25 @@ const SignInForm = () => {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Password</FormLabel>
+                                        <FormLabel className="text-sm sm:text-base">Password</FormLabel>
                                         <FormControl>
                                             <Input {...field}
                                                 placeholder="******"
                                                 type="password"
+                                                className="h-9 sm:h-10 text-sm sm:text-base"
                                             />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="text-xs sm:text-sm" />
                                     </FormItem>
                                 )}
                             />
                         </div>
                         <FormError message="" />
                         <FormSuccess message={success} />
-                        {/* {form.formState.errors.email?.message} */}
                         <Button
                             disabled={isLoading}
                             type="submit"
-                            className="w-full dark:text-secondary-foreground"
+                            className="w-full h-9 sm:h-10 text-sm sm:text-base dark:text-secondary-foreground"
                         >
                             {isLoading ? "Signing in..." : "Sign in"}
                         </Button>
@@ -238,23 +239,23 @@ const SignInForm = () => {
             {userType === "kid" && (
                 <Form {...kidForm}>
                     <form onSubmit={kidForm.handleSubmit(onKidSubmit)}
-                        className="space-y-6"
+                        className="space-y-4 sm:space-y-6"
                     >
-                        <div className="space-y-4">
+                        <div className="space-y-3 sm:space-y-4">
                             <FormField
                                 control={kidForm.control}
                                 name="username"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Username</FormLabel>
+                                        <FormLabel className="text-sm sm:text-base">Username</FormLabel>
                                         <FormControl>
                                             <Input {...field}
                                                 placeholder="Enter your username"
                                                 type="text"
-
+                                                className="h-9 sm:h-10 text-sm sm:text-base"
                                             />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="text-xs sm:text-sm" />
                                     </FormItem>
                                 )}
                             />
@@ -263,26 +264,26 @@ const SignInForm = () => {
                                 name="pin"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Pin</FormLabel>
+                                        <FormLabel className="text-sm sm:text-base">Pin</FormLabel>
                                         <FormControl>
                                             <Input {...field}
                                                 placeholder="******"
                                                 type="password"
                                                 maxLength={4}
+                                                className="h-9 sm:h-10 text-sm sm:text-base"
                                             />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="text-xs sm:text-sm" />
                                     </FormItem>
                                 )}
                             />
                         </div>
                         <FormError message="" />
                         <FormSuccess message={success} />
-                        {/* {form.formState.errors.email?.message} */}
                         <Button
                             disabled={isLoading}
                             type="submit"
-                            className="w-full dark:text-secondary-foreground"
+                            className="w-full h-9 sm:h-10 text-sm sm:text-base dark:text-secondary-foreground"
                         >
                             {isLoading ? "Signing in..." : "Sign in"}
                         </Button>

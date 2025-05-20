@@ -21,5 +21,26 @@ const KidSignInSchema = z.object({
     }),
 })
 
+const SignUpSchema = z.object({
+    email: z.string().email({
+        message: "Invalid email address",
+    }),
+    password: z.string()
+        .min(6, { message: "Password must be at least 6 characters" }),
+    // .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
+    // .regex(/[0-9]/, { message: "Password must contain at least one number" }),
+    fullName: z.string().min(1, {
+        message: "Full name is required",
+    }),
+    confirmPassword: z.string(),
 
-export { ParentSignInSchema, KidSignInSchema }
+    agreeToTerms: z.boolean().refine(val => val === true, {
+        message: "You must agree to the terms and conditions.",
+    }),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+})
+
+
+export { ParentSignInSchema, KidSignInSchema, SignUpSchema }
