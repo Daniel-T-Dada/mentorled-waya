@@ -168,10 +168,10 @@ const SignInForm = () => {
         >
             <Tabs
                 defaultValue="parent"
-                className="w-full mb-6"
+                className="w-full mb-6  dark:rounded-md"
                 onValueChange={handleTabChange}
             >
-                <TabsList className="w-full grid grid-cols-2 h-12 rounded-md">
+                <TabsList className="w-full grid grid-cols-2 h-12 dark:bg-secondary rounded-md dark:border ">
                     <TabsTrigger value="parent" className="rounded-l-md">Parent</TabsTrigger>
                     <TabsTrigger value="kid" className="rounded-r-md">Kid</TabsTrigger>
                 </TabsList>
@@ -228,7 +228,7 @@ const SignInForm = () => {
                         <Button
                             disabled={isLoading}
                             type="submit"
-                            className="w-full"
+                            className="w-full dark:text-secondary-foreground"
                         >
                             {isLoading ? "Signing in..." : "Sign in"}
                         </Button>
@@ -282,7 +282,7 @@ const SignInForm = () => {
                         <Button
                             disabled={isLoading}
                             type="submit"
-                            className="w-full"
+                            className="w-full dark:text-secondary-foreground"
                         >
                             {isLoading ? "Signing in..." : "Sign in"}
                         </Button>

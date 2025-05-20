@@ -26,7 +26,7 @@ const Social = () => {
                 className="flex-1"
                 variant="outline"
                 onClick={() => onClick()}>
-                <FaFacebook className="h-5 w-5 text-blue-600 rounded-full" />
+                <FaFacebook className="h-5 w-5 text-blue-600 dark:text-blue-100 rounded-full" />
             </Button>
             <Button
                 size="lg"
