@@ -4,7 +4,6 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
 import { Button } from "./ui/button"
-import ThemeToggle from "./theme-toggle"
 import { SignInButton } from "./auth/signin-button"
 import { SignUpButton } from "./auth/signup-button"
 
@@ -44,7 +43,7 @@ const Navbar = () => {
 
                     {/* Desktop Authentication Buttons */}
                     <div className="hidden md:flex space-x-4">
-                        <ThemeToggle />
+                        {/* <ThemeToggle /> */}
                         <SignUpButton>
                             <Button className="bg-[#500061] dark:bg-[#9333EA] hover:bg-[#9514b7] text-white hover:text-secondary font-semibold mr-4">
                                 Sign Up

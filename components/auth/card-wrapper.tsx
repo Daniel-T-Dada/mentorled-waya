@@ -39,7 +39,7 @@ const CardWrapper = ({
                     />
                     <Header label={headerLabel} />
                 </div>
-                <div className="flex flex-col mt-8">
+                <div className="flex flex-col mt-4">
                     <Title label={titleLabel} />
                 </div>
             </CardHeader>

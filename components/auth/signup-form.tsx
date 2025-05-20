@@ -200,7 +200,7 @@ const SignUpForm = () => {
                                         />
                                     </FormControl>
                                     <div className="space-y-1 leading-none">
-                                        <label className="font-medium text-sm">
+                                        <label className="font-medium text-[12px] sm:text-sm">
                                             By signing up you agree to the{" "}
                                             <Link href="/#terms" className="text-blue-500 hover:underline">
                                                 Terms of Service
@@ -210,7 +210,7 @@ const SignUpForm = () => {
                                                 Privacy Policy
                                             </Link>
                                         </label>
-                                        <FormMessage />
+                                        <FormMessage className="text-xs sm:text-sm" />
                                     </div>
                                 </FormItem>
                             )}
