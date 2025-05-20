@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import CardWrapper from "./card-wrapper"
 import { ParentSignInSchema, KidSignInSchema } from "@/schemas"
+import { signIn } from "next-auth/react";
 
 
 
