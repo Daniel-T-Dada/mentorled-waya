@@ -8,7 +8,7 @@ import Image from "next/image"
 import Link from "next/link";
 
 
-const Home = () => {
+const Home =  async () => {
   return (
     <>
       <div className="flex flex-col ">
@@ -34,7 +34,7 @@ const Home = () => {
               <section className="">
                 <div className="flex flex-col items-center sm:items-start dark:bg-gray-950">
                   <FadeInOld delay={0.3} direction="right">
-                    <h1 className="text-[28px] lg:text-5xl font-bold mb-4 text-[#500061] dark:text-[#9333EA]">
+                    <h1 className="text-[28px] lg:text-5xl font-bold mb-4 text-primary dark:text-primary">
                       Be the Hero, Do your Chores!
                     </h1>
                   </FadeInOld>

@@ -5,6 +5,7 @@ import Image from "next/image"
 import { useState } from "react"
 import { Button } from "./ui/button"
 import ThemeToggle from "./theme-toggle"
+import { SignInButton } from "./auth/signin-button"
 
 
 const Navbar = () => {
@@ -29,7 +30,7 @@ const Navbar = () => {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center space-x-8">
-                        
+
                         {getNavItems().map((item) => (
                             <Link
                                 key={item.name}
@@ -48,11 +49,12 @@ const Navbar = () => {
                                 Sign Up
                             </Button>
                         </Link>
-                        <Link href="/register" onClick={(e) => e.preventDefault()}>
+                        <SignInButton>
                             <Button variant="outline" className="text-primary hover:bg-[#ffe7fe] outline-[#500061] dark:outline-[#9333EA] outline-offset-2 font-semibold">
                                 Sign In
                             </Button>
-                        </Link>
+                        </SignInButton>
+
                     </div>
 
                     {/* Mobile Menu Button */}
