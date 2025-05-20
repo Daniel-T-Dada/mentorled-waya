@@ -2,7 +2,7 @@
 
 
 import * as z from "zod"
-import { useState, useTransition } from "react"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import CardWrapper from "./card-wrapper"
@@ -25,10 +25,10 @@ type KidFormValues = z.infer<typeof KidSignInSchema>
 
 
 const SignInForm = () => {
-    const [isPending, startTransition] = useTransition()
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [userType, setUserType] = useState<"parent" | "kid">("parent");
+    const [success, setSuccess] = useState<string | undefined>("")
     const [error, setError] = useState<string | null>(null);
 
 
@@ -74,8 +74,13 @@ const SignInForm = () => {
 
     // Parent login submission
     async function onParentSubmit(values: ParentFormValues) {
+        // console.log("Parent Form Values:", {
+        //     email: values.email,
+        //     password: values.password
+        // });
         setIsLoading(true);
         setError(null);
+        setSuccess("");
 
         try {
             const result = await signIn("parent-credentials", {
@@ -91,6 +96,7 @@ const SignInForm = () => {
                 return;
             }
 
+            setSuccess("Successfully signed in!");
             if (result?.url) {
                 router.push(result.url);
             } else {
@@ -107,8 +113,13 @@ const SignInForm = () => {
 
     // Kid login submission
     async function onKidSubmit(values: KidFormValues) {
+        // console.log("Kid Form Values:", {
+        //     username: values.username,
+        //     pin: values.pin
+        // });
         setIsLoading(true);
         setError(null);
+        setSuccess("");
 
         try {
             const result = await signIn("kid-credentials", {
@@ -124,6 +135,7 @@ const SignInForm = () => {
                 return;
             }
 
+            setSuccess("Successfully signed in!");
             if (result?.url) {
                 router.push(result.url);
             } else {
@@ -143,6 +155,8 @@ const SignInForm = () => {
     //         console.log(values)
     //     })
     // }
+
+
 
     return (
         <CardWrapper
@@ -208,14 +222,14 @@ const SignInForm = () => {
                             />
                         </div>
                         <FormError message="" />
-                        <FormSuccess message="" />
+                        <FormSuccess message={success} />
                         {/* {form.formState.errors.email?.message} */}
                         <Button
-                            disabled={isPending}
+                            disabled={isLoading}
                             type="submit"
                             className="w-full"
                         >
-                            {isPending ? "Signing in..." : "Sign in"}
+                            {isLoading ? "Signing in..." : "Sign in"}
                         </Button>
                     </form>
                 </Form>
@@ -262,14 +276,14 @@ const SignInForm = () => {
                             />
                         </div>
                         <FormError message="" />
-                        <FormSuccess message="" />
+                        <FormSuccess message={success} />
                         {/* {form.formState.errors.email?.message} */}
                         <Button
-                            disabled={isPending}
+                            disabled={isLoading}
                             type="submit"
                             className="w-full"
                         >
-                            {isPending ? "Signing in..." : "Sign in"}
+                            {isLoading ? "Signing in..." : "Sign in"}
                         </Button>
                     </form>
                 </Form>
