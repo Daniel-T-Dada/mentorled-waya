@@ -1,7 +1,7 @@
 "use client";
 
 import { BarChart, ChartSpline, Clipboard, Goal, HandCoins, Home, List, LogOut, Settings, UsersRound, Wallet } from "lucide-react";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarSeparator, useSidebar } from "../ui/sidebar"
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, /* SidebarMenuBadge, */ SidebarMenuButton, SidebarMenuItem, SidebarSeparator, useSidebar } from "../ui/sidebar"
 
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -11,17 +11,19 @@ import { Avatar, AvatarFallback, AvatarImage, } from "../ui/avatar";
 import { Button } from "../ui/button";
 import ThemeToggle from "@/components/theme-toggle";
 
-interface AppSidebarProps {
-    isParent: boolean;
-}
 
-const AppSidebar = ({ isParent }: AppSidebarProps) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
+
+
+const AppSidebar = () => {
     const pathname = usePathname();
     const { theme } = useTheme();
     const { state } = useSidebar();
 
-    const navItems = isParent
+    const isParentRoute = pathname?.startsWith('/dashboard/parents');
+
+
+    const navItems = isParentRoute
         ? [
             {
                 name: "Dashboard",
@@ -76,6 +78,7 @@ const AppSidebar = ({ isParent }: AppSidebarProps) => {
             },
         ];
 
+
     return (
         <Sidebar collapsible="icon" >
             {/* The Sidebar Header */}
@@ -106,18 +109,16 @@ const AppSidebar = ({ isParent }: AppSidebarProps) => {
                 <SidebarGroup>
                     {/* <SidebarGroupLabel>Application</SidebarGroupLabel> */}
                     <SidebarGroupContent>
-                        <SidebarMenu>
+                        <SidebarMenu className="space-y-8 mt-8">
                             {navItems.map((item) => (
                                 <SidebarMenuItem key={item.name}>
-                                    <SidebarMenuButton asChild>
+                                    <SidebarMenuButton asChild className="text-xl hover:bg-primary ">
                                         <Link href={item.href}>
                                             <item.icon />
                                             <span>{item.name}</span>
                                         </Link>
                                     </SidebarMenuButton>
-                                    {item.name === "Inbox" && (
-                                        <SidebarMenuBadge>20</SidebarMenuBadge>
-                                    )}
+
                                 </SidebarMenuItem>
                             ))}
                         </SidebarMenu>
@@ -126,16 +127,17 @@ const AppSidebar = ({ isParent }: AppSidebarProps) => {
             </SidebarContent>
             <SidebarSeparator />
 
+
             {/* The Sidebar Footer Content */}
             <SidebarFooter className="mt-6 space-y-4">
                 <SidebarMenu>
                     <Button
                         variant="outline"
                         className={`w-full ${state === 'collapsed' ? 'justify-center' : 'justify-start'}`}
-                        onClick={() => (!isParent)}
+                        onClick={() => navigateToView(isParentRoute)}
                     >
                         <UsersRound className={`${state === 'collapsed' ? '' : 'mr-2'} h-4 w-4`} />
-                        {state !== 'collapsed' && <span>Switch to {isParent ? "Kid" : "Parent"} View</span>}
+                        {state !== 'collapsed' && <span>Switch to {isParentRoute ? "Kid" : "Parent"} View</span>}
                     </Button>
                 </SidebarMenu>
                 <SidebarMenu>
@@ -179,3 +181,11 @@ const AppSidebar = ({ isParent }: AppSidebarProps) => {
     )
 }
 export default AppSidebar
+
+const navigateToView = (isParent: boolean) => {
+    if (isParent) {
+        window.location.href = '/dashboard/kids';
+    } else {
+        window.location.href = '/dashboard/parents';
+    }
+}
