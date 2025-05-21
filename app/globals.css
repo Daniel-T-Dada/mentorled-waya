@@ -74,14 +74,12 @@ body,
   --accent: oklch(90% 0.03 318.87); /* Matches muted for consistency */
   --accent-foreground: oklch(20% 0.05 318.87); /* Matches foreground */
 
-
 /* 5. Destructive / Status */
 
   --destructive: oklch(60% 0.2 25); /* Red for errors, Lc ≥ 60 vs background */
   --border: oklch(85% 0.02 318.87); /* Neutral, subtle, Lc ≥ 45 vs background */
   --input: oklch(85% 0.02 318.87); /* Matches border */
   --ring: oklch(50% 0.1 318.87); /* Brand-tinted outline, Lc ≥ 45 vs background */
-
 
 /* 6. Chart Accents */
   --chart-1: oklch(31.59% 0.15 318.87); /* Brand color */
@@ -203,9 +201,6 @@ body,
   animation: pulse-slow 3s ease-in-out infinite;
 }
 
-
-
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -215,7 +210,6 @@ body,
     @apply bg-background text-foreground;
   }
 }
-
 
 @layer utilities {
   .animate-delay-75 {
