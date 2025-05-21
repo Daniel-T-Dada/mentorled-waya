@@ -11,7 +11,8 @@ const ParentsPage = () => {
                         <p className="text-4xl mb-8">🚧 Still under construction </p>
                         <SignOutButton
                             variant="outline"
-                            className="text-lg"
+                            className="text-lg dark:text-foreground"
+                            size="lg"
                         />
                     </ScaleIn>
                 </div>

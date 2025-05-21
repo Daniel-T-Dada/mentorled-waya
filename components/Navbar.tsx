@@ -6,10 +6,11 @@ import { useState } from "react"
 import { Button } from "./ui/button"
 import { SignInButton } from "./auth/signin-button"
 import { SignUpButton } from "./auth/signup-button"
-
-
+import { useTheme } from "next-themes"
+import ThemeToggle from "./theme-toggle"
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const { theme } = useTheme()
 
     const getNavItems = () => {
         return [
@@ -25,16 +26,21 @@ const Navbar = () => {
             <div className="container mx-auto px-4 md:px-8 lg:px-16 xl:px-24">
                 <div className="flex items-center justify-between h-16 py-4">
                     <Link href="/" className="font-bold text-2xl text-primary flex items-center space-x-2">
-                        <Image src="/Logo/Purple.svg" alt="Logo" width={80} height={80} />
+                        <Image
+                            src={theme === 'dark' ? "/Logo/White.svg" : "/Logo/Purple.svg"}
+                            alt="Logo"
+                            width={80}
+                            height={80}
+                        />
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <nav className="hidden md:flex items-center space-x-8">
+                    <nav className="hidden md:flex items-center  space-x-8">
                         {getNavItems().map((item) => (
                             <Link
                                 key={item.name}
                                 href={item.path}
-                                className="text-primary hover:text-primary/80 font-semibold">
+                                className="text-primary dark:text-foreground hover:text-primary/80 font-semibold">
                                 {item.name}
                             </Link>
                         ))}
@@ -42,14 +48,15 @@ const Navbar = () => {
 
                     {/* Desktop Authentication Buttons */}
                     <div className="hidden md:flex space-x-4">
+                    <ThemeToggle />
                         <SignUpButton>
-                            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold mr-4">
+                            <Button className="bg-primary dark:text-foreground hover:bg-primary/90 text-primary-foreground font-semibold mr-4">
                                 Sign Up
                             </Button>
                         </SignUpButton>
 
                         <SignInButton>
-                            <Button variant="outline" className="text-primary hover:bg-primary/10 border-primary font-semibold">
+                            <Button variant="outline" className="text-primary dark:text-foreground hover:bg-primary/10 border-primary font-semibold">
                                 Sign In
                             </Button>
                         </SignInButton>
@@ -98,12 +105,12 @@ const Navbar = () => {
                             ))}
                             <div className="flex flex-col gap-2 py-4">
                                 <Link href="/login" onClick={(e) => e.preventDefault()}>
-                                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+                                    <Button className="w-full bg-primary dark:text-foreground hover:bg-primary/90 text-primary-foreground font-semibold">
                                         Sign Up
                                     </Button>
                                 </Link>
                                 <Link href="/register" onClick={(e) => e.preventDefault()}>
-                                    <Button variant="outline" className="w-full text-primary hover:bg-primary/10 border-primary font-semibold">
+                                    <Button variant="outline" className="w-full text-primary dark:text-foreground hover:bg-primary/10 border-primary font-semibold">
                                         Sign In
                                     </Button>
                                 </Link>

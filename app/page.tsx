@@ -25,8 +25,7 @@ const Home = async () => {
                     alt="Logo"
                     width={500}
                     height={495}
-                    className="mx-auto mb-4 top-[100px] md:top-[100px] lg:top-[0px] xl:top-[0px] w-full h-auto"
-
+                    className="mx-auto mb-4 top-[100px] md:top-[100px] lg:top-[0px] xl:top-[0px] w-full h-auto dark:brightness-80 dark:contrast-80"
                   />
                 </ScaleIn>
               </div>
@@ -46,8 +45,8 @@ const Home = async () => {
                   </FadeInOld>
 
                   <FadeInOld delay={0.5} direction="right">
-                    <Link href="/signup">
-                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-[28px] px-4 rounded-full mt-4 w-[360px] sm:w-[238px] lg:w-[238px] lg:h-10">
+                    <Link href="/auth/signup">
+                      <Button className="bg-primary hover:bg-primary/90 dark:text-foreground text-primary-foreground font-semibold py-[28px] px-4 rounded-full mt-4 w-[360px] sm:w-[238px] lg:w-[238px] lg:h-10">
                         Get Started
                       </Button>
                     </Link>
@@ -62,7 +61,7 @@ const Home = async () => {
           <section className="w-full md:h-20 lg:h-24  relative ">
             {/* The wavey lines */}
             <div >
-              <div className="w-full h-auto absolute sm:-top-30 -top-80 lg:-top-60 left-0  animate-float -rotate-[4.62deg]">
+              <div className="w-full h-auto absolute sm:-top-30 -top-80 lg:-top-60 left-0 -z-10 animate-float -rotate-[4.62deg]">
                 <Image
                   src="/assets/wave-1.svg"
                   width={3400}
@@ -114,7 +113,7 @@ const Home = async () => {
                     width={400}
                     height={300}
                     alt="Children learning about money"
-                    className="w-full h-auto"
+                    className="w-full h-auto dark:brightness-80 dark:contrast-80"
                   />
                 </ScaleIn>
               </div>
@@ -199,7 +198,7 @@ const Home = async () => {
                     <p className="text-sm sm:text-[18px] md:text-[18px] lg:text-2xl text-muted-foreground mb-4">
                       Sign up and create a family account
                     </p>
-                    <Link href="/signup">
+                    <Link href="/auth/signup">
                       <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 px-6 rounded">
                         Sign Up
                       </Button>
@@ -213,7 +212,7 @@ const Home = async () => {
                       alt="Sign up"
                       width={400}
                       height={400}
-                      className="w-full h-auto"
+                      className="w-full h-auto dark:brightness-80 dark:contrast-80"
                     />
                   </ScrollFadeIn>
                 </div>
@@ -238,7 +237,7 @@ const Home = async () => {
                       alt="Mobile app"
                       width={400}
                       height={400}
-                      className="w-full h-auto"
+                      className="w-full h-auto dark:brightness-80 dark:contrast-80"
                     />
                   </ScrollFadeIn>
                 </div>
@@ -262,7 +261,7 @@ const Home = async () => {
                       alt="Analytics dashboard"
                       width={400}
                       height={400}
-                      className="w-full h-auto"
+                      className="w-full h-auto dark:brightness-80 dark:contrast-80"
                     />
                   </ScrollFadeIn>
                 </div>

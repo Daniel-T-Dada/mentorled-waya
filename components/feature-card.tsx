@@ -12,12 +12,12 @@ export function FeatureCard({ title, description, imageSrc }: FeatureCardProps) 
   return (
     <StaggerItem>
       <HoverScale className="flex flex-col items-center text-center p-6 hover:shadow-md transition-shadow duration-300 rounded-lg h-full">
-        <div className="mb-4 h-60 w-60 sm:h-32 sm:w-32 md:h-60 md:w-60 relative">
+        <div className="mb-4 h-60 w-60 sm:h-32 sm:w-32 md:h-60 md:w-60 relative ">
           <Image
             src={imageSrc}
             alt={title}
             fill
-            className="object-contain"
+            className="object-contain dark:brightness-80 dark:contrast-80"
           // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
 
 
