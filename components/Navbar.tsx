@@ -30,12 +30,11 @@ const Navbar = () => {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center space-x-8">
-
                         {getNavItems().map((item) => (
                             <Link
                                 key={item.name}
                                 href={item.path}
-                                className="text-[#500061] dark:text-[#9333EA] hover:text-[#9514b7] font-semibold">
+                                className="text-primary hover:text-primary/80 font-semibold">
                                 {item.name}
                             </Link>
                         ))}
@@ -43,19 +42,17 @@ const Navbar = () => {
 
                     {/* Desktop Authentication Buttons */}
                     <div className="hidden md:flex space-x-4">
-                        {/* <ThemeToggle /> */}
                         <SignUpButton>
-                            <Button className="bg-[#500061] dark:bg-[#9333EA] hover:bg-[#9514b7] text-white hover:text-secondary font-semibold mr-4">
+                            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold mr-4">
                                 Sign Up
                             </Button>
                         </SignUpButton>
 
                         <SignInButton>
-                            <Button variant="outline" className="text-primary hover:bg-[#ffe7fe] outline-[#500061] dark:outline-[#9333EA] outline-offset-2 font-semibold">
+                            <Button variant="outline" className="text-primary hover:bg-primary/10 border-primary font-semibold">
                                 Sign In
                             </Button>
                         </SignInButton>
-
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -65,7 +62,7 @@ const Navbar = () => {
                         aria-label="Toggle menu"
                     >
                         <svg
-                            className="w-6 h-6 text-[#500061]"
+                            className="w-6 h-6 text-primary"
                             fill="none"
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -84,7 +81,7 @@ const Navbar = () => {
 
                 {/* Mobile Menu */}
                 {isMenuOpen && (
-                    <div className="md:hidden absolute top-16 left-0 right-0 bg-white border-b shadow-lg">
+                    <div className="md:hidden absolute top-16 left-0 right-0 bg-background border-b shadow-lg">
                         <nav className="flex flex-col px-4 py-2">
                             {getNavItems().map((item) => (
                                 <Link
@@ -94,19 +91,19 @@ const Navbar = () => {
                                         e.preventDefault()
                                         setIsMenuOpen(false)
                                     }}
-                                    className="py-2 text-[#500061] hover:text-[#9514b7] font-semibold"
+                                    className="py-2 text-primary hover:text-primary/80 font-semibold"
                                 >
                                     {item.name}
                                 </Link>
                             ))}
                             <div className="flex flex-col gap-2 py-4">
                                 <Link href="/login" onClick={(e) => e.preventDefault()}>
-                                    <Button className="w-full bg-[#500061] hover:bg-[#9514b7] text-white hover:text-secondary font-semibold">
+                                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
                                         Sign Up
                                     </Button>
                                 </Link>
                                 <Link href="/register" onClick={(e) => e.preventDefault()}>
-                                    <Button variant="outline" className="w-full text-primary hover:bg-[#ffe7fe] outline-[#500061] outline-offset-2 font-semibold">
+                                    <Button variant="outline" className="w-full text-primary hover:bg-primary/10 border-primary font-semibold">
                                         Sign In
                                     </Button>
                                 </Link>

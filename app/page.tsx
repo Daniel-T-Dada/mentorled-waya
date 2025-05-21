@@ -8,7 +8,7 @@ import Image from "next/image"
 import Link from "next/link";
 
 
-const Home =  async () => {
+const Home = async () => {
   return (
     <>
       <div className="flex flex-col ">
@@ -32,23 +32,25 @@ const Home =  async () => {
               </div>
 
               <section className="">
-                <div className="flex flex-col items-center sm:items-start dark:bg-gray-950">
+                <div className="flex flex-col items-center sm:items-start">
                   <FadeInOld delay={0.3} direction="right">
-                    <h1 className="text-[28px] lg:text-5xl font-bold mb-4 text-primary dark:text-primary">
+                    <h1 className="text-[28px] lg:text-5xl font-bold mb-4 text-primary">
                       Be the Hero, Do your Chores!
                     </h1>
                   </FadeInOld>
                   <FadeInOld delay={0.4} direction="right">
-                    <p className="text-lg text-center sm:text-start md:text-xl text-gray-700  dark:text-gray-400 mb-6">
+                    <p className="text-lg text-center sm:text-start md:text-xl text-muted-foreground mb-6">
                       Help your kids learn money smarts
                       and have a blast doing it
                     </p>
                   </FadeInOld>
 
                   <FadeInOld delay={0.5} direction="right">
-                    <Button className="bg-[#500061] hover:bg-[#9514b7] dark:bg-[#9333EA] text-white font-semibold py-[28px] px-4 rounded-full mt-4 w-[360px]  sm:w-[238px] lg:w-[238px] lg:h-10">
-                      Get Started
-                    </Button>
+                    <Link href="/signup">
+                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-[28px] px-4 rounded-full mt-4 w-[360px] sm:w-[238px] lg:w-[238px] lg:h-10">
+                        Get Started
+                      </Button>
+                    </Link>
                   </FadeInOld>
                 </div>
               </section>
@@ -87,17 +89,17 @@ const Home =  async () => {
         </section>
 
         {/* Why WE Built Waya Section */}
-        <section className="text-[#500061] dark:text-[#9333EA]">
+        <section className="text-primary">
           <div className="container mx-auto px-4 py-0 sm:py-8 md:py-12">
             <div className="flex flex-col md:flex-row items-center gap-8  lg:mx-32 md:mx-8 my-16 sm:my-0">
               <div className="w-full md:w-1/2 text-center md:text-left">
                 <FadeInOld delay={0.2} direction="left">
-                  <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-5xl font-bold text-brand dark:text-brand-light mb-4">Why we Built Waya</h2>
+                  <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-5xl font-bold text-primary mb-4">Why we Built Waya</h2>
                 </FadeInOld>
 
                 <FadeInOld delay={0.3} direction="left">
 
-                  <p className="text-sm sm:text-[18px] md:text-[18px] lg:text-2xl font-medium font text-gray-600 dark:text-gray-400">
+                  <p className="text-sm sm:text-[18px] md:text-[18px] lg:text-2xl font-medium text-muted-foreground">
                     At Waya, we believe that money lessons should be as easy as breathing and twice as fun. Our platform
                     turns everyday tasks into exciting opportunities for kids to learn, save, and grow their financial
                     confidence.
@@ -127,12 +129,12 @@ const Home =  async () => {
         <section className="w-full py-12 md:py-16">
           <div className="container mx-auto px-4">
             <FadeInOld delay={0.2} direction="up">
-              <h2 className="text-2xl sm:text-2xl md:text-3xl lg:text-5xl font-bold text-center mb-4  text-[#500061] dark:text-[#9333EA]">
+              <h2 className="text-2xl sm:text-2xl md:text-3xl lg:text-5xl font-bold text-center mb-4 text-primary">
                 What You&apos;ll Love About Waya
               </h2>
             </FadeInOld>
             <FadeInOld delay={0.3} direction="up">
-              <p className="text-sm sm:text-[18px] md:text-[18px] lg:text-2xl dark:text-gray-400 text-center mb-12 font-semibold">
+              <p className="text-sm sm:text-[18px] md:text-[18px] lg:text-2xl text-muted-foreground text-center mb-12 font-semibold">
                 Explore how Waya makes saving, spending, and earning feel like an adventure.
               </p>
             </FadeInOld>
@@ -172,15 +174,15 @@ const Home =  async () => {
         </section>
 
         {/* Ready to Raise a Money-Smart Kid? */}
-        <section className="py-16 md:py-24 bg-white">
+        <section className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4">
             <ScrollFadeInUp>
-              <h2 className="text-2xl sm:text-2xl md:text-3xl lg:text-5xl font-bold text-[#500061] dark:text-[#9333EA] mb-2 text-center">
+              <h2 className="text-2xl sm:text-2xl md:text-3xl lg:text-5xl font-bold text-primary mb-2 text-center">
                 Ready to Raise a Money-Smart Kid?
               </h2>
             </ScrollFadeInUp>
             <ScrollFadeInUp delay={0.1}>
-              <p className="text-sm sm:text-[18px] md:text-[18px] lg:text-2xl dark:text-gray-400 text-center text-gray-700 mb-12 font-medium">
+              <p className="text-sm sm:text-[18px] md:text-[18px] lg:text-2xl text-muted-foreground text-center mb-12 font-medium">
                 Join Waya today and turn everyday life into a lifelong lesson with
                 these three steps:
               </p>
@@ -191,14 +193,14 @@ const Home =  async () => {
               <div className="flex flex-col md:flex-row items-center gap-8 mb-16">
                 <div className="w-full md:w-1/2">
                   <ScrollFadeInUp delay={0.1}>
-                    <h3 className="text-xl sm:text-xl md:text-2xl lg:text-4xl dark:text-[#9333EA] font-semibold text-[#500061] mb-2">
+                    <h3 className="text-xl sm:text-xl md:text-2xl lg:text-4xl text-primary font-semibold mb-2">
                       Ready to Build Smart Money Habits?
                     </h3>
-                    <p className="text-sm sm:text-[18px] md:text-[18px] lg:text-2xl dark:text-gray-400  text-gray-700 mb-4">
+                    <p className="text-sm sm:text-[18px] md:text-[18px] lg:text-2xl text-muted-foreground mb-4">
                       Sign up and create a family account
                     </p>
                     <Link href="/signup">
-                      <Button className="bg-[#500061] hover:bg-[#9514b7] text-white font-semibold py-3 px-6 rounded">
+                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 px-6 rounded">
                         Sign Up
                       </Button>
                     </Link>
@@ -220,10 +222,10 @@ const Home =  async () => {
               <div className="flex flex-col md:flex-row-reverse items-center gap-8 mb-16">
                 <div className="w-full md:w-1/2">
                   <ScrollFadeInUp delay={0.1}>
-                    <h3 className="text-xl sm:text-xl md:text-2xl lg:text-4xl dark:text-[#9333EA] font-semibold text-[#500061] mb-2">
+                    <h3 className="text-xl sm:text-xl md:text-2xl lg:text-4xl text-primary font-semibold mb-2">
                       Assign chores and allowances
                     </h3>
-                    <p className="text-sm sm:text-[18px] md:text-[18px] lg:text-2xl dark:text-gray-400  text-gray-700 mb-4">
+                    <p className="text-sm sm:text-[18px] md:text-[18px] lg:text-2xl text-muted-foreground mb-4">
                       Set up a schedule of tasks and rewards for your kids to
                       complete
                     </p>
@@ -245,10 +247,10 @@ const Home =  async () => {
               <div className="flex flex-col md:flex-row items-center gap-8">
                 <div className="w-full md:w-1/2">
                   <ScrollFadeInUp delay={0.1}>
-                    <h3 className="text-xl sm:text-xl md:text-2xl lg:text-4xl dark:text-[#9333EA] font-semibold text-[#500061] mb-2">
+                    <h3 className="text-xl sm:text-xl md:text-2xl lg:text-4xl text-primary font-semibold mb-2">
                       Watch your kids learn and grow!
                     </h3>
-                    <p className="text-sm sm:text-[18px] md:text-[18px] lg:text-2xl dark:text-gray-400  text-gray-700 mb-4">
+                    <p className="text-sm sm:text-[18px] md:text-[18px] lg:text-2xl text-muted-foreground mb-4">
                       Track progress and celebrate financial milestones together
                     </p>
                   </ScrollFadeInUp>
@@ -270,10 +272,10 @@ const Home =  async () => {
         </section>
 
         {/* Contact Us Section */}
-        <section className="py-16 md:py-24 bg-gray-50">
+        <section className="py-16 md:py-24">
           <div className="container mx-auto px-4 max-w-3xl">
             <ScrollFadeInUp>
-              <h2 className="text-3xl md:text-4xl font-bold text-[#500061] mb-12 text-center">
+              <h2 className="text-3xl md:text-4xl font-bold text-primary mb-12 text-center">
                 Contact Us
               </h2>
             </ScrollFadeInUp>
@@ -284,14 +286,14 @@ const Home =  async () => {
                   <input
                     type="text"
                     placeholder="First Name"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#500061]"
+                    className="w-full px-4 py-3 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
                   />
                 </div>
                 <div>
                   <input
                     type="text"
                     placeholder="Last Name"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#500061]"
+                    className="w-full px-4 py-3 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
                   />
                 </div>
               </div>
@@ -301,14 +303,14 @@ const Home =  async () => {
                   <input
                     type="tel"
                     placeholder="Phone Number"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#500061]"
+                    className="w-full px-4 py-3 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
                   />
                 </div>
                 <div>
                   <input
                     type="email"
                     placeholder="Email Address"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#500061]"
+                    className="w-full px-4 py-3 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
                   />
                 </div>
               </div>
@@ -317,12 +319,12 @@ const Home =  async () => {
                 <textarea
                   placeholder="Your Message"
                   rows={5}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#500061]"
+                  className="w-full px-4 py-3 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background"
                 ></textarea>
               </div>
 
               <div>
-                <Button className="w-full bg-[#500061] hover:bg-[#9514b7] text-white font-semibold py-3 px-6 rounded animate-shimmer shimmer">
+                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 px-6 rounded">
                   Submit
                 </Button>
               </div>

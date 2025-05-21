@@ -1,7 +1,7 @@
 "use client";
 
 import { BarChart, ChartSpline, Clipboard, Goal, HandCoins, Home, List, LogOut, Settings, UsersRound, Wallet } from "lucide-react";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, /* SidebarMenuBadge, */ SidebarMenuButton, SidebarMenuItem, SidebarSeparator, useSidebar } from "../ui/sidebar"
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu,  SidebarMenuButton, SidebarMenuItem, SidebarSeparator, useSidebar } from "../ui/sidebar"
 
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -10,15 +10,21 @@ import { useTheme } from "next-themes"
 import { Avatar, AvatarFallback, AvatarImage, } from "../ui/avatar";
 import { Button } from "../ui/button";
 import ThemeToggle from "@/components/theme-toggle";
+import { useUser } from "@/contexts/UserContext";
+import { signOut } from "next-auth/react";
+import { Skeleton } from "../ui/skeleton";
 
 
 
+/* interface AppSidebarProps {
+    isParent: boolean;
+} */
 
-
-const AppSidebar = () => {
+const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
     const pathname = usePathname();
     const { theme } = useTheme();
     const { state } = useSidebar();
+    const { user, isLoading } = useUser();
 
     const isParentRoute = pathname?.startsWith('/dashboard/parents');
 
@@ -78,6 +84,19 @@ const AppSidebar = () => {
             },
         ];
 
+    const handleLogout = () => {
+        signOut({ callbackUrl: "/" });
+    };
+
+    const getAvatarFallback = () => {
+        if (!user?.name) return "U";
+        return user.name
+            .split(" ")
+            .map(n => n[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2);
+    };
 
     return (
         <Sidebar collapsible="icon" >
@@ -149,27 +168,50 @@ const AppSidebar = () => {
 
                 <SidebarMenu>
                     <SidebarMenuItem>
-
                         <div className="flex items-center gap-2">
                             <SidebarMenuButton
                                 size="lg"
                                 className="hover:bg-transparent flex-1"
                             >
                                 <Avatar className="h-8 w-8 md:h-10 md:w-10">
-                                    <AvatarImage src="https://avatars.githubusercontent.com/u/103610391?v=4&size=64" />
-                                    <AvatarFallback>DD</AvatarFallback>
+                                    {isLoading ? (
+                                        <Skeleton className="h-full w-full rounded-full" />
+                                    ) : (
+                                        <>
+                                            {user?.avatar ? (
+                                                <AvatarImage
+                                                    src={user.avatar}
+                                                    alt={user.name || "User avatar"}
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement;
+                                                        target.style.display = 'none';
+                                                    }}
+                                                />
+                                            ) : null}
+                                            <AvatarFallback>{getAvatarFallback()}</AvatarFallback>
+                                        </>
+                                    )}
                                 </Avatar>
                                 {state !== 'collapsed' && (
                                     <div className="grid flex-1 text-left text-sm leading-tight">
-                                        <span className="truncate font-medium">Double D</span>
-                                        <span className="truncate text-xs text-muted-foreground">
-                                            @simplytobs
-                                        </span>
+                                        {isLoading ? (
+                                            <>
+                                                <Skeleton className="h-4 w-24" />
+                                                <Skeleton className="h-3 w-32 mt-1" />
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span className="truncate font-medium">{user?.name || "User"}</span>
+                                                <span className="truncate text-xs text-muted-foreground">
+                                                    {user?.email || "No email"}
+                                                </span>
+                                            </>
+                                        )}
                                     </div>
                                 )}
                             </SidebarMenuButton>
                             {state !== 'collapsed' && (
-                                <Button variant="outline" size="icon">
+                                <Button variant="outline" size="icon" onClick={handleLogout}>
                                     <LogOut className="size-4" />
                                 </Button>
                             )}

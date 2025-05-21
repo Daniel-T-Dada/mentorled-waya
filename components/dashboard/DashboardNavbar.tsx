@@ -1,6 +1,5 @@
 'use client'
 import { Separator } from "@/components/ui/separator"
-// import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
     DropdownMenu,
@@ -10,17 +9,37 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-// import { Button } from "@/components/ui/button"
-// import { useTheme } from "next-themes"
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { BellIcon, LogOut, Menu, Settings, SlidersHorizontal, User } from "lucide-react"
 import { useState } from "react";
+import { useUser } from "@/contexts/UserContext";
+import { signOut } from "next-auth/react";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet"
 
 const DashboardNavbar = () => {
     const [filter, setFilter] = useState("");
+    const { user, isLoading } = useUser();
+    const [avatarError, setAvatarError] = useState(false);
+
+    const handleLogout = () => {
+        signOut({ callbackUrl: "/" });
+    };
+
+    const getAvatarFallback = () => {
+        if (!user?.name) return "U";
+        return user.name.charAt(0).toUpperCase();
+    };
+
     return (
         <nav className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-12 sticky top-0 z-10 shrink-0 items-center gap-2 border-b bg-background transition-[width,height] ease-linear py-8">
-            <div className="flex w-full items-center justify-between gap-1 pl-4 pr-4 lg:gap-2 lg:px-6">
+            <div className="flex items-center justify-between w-full px-4">
                 {/* Left Side */}
                 <div className="flex items-center gap-2">
                     <SidebarTrigger className="-ml-1" />
@@ -29,13 +48,22 @@ const DashboardNavbar = () => {
                         className="mx-2 data-[orientation=vertical]:h-4 hidden sm:block"
                     />
                     <div className="hidden sm:block">
-                        <h1 className="text-xl md:text-2xl font-semibold">Hello Tobi</h1>
-                        <p className="text-muted-foreground text-xs md:text-sm">Building Smart Money Habits, One Chore at a Time.</p>
+                        {isLoading ? (
+                            <>
+                                <Skeleton className="h-7 w-48 mb-1" />
+                                <Skeleton className="h-4 w-64" />
+                            </>
+                        ) : (
+                            <>
+                                <h1 className="text-xl md:text-2xl font-semibold">Hello {user?.name || "User"}</h1>
+                                <p className="text-muted-foreground text-xs md:text-sm">Building Smart Money Habits, One Chore at a Time.</p>
+                            </>
+                        )}
                     </div>
                 </div>
 
                 {/* Right Side */}
-                <div className="flex items-center gap-2 md:gap-6 lg:gap-8 flex-shrink-0">
+                <div className="flex items-center gap-4">
                     {/* Search - Hidden on mobile */}
                     <div className="relative hidden md:block">
                         <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -56,17 +84,81 @@ const DashboardNavbar = () => {
                         </span>
                     </button>
 
-                    {/* Mobile Menu Button */}
-                    <button className="md:hidden" aria-label="Open mobile menu">
-                        <Menu className="w-6 h-6" />
-                    </button>
+                    {/* //TODO: TO fix the hamburger menu issue on mobile later */}
+                    {/* Mobile Menu */}
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <button className="md:hidden" aria-label="Open mobile menu">
+                                <Menu className="w-6 h-6" />
+                            </button>
+                        </SheetTrigger>
+                        <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                            <SheetHeader>
+                                <SheetTitle>Menu</SheetTitle>
+                            </SheetHeader>
+                            <div className="flex flex-col gap-4 mt-4">
+                                {/* Mobile Search */}
+                                <div className="relative">
+                                    <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                    <input
+                                        type="text"
+                                        placeholder="Filter"
+                                        className="w-full pl-9 pr-4 py-2 text-sm rounded-md bg-muted/50 border-0 focus:outline-none focus:ring-2 focus:ring-primary"
+                                        value={filter}
+                                        onChange={e => setFilter(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Mobile Notifications */}
+                                <button className="relative flex items-center gap-2 p-2 rounded-md hover:bg-muted">
+                                    <BellIcon className="w-5 h-5" />
+                                    <span>Notifications</span>
+                                    <span className="ml-auto w-4 h-4 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center">
+                                        3
+                                    </span>
+                                </button>
+
+                                {/* Mobile Menu Items */}
+                                <div className="flex flex-col gap-2">
+                                    <button className="flex items-center gap-2 p-2 rounded-md hover:bg-muted">
+                                        <User className="w-5 h-5" />
+                                        <span>Profile</span>
+                                    </button>
+                                    <button className="flex items-center gap-2 p-2 rounded-md hover:bg-muted">
+                                        <Settings className="w-5 h-5" />
+                                        <span>Settings</span>
+                                    </button>
+                                    <button
+                                        className="flex items-center gap-2 p-2 rounded-md hover:bg-destructive/10 text-destructive"
+                                        onClick={handleLogout}
+                                    >
+                                        <LogOut className="w-5 h-5" />
+                                        <span>Logout</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </SheetContent>
+                    </Sheet>
 
                     {/* User Menu */}
                     <DropdownMenu>
                         <DropdownMenuTrigger>
                             <Avatar className="h-8 w-8 md:h-10 md:w-10">
-                                <AvatarImage src="https://avatars.githubusercontent.com/u/103610391?v=4&size=64" />
-                                <AvatarFallback>DD</AvatarFallback>
+                                {isLoading ? (
+                                    <Skeleton className="h-full w-full rounded-full" />
+                                ) : (
+                                    <>
+                                        {user?.avatar && !avatarError ? (
+                                            <AvatarImage
+                                                src={user.avatar}
+                                                alt={user.name || "User avatar"}
+                                                onError={() => setAvatarError(true)}
+                                                loading="lazy"
+                                            />
+                                        ) : null}
+                                        <AvatarFallback>{getAvatarFallback()}</AvatarFallback>
+                                    </>
+                                )}
                             </Avatar>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent sideOffset={10} align="end">
@@ -80,7 +172,7 @@ const DashboardNavbar = () => {
                                 <Settings className="h-[1.2rem] w-[1.2rem] mr-2" />
                                 Settings
                             </DropdownMenuItem>
-                            <DropdownMenuItem variant='destructive'>
+                            <DropdownMenuItem variant='destructive' onClick={handleLogout}>
                                 <LogOut className="h-[1.2rem] w-[1.2rem] mr-2" />
                                 Logout
                             </DropdownMenuItem>
@@ -88,8 +180,8 @@ const DashboardNavbar = () => {
                     </DropdownMenu>
                 </div>
             </div>
-        </nav >
+        </nav>
     )
 }
 
-export default DashboardNavbar 
+export default DashboardNavbar
