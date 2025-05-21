@@ -70,7 +70,6 @@ const SignUpForm = () => {
         setError(null);
         setSuccess("");
 
-
         try {
             // Call Auth.js signup
             const result = await signIn("parent-credentials", {
@@ -102,8 +101,8 @@ const SignUpForm = () => {
             // router.push(`/auth/verify-email?email=${encodeURIComponent(values.email)}`);
             router.push("/auth/signin");
         } catch (error) {
-            setError("Something went wrong. Please try again.");
             console.error("Registration failed:", error);
+            setError("Something went wrong. Please try again.");
         } finally {
             setIsLoading(false);
         }

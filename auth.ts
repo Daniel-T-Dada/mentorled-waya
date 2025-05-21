@@ -63,7 +63,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
                         console.log("Validated data:", validatedData);
 
-                        console.log("Making API request to:", "http://localhost:3001/api/signup");
+                        // console.log("Making API request to:", "http://localhost:3001/api/signup");
                         const response = await fetch("http://localhost:3001/api/signup", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
@@ -166,8 +166,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
         }),
     ],
+    session: {
+        strategy: "jwt",
+    },
     pages: {
         error: '/auth/error',
+        signOut: '/',
     },
     debug: true,
 })
