@@ -1,60 +1,198 @@
 'use client'
 
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
-import { useState } from "react";
-import chartData from "@/mockdata/mockbarchart.json"
+import { useEffect, useState } from "react";
+import initialChartData from "@/mockdata/mockbarchart.json"
+import { useSession } from "next-auth/react";
 
 
+interface Allowance {
+    id: string;
+    kidId: string;
+    parentId: string;
+    amount: number;
+    frequency: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+    lastPaidAt: string | null;
+    nextPaymentDate: string | null;
+}
+
+interface ChartDataPoint {
+    date: string;
+    allowanceGiven: number;
+    allowanceSpent: number;
+}
 
 const chartConfig = {
     allowanceGiven: { label: "Allowance Given", color: "#7DE2D1" },
     allowanceSpent: { label: "Allowance Spent", color: "#7D238E" },
 } satisfies ChartConfig;
 
-
-// const chartData2 = [
-//     { browser: "chrome", visitors: 187, fill: "var(--color-chrome)" },
-//     { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
-//     { browser: "firefox", visitors: 275, fill: "var(--color-firefox)" },
-//     { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
-//     { browser: "other", visitors: 90, fill: "var(--color-other)" },
-// ]
-
-// const chartConfig2 = {
-//     visitors: {
-//         label: "Visitors",
-//     },
-//     chrome: {
-//         label: "Chrome",
-//         color: "hsl(var(--chart-1))",
-//     },
-//     safari: {
-//         label: "Safari",
-//         color: "hsl(var(--chart-2))",
-//     },
-//     firefox: {
-//         label: "Firefox",
-//         color: "hsl(var(--chart-3))",
-//     },
-//     edge: {
-//         label: "Edge",
-//         color: "hsl(var(--chart-4))",
-//     },
-//     other: {
-//         label: "Other",
-//         color: "hsl(var(--chart-5))",
-//     }
-// } satisfies ChartConfig
-
 const AppBarChart = () => {
     const [range, setRange] = useState("7");
+    const [allowanceData, setAllowanceData] = useState<ChartDataPoint[]>(initialChartData);
+    const [isAllowanceLoading, setIsAllowanceLoading] = useState(true);
+    const [allowanceError, setAllowanceError] = useState<string | null>(null);
+    const { data: session } = useSession();
+
+    useEffect(() => {
+        const fetchAllowanceData = async () => {
+            if (!session?.user?.id) {
+                console.log('No session user ID, using mock data');
+                setAllowanceData(initialChartData);
+                setIsAllowanceLoading(false);
+                return;
+            }
+            setIsAllowanceLoading(true);
+            setAllowanceError(null);
+            try {
+                const res = await fetch(`http://localhost:3001/api/allowances?parentId=${session.user.id}`);
+                if (!res.ok) {
+                    console.log('API request failed, using mock data');
+                    throw new Error('Failed to fetch allowance data');
+                }
+                const data = await res.json();
+                console.log('API response:', data);
+
+                if (Array.isArray(data)) {
+
+
+                    // Transform the data into the required format
+                    const transformedData = data.reduce((acc: ChartDataPoint[], allowance: Allowance) => {
+                        const date = new Date(allowance.createdAt).toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric'
+                        }).replace(',', '');
+
+                        // Find if we already have an entry for this date
+                        const existingEntry = acc.find(entry => entry.date === date);
+
+                        if (existingEntry) {
+                            // Update existing entry
+                            existingEntry.allowanceGiven += allowance.amount;
+                            if (allowance.status === 'completed') {
+                                existingEntry.allowanceSpent += allowance.amount;
+                            }
+                        } else {
+                            // Create new entry
+                            acc.push({
+                                date,
+                                allowanceGiven: allowance.amount,
+                                allowanceSpent: allowance.status === 'completed' ? allowance.amount : 0
+                            });
+                        }
+
+                        return acc;
+                    }, []);
+
+                    // Sort by date
+                    transformedData.sort((a: ChartDataPoint, b: ChartDataPoint) => {
+                        const dateA = new Date(a.date);
+                        const dateB = new Date(b.date);
+                        return dateA.getTime() - dateB.getTime();
+                    });
+
+                    console.log('Transformed data:', transformedData);
+                    console.log('Mock data:', initialChartData);
+
+                    // If no data was transformed, use mock data
+                    if (transformedData.length === 0) {
+                        console.log('No transformed data, using mock data');
+                        setAllowanceData(initialChartData);
+                    } else {
+                        setAllowanceData(transformedData);
+                    }
+                } else {
+                    console.log('Invalid data format, using mock data');
+                    throw new Error('Fetched data is not in expected array format');
+                }
+            } catch (err: unknown) {
+                console.error("Error fetching allowance data:", err);
+                setAllowanceError(err instanceof Error ? err.message : 'Unknown error');
+                // Fallback to mock data on error
+                console.log('Error occurred, using mock data');
+                setAllowanceData(initialChartData);
+            } finally {
+                setIsAllowanceLoading(false);
+            }
+        };
+        fetchAllowanceData();
+    }, [session?.user?.id]);
+
+    // Filter data based on range before rendering
+    const filteredAllowanceData = allowanceData.filter(item => {
+        try {
+            // convert the date string givin me issues to an object with ti
+            const [month, day] = item.date.split(' ');
+            const currentYear = new Date().getFullYear();
+            const date = new Date(`${month} ${day}, ${currentYear}`);
+
+            const days = parseInt(range);
+            const today = new Date();
+            const comparisonDate = new Date(today);
+            comparisonDate.setDate(today.getDate() - days);
+
+            // Set both dates to start of day for accurate comparison
+            date.setHours(0, 0, 0, 0);
+            comparisonDate.setHours(0, 0, 0, 0);
+
+            // TODO: To remove later after I am done with development
+            console.log('Comparing dates:', {
+                itemDate: date.toISOString(),
+                comparisonDate: comparisonDate.toISOString(),
+                isAfter: date >= comparisonDate,
+                item
+            });
+
+            return date >= comparisonDate;
+        } catch (error) {
+            console.error('Error parsing date:', item.date, error);
+            return true; // Include items with invalid dates to ensure we show something
+        }
+    });
+
+    // If filtered data is empty, use all data
+    const dataToDisplay = filteredAllowanceData.length > 0 ? filteredAllowanceData : allowanceData;
+
+    console.log('Current allowance data:', allowanceData);
+    console.log('Filtered allowance data:', filteredAllowanceData);
+    console.log('Data to display:', dataToDisplay);
+
+    if (isAllowanceLoading) {
+        return (
+            <div className="lg:col-span-2 rounded-lg shadow-md">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Allowance Breakdown</CardTitle>
+                        <CardDescription>Loading...</CardDescription>
+                    </CardHeader>
+                </Card>
+            </div>
+        );
+    }
+    // I want to catch all possible error here
+    if (allowanceError) {
+        return (
+            <div className="lg:col-span-2 rounded-lg shadow-md">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Allowance Breakdown</CardTitle>
+                        <CardDescription>Error: {allowanceError}</CardDescription>
+                    </CardHeader>
+                </Card>
+            </div>
+        );
+    }
+
     return (
-        <div className="lg:col-span-2 rounded-lg shadow-md">
-            <Card >
+        <div className="lg:col-span-1">
+            <Card>
+
                 <CardHeader>
                     <CardTitle>Allowance Breakdown</CardTitle>
                     <CardDescription>
@@ -81,38 +219,36 @@ const AppBarChart = () => {
                         </div>
                     </CardDescription>
                 </CardHeader>
+
                 <CardContent>
-                    <ResponsiveContainer>
-                        <ChartContainer config={chartConfig}>
+                    <ChartContainer config={chartConfig}>
+                        <ResponsiveContainer width="100%" height={180}>
                             <BarChart
                                 accessibilityLayer
-                                data={chartData}
+                                data={dataToDisplay}
                                 margin={{
-                                    top: 20,
-                                    right: 30,
-                                    left: 20,
-                                    bottom: 20
+                                    top: 5,
+                                    right: 10,
+                                    left: 5,
+                                    bottom: 5
                                 }}
                             >
                                 <CartesianGrid vertical={false} />
                                 <XAxis
                                     dataKey="date"
                                     tickLine={false}
-                                    tickMargin={10}
+                                    tickMargin={5}
                                     axisLine={false}
-                                    tick={{ fontSize: 12 }}
                                     tickFormatter={(value) => {
                                         const date = new Date(value);
                                         return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
                                     }}
                                 />
                                 <YAxis
-
                                     tickLine={false}
-                                    tickMargin={10}
+                                    tickMargin={5}
                                     axisLine={false}
-                                    tickFormatter={(value) => `₦${value}k`}
-
+                                    tickFormatter={(value) => value.toLocaleString('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 })}
                                 />
                                 <ChartTooltip
                                     cursor={false}
@@ -129,11 +265,12 @@ const AppBarChart = () => {
                                     fill={chartConfig.allowanceSpent.color}
                                 />
                             </BarChart>
-                        </ChartContainer>
-                    </ResponsiveContainer>
+                        </ResponsiveContainer>
+                    </ChartContainer>
                 </CardContent>
+
             </Card>
         </div>
-    )
-}
+    );
+};
 export default AppBarChart

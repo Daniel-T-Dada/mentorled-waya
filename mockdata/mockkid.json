@@ -1,0 +1,30 @@
+[
+    {
+        "id": "kid-001",
+        "name": "Tobi",
+        "avatar": "https://api.dicebear.com/7.x/lorelei/svg?seed=Tobi",
+        "level": 5,
+        "balance": 10000
+    },
+    {
+        "id": "kid-002",
+        "name": "Fade",
+        "avatar": null,
+        "level": 3,
+        "balance": 7000
+    },
+    {
+        "id": "kid-003",
+        "name": "Chris",
+        "avatar": "https://api.dicebear.com/7.x/lorelei/svg?seed=Chris",
+        "level": 4,
+        "balance": 5000
+    },
+    {
+        "id": "kid-004",
+        "name": "Wura",
+        "avatar": "https://api.dicebear.com/7.x/lorelei/svg?seed=Wura",
+        "level": 2,
+        "balance": 3000
+    }
+]

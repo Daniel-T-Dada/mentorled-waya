@@ -52,43 +52,65 @@ body,
 /* 1. Background and Surfaces */
 :root {
   --radius: 0.625rem;
-  --background: oklch(98% 0.01 300); /* Near-white, slight purple tint, Lc ≈ 90 vs foreground */
-  --foreground: oklch(20% 0.05 318.87); /* Darker for contrast, Lc ≥ 75 vs background */
-  --card: oklch(95% 0.01 318.87); /* Slightly tinted, Lc ≈ 85 vs card-foreground */
-  --card-foreground: oklch(20% 0.05 318.87); /* Matches foreground, Lc ≥ 75 vs card */
+  --background: oklch(
+    98% 0.01 300
+  ); /* Near-white, slight purple tint, Lc ≈ 90 vs foreground */
+  --foreground: oklch(
+    20% 0.05 318.87
+  ); /* Darker for contrast, Lc ≥ 75 vs background */
+  --card: oklch(
+    95% 0.01 318.87
+  ); /* Slightly tinted, Lc ≈ 85 vs card-foreground */
+  --card-foreground: oklch(
+    20% 0.05 318.87
+  ); /* Matches foreground, Lc ≥ 75 vs card */
   --popover: oklch(95% 0.01 318.87); /* Same as card for consistency */
-  --popover-foreground: oklch(20% 0.05 318.87); /* Matches foreground, Lc ≥ 75 vs popover */
+  --popover-foreground: oklch(
+    20% 0.05 318.87
+  ); /* Matches foreground, Lc ≥ 75 vs popover */
 
-/* 2. Primary */
-  --primary: oklch(31.59% 0.15 318.87); /* Brand color, Lc ≥ 60 vs primary-foreground */
+  /* 2. Primary */
+  --primary: oklch(
+    31.59% 0.15 318.87
+  ); /* Brand color, Lc ≥ 60 vs primary-foreground */
   --primary-foreground: oklch(95% 0.01 318.87); /* Near-white, high contrast */
 
-/* 3. Secondary */
-  --secondary: oklch(85% 0.05 318.87); /* Lighter, desaturated brand color, Lc ≥ 60 vs secondary-foreground */
+  /* 3. Secondary */
+  --secondary: oklch(
+    85% 0.05 318.87
+  ); /* Lighter, desaturated brand color, Lc ≥ 60 vs secondary-foreground */
   --secondary-foreground: oklch(20% 0.05 318.87); /* Matches foreground */
 
-/* 4. Muted / Accent / Neutrals */
+  /* 4. Muted / Accent / Neutrals */
 
-  --muted: oklch(90% 0.03 318.87); /* Subtle brand tint, Lc ≥ 60 vs muted-foreground */
-  --muted-foreground: oklch(50% 0.05 318.87); /* Mid-tone for readability */
-  --accent: oklch(90% 0.03 318.87); /* Matches muted for consistency */
+  --muted: oklch(
+    92% 0.02 318.87
+  ); /* Slightly lighter muted for better contrast with muted-foreground */
+  --muted-foreground: oklch(
+    40% 0.05 318.87
+  ); /* Darker muted-foreground for improved readability */
+  --accent: oklch(92% 0.02 318.87); /* Matches muted */
   --accent-foreground: oklch(20% 0.05 318.87); /* Matches foreground */
 
-/* 5. Destructive / Status */
+  /* 5. Destructive / Status */
 
   --destructive: oklch(60% 0.2 25); /* Red for errors, Lc ≥ 60 vs background */
-  --border: oklch(85% 0.02 318.87); /* Neutral, subtle, Lc ≥ 45 vs background */
-  --input: oklch(85% 0.02 318.87); /* Matches border */
-  --ring: oklch(50% 0.1 318.87); /* Brand-tinted outline, Lc ≥ 45 vs background */
+  --border: oklch(
+    80% 0.02 318.87
+  ); /* Slightly darker border for better visibility */
+  --input: oklch(80% 0.02 318.87); /* Matches border */
+  --ring: oklch(
+    50% 0.1 318.87
+  ); /* Brand-tinted outline, Lc ≥ 45 vs background */
 
-/* 6. Chart Accents */
+  /* 6. Chart Accents */
   --chart-1: oklch(31.59% 0.15 318.87); /* Brand color */
   --chart-2: oklch(60% 0.1 200); /* Cyan for contrast */
   --chart-3: oklch(70% 0.15 80); /* Yellow-green */
   --chart-4: oklch(65% 0.12 260); /* Blue */
   --chart-5: oklch(55% 0.18 30); /* Orange-red */
 
-/* 7. Sidebar */
+  /* 7. Sidebar */
   --sidebar: oklch(95% 0.01 318.87); /* Matches card */
   --sidebar-foreground: oklch(20% 0.05 318.87); /* Matches foreground */
   --sidebar-primary: oklch(31.59% 0.15 318.87); /* Brand color */
@@ -103,48 +125,56 @@ body,
 .dark {
   /* 1. Background and Surfaces */
   --background: oklch(12.25% 0 0); /* #111111 as specified */
-  --foreground: oklch(75% 0.02 280); /* Softer, neutral gray, Lc ≥ 75 vs background */
+  --foreground: oklch(
+    80% 0.02 280
+  ); /* Slightly lighter for better contrast against dark backgrounds */
   --card: oklch(14.51% 0 0); /* #1b1b1b as specified */
-  --card-foreground: oklch(75% 0.02 280); /* Matches foreground, Lc ≥ 75 vs card */
+  --card-foreground: oklch(80% 0.02 280); /* Matches foreground */
   --popover: oklch(14.51% 0 0); /* Matches card */
-  --popover-foreground: oklch(75% 0.02 280); /* Matches foreground */
+  --popover-foreground: oklch(80% 0.02 280); /* Matches foreground */
 
   /* 2. Primary */
-  --primary: oklch(45% 0.15 318.87); /* Lighter brand color, Lc ≥ 60 vs background */
-  --primary-foreground: oklch(20% 0.05 318.87); /* Dark for contrast */
+  --primary: oklch(40% 0.15 318.87); /* Slightly darker primary */
+  --primary-foreground: oklch(
+    90% 0.05 318.87
+  ); /* Much lighter for contrast against primary */
 
   /* 3. Secondary */
-  --secondary: oklch(14.51% 0 0); /* #1b1b1b as specified */
-  --secondary-foreground: oklch(75% 0.02 280); /* Matches foreground */
+  --secondary: oklch(
+    20% 0.02 318.87
+  ); /* Darker secondary for better separation */
+  --secondary-foreground: oklch(80% 0.02 280); /* Matches foreground */
 
   /* 4. Muted / Accent / Neutrals */
-  --muted: oklch(30% 0.05 318.87); /* Darker muted tone */
-  --muted-foreground: oklch(70% 0.05 318.87); /* Lighter for readability */
-  --accent: oklch(30% 0.05 318.87); /* Matches muted */
-  --accent-foreground: oklch(75% 0.02 280); /* Matches foreground */
+  --muted: oklch(25% 0.03 318.87); /* Darker muted */
+  --muted-foreground: oklch(75% 0.05 318.87); /* Lighter for readability */
+  --accent: oklch(25% 0.03 318.87); /* Matches muted */
+  --accent-foreground: oklch(80% 0.02 280); /* Matches foreground */
 
   /* 5. Destructive / Status */
-  --destructive: oklch(50% 0.18 25); /* Darker red, Lc ≥ 60 vs background */
-  --border: oklch(30% 0.02 318.87); /* Subtle, Lc ≥ 45 vs background */
-  --input: oklch(30% 0.02 318.87); /* Matches border */
-  --ring: oklch(60% 0.1 318.87); /* Lighter brand tint, Lc ≥ 45 vs background */
+  --destructive: oklch(55% 0.18 25); /* Slightly lighter red */
+  --border: oklch(35% 0.02 318.87); /* Slightly lighter border */
+  --input: oklch(35% 0.02 318.87); /* Matches border */
+  --ring: oklch(65% 0.1 318.87); /* Slightly lighter ring */
 
   /* 6. Chart Accents */
-  --chart-1: oklch(45% 0.15 318.87); /* Lighter brand color */
-  --chart-2: oklch(55% 0.1 200); /* Cyan */
-  --chart-3: oklch(60% 0.15 80); /* Yellow-green */
-  --chart-4: oklch(50% 0.12 260); /* Blue */
-  --chart-5: oklch(45% 0.18 30); /* Orange-red */
+  --chart-1: oklch(40% 0.15 318.87); /* Matches primary */
+  --chart-2: oklch(60% 0.1 200); /* Cyan */
+  --chart-3: oklch(70% 0.15 80); /* Yellow-green */
+  --chart-4: oklch(65% 0.12 260); /* Blue */
+  --chart-5: oklch(55% 0.18 30); /* Orange-red */
 
   /* 7. Sidebar */
   --sidebar: oklch(14.51% 0 0); /* #1b1b1b */
-  --sidebar-foreground: oklch(75% 0.02 280); /* Matches foreground */
-  --sidebar-primary: oklch(45% 0.15 318.87); /* Lighter brand color */
-  --sidebar-primary-foreground: oklch(20% 0.05 318.87); /* Dark for contrast */
-  --sidebar-accent: oklch(30% 0.05 318.87); /* Matches muted */
-  --sidebar-accent-foreground: oklch(75% 0.02 280); /* Matches foreground */
-  --sidebar-border: oklch(30% 0.02 318.87); /* Matches border */
-  --sidebar-ring: oklch(60% 0.1 318.87); /* Matches ring */
+  --sidebar-foreground: oklch(80% 0.02 280); /* Matches foreground */
+  --sidebar-primary: oklch(40% 0.15 318.87); /* Matches primary */
+  --sidebar-primary-foreground: oklch(
+    90% 0.05 318.87
+  ); /* Matches primary-foreground */
+  --sidebar-accent: oklch(25% 0.03 318.87); /* Matches muted */
+  --sidebar-accent-foreground: oklch(80% 0.02 280); /* Matches foreground */
+  --sidebar-border: oklch(35% 0.02 318.87); /* Matches border */
+  --sidebar-ring: oklch(65% 0.1 318.87); /* Matches ring */
 }
 
 /* Custom animations */
@@ -177,7 +207,6 @@ body,
 }
 
 @keyframes pulse-slow {
-
   0%,
   100% {
     opacity: 1;

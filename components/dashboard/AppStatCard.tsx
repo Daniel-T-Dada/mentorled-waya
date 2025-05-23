@@ -13,7 +13,7 @@ interface Chore {
     status: "completed" | "pending";
 }
 
-const StatCard = () => {
+const AppStatCard = () => {
     const [chores] = useState<Chore[]>(mockChores as Chore[]);
 
     const totalChores = chores.length;
@@ -55,4 +55,4 @@ const StatCard = () => {
         </>
     )
 }
-export default StatCard
+export default AppStatCard

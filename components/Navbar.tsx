@@ -8,6 +8,9 @@ import { SignInButton } from "./auth/signin-button"
 import { SignUpButton } from "./auth/signup-button"
 import { useTheme } from "next-themes"
 import ThemeToggle from "./theme-toggle"
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Menu } from "lucide-react"
+
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const { theme } = useTheme()
@@ -48,7 +51,7 @@ const Navbar = () => {
 
                     {/* Desktop Authentication Buttons */}
                     <div className="hidden md:flex space-x-4">
-                    <ThemeToggle />
+                        <ThemeToggle />
                         <SignUpButton>
                             <Button className="bg-primary dark:text-foreground hover:bg-primary/90 text-primary-foreground font-semibold mr-4">
                                 Sign Up
@@ -63,61 +66,48 @@ const Navbar = () => {
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <button
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className="md:hidden p-2"
-                        aria-label="Toggle menu"
-                    >
-                        <svg
-                            className="w-6 h-6 text-primary"
-                            fill="none"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            {isMenuOpen ? (
-                                <path d="M6 18L18 6M6 6l12 12" />
-                            ) : (
-                                <path d="M4 6h16M4 12h16M4 18h16" />
-                            )}
-                        </svg>
-                    </button>
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <button
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                className="md:hidden p-2"
+                                aria-label="Toggle menu"
+                            >
+                                <Menu className="w-6 h-6 text-primary" />
+                            </button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="w-[250px] sm:w-[300px]">
+                            <SheetHeader>
+                                <SheetTitle>Menu</SheetTitle>
+                            </SheetHeader>
+                            <nav className="flex flex-col px-4 py-2">
+                                {getNavItems().map((item) => (
+                                    <Link
+                                        key={item.name}
+                                        href={item.path}
+                                        onClick={() => {
+                                        }}
+                                        className="py-2 text-primary hover:text-primary/80 font-semibold"
+                                    >
+                                        {item.name}
+                                    </Link>
+                                ))}
+                                <div className="flex flex-col gap-2 py-4">
+                                    <SignUpButton>
+                                        <Button className="w-full bg-primary dark:text-foreground hover:bg-primary/90 text-primary-foreground font-semibold">
+                                            Sign Up
+                                        </Button>
+                                    </SignUpButton>
+                                    <SignInButton>
+                                        <Button variant="outline" className="w-full text-primary dark:text-foreground hover:bg-primary/10 border-primary font-semibold">
+                                            Sign In
+                                        </Button>
+                                    </SignInButton>
+                                </div>
+                            </nav>
+                        </SheetContent>
+                    </Sheet>
                 </div>
-
-                {/* Mobile Menu */}
-                {isMenuOpen && (
-                    <div className="md:hidden absolute top-16 left-0 right-0 bg-background border-b shadow-lg">
-                        <nav className="flex flex-col px-4 py-2">
-                            {getNavItems().map((item) => (
-                                <Link
-                                    key={item.name}
-                                    href={item.path}
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        setIsMenuOpen(false)
-                                    }}
-                                    className="py-2 text-primary hover:text-primary/80 font-semibold"
-                                >
-                                    {item.name}
-                                </Link>
-                            ))}
-                            <div className="flex flex-col gap-2 py-4">
-                                <Link href="/login" onClick={(e) => e.preventDefault()}>
-                                    <Button className="w-full bg-primary dark:text-foreground hover:bg-primary/90 text-primary-foreground font-semibold">
-                                        Sign Up
-                                    </Button>
-                                </Link>
-                                <Link href="/register" onClick={(e) => e.preventDefault()}>
-                                    <Button variant="outline" className="w-full text-primary dark:text-foreground hover:bg-primary/10 border-primary font-semibold">
-                                        Sign In
-                                    </Button>
-                                </Link>
-                            </div>
-                        </nav>
-                    </div>
-                )}
             </div>
         </header>
     )

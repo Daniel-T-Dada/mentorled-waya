@@ -76,19 +76,18 @@ const DashboardNavbar = () => {
                         />
                     </div>
 
-                    {/* Notification - Hidden on mobile */}
-                    <button className="relative hidden md:block">
+                    {/* Notification - Visible on all screens */}
+                    <button className="relative">
                         <BellIcon className="w-6 h-6 text-foreground" />
                         <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center">
                             3
                         </span>
                     </button>
 
-                    {/* //TODO: TO fix the hamburger menu issue on mobile later */}
-                    {/* Mobile Menu */}
+                    {/* Mobile Menu Trigger - Hidden on mobile */}
                     <Sheet>
                         <SheetTrigger asChild>
-                            <button className="md:hidden" aria-label="Open mobile menu">
+                            <button className="hidden md:hidden" aria-label="Open mobile menu">
                                 <Menu className="w-6 h-6" />
                             </button>
                         </SheetTrigger>
