@@ -5,11 +5,16 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { useEffect, useState } from "react";
-import initialChartData from "@/mockdata/mockbarchart.json"
 import { useSession } from "next-auth/react";
+import { mockDataService } from '@/lib/services/mockDataService';
 
+interface ChartDataPoint {
+    date: string;
+    allowanceGiven: number;
+    allowanceSpent: number;
+}
 
-interface Allowance {
+interface ApiAllowance {
     id: string;
     kidId: string;
     parentId: string;
@@ -22,12 +27,6 @@ interface Allowance {
     nextPaymentDate: string | null;
 }
 
-interface ChartDataPoint {
-    date: string;
-    allowanceGiven: number;
-    allowanceSpent: number;
-}
-
 const chartConfig = {
     allowanceGiven: { label: "Allowance Given", color: "#7DE2D1" },
     allowanceSpent: { label: "Allowance Spent", color: "#7D238E" },
@@ -35,7 +34,7 @@ const chartConfig = {
 
 const AppBarChart = () => {
     const [range, setRange] = useState("7");
-    const [allowanceData, setAllowanceData] = useState<ChartDataPoint[]>(initialChartData);
+    const [allowanceData, setAllowanceData] = useState<ChartDataPoint[]>([]);
     const [isAllowanceLoading, setIsAllowanceLoading] = useState(true);
     const [allowanceError, setAllowanceError] = useState<string | null>(null);
     const { data: session } = useSession();
@@ -44,7 +43,9 @@ const AppBarChart = () => {
         const fetchAllowanceData = async () => {
             if (!session?.user?.id) {
                 console.log('No session user ID, using mock data');
-                setAllowanceData(initialChartData);
+                const mockData = mockDataService.getBarChartData();
+                console.log('Raw mock data:', mockData);
+                setAllowanceData(mockData);
                 setIsAllowanceLoading(false);
                 return;
             }
@@ -63,7 +64,7 @@ const AppBarChart = () => {
 
 
                     // Transform the data into the required format
-                    const transformedData = data.reduce((acc: ChartDataPoint[], allowance: Allowance) => {
+                    const transformedData = data.reduce((acc: ChartDataPoint[], allowance: ApiAllowance) => {
                         const date = new Date(allowance.createdAt).toLocaleDateString('en-US', {
                             month: 'long',
                             day: 'numeric'
@@ -92,18 +93,22 @@ const AppBarChart = () => {
 
                     // Sort by date
                     transformedData.sort((a: ChartDataPoint, b: ChartDataPoint) => {
-                        const dateA = new Date(a.date);
-                        const dateB = new Date(b.date);
+                        const [monthA, dayA] = a.date.split(' ');
+                        const [monthB, dayB] = b.date.split(' ');
+                        const currentYear = new Date().getFullYear();
+                        const dateA = new Date(`${monthA} ${dayA}, ${currentYear}`);
+                        const dateB = new Date(`${monthB} ${dayB}, ${currentYear}`);
                         return dateA.getTime() - dateB.getTime();
                     });
 
                     console.log('Transformed data:', transformedData);
-                    console.log('Mock data:', initialChartData);
 
                     // If no data was transformed, use mock data
                     if (transformedData.length === 0) {
                         console.log('No transformed data, using mock data');
-                        setAllowanceData(initialChartData);
+                        const mockData = mockDataService.getBarChartData();
+                        console.log('Raw mock data:', mockData);
+                        setAllowanceData(mockData);
                     } else {
                         setAllowanceData(transformedData);
                     }
@@ -114,15 +119,19 @@ const AppBarChart = () => {
             } catch (err: unknown) {
                 console.error("Error fetching allowance data:", err);
                 setAllowanceError(err instanceof Error ? err.message : 'Unknown error');
+
+
                 // Fallback to mock data on error
                 console.log('Error occurred, using mock data');
-                setAllowanceData(initialChartData);
+                const mockData = mockDataService.getBarChartData();
+                console.log('Raw mock data:', mockData);
+                setAllowanceData(mockData);
             } finally {
                 setIsAllowanceLoading(false);
             }
         };
         fetchAllowanceData();
-    }, [session?.user?.id]);
+    }, [session?.user?.id, range]);
 
     // Filter data based on range before rendering
     const filteredAllowanceData = allowanceData.filter(item => {
@@ -141,8 +150,12 @@ const AppBarChart = () => {
             date.setHours(0, 0, 0, 0);
             comparisonDate.setHours(0, 0, 0, 0);
 
+            // For mock data, we'll show all data since it's already filtered
+            if (!session?.user?.id) {
+                return true;
+            }
             // TODO: To remove later after I am done with development
-            console.log('Comparing dates:', {
+            console.log('Date comparison:', {
                 itemDate: date.toISOString(),
                 comparisonDate: comparisonDate.toISOString(),
                 isAfter: date >= comparisonDate,
@@ -152,7 +165,7 @@ const AppBarChart = () => {
             return date >= comparisonDate;
         } catch (error) {
             console.error('Error parsing date:', item.date, error);
-            return true; // Include items with invalid dates to ensure we show something
+            return true; // Include items with invalid dates to ensure we show something, maybe this time the bar will show in the UI.........
         }
     });
 
@@ -239,10 +252,6 @@ const AppBarChart = () => {
                                     tickLine={false}
                                     tickMargin={5}
                                     axisLine={false}
-                                    tickFormatter={(value) => {
-                                        const date = new Date(value);
-                                        return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
-                                    }}
                                 />
                                 <YAxis
                                     tickLine={false}
@@ -273,4 +282,5 @@ const AppBarChart = () => {
         </div>
     );
 };
-export default AppBarChart
+
+export default AppBarChart;

@@ -5,39 +5,42 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-import mockChores from "@/mockdata/mockChores.json"; 
 import { Pencil, Trash } from "lucide-react";
+import { mockDataService } from '@/lib/services/mockDataService';
+
+// interface Kid {
+//     id: string;
+//     name: string;
+//     avatar?: string | null;
+// }
+
+// interface Chore {
+//     id: string;
+//     title: string;
+//     description: string;
+//     reward: number;
+//     assignedTo: string;
+//     status: "completed" | "pending" | "cancelled";
+//     createdAt?: string;
+//     completedAt?: string | null;
+// }
+
+// interface AppChoreManagementProps {
+
+//     kids: Kid[];
+
+// }
+
+// export function AppChoreManagement({ kids }: AppChoreManagementProps) {
 
 
-interface Kid {
-    id: string;
-    name: string;
-    avatar?: string | null; 
-}
 
-interface Chore {
-    id: string;
-    title: string;
-    description: string;
-    reward: number;
-    assignedTo: string; 
-    status: "completed" | "pending" | "cancelled"; 
-    createdAt?: string; 
-    completedAt?: string | null; 
-}
 
-interface AppChoreManagementProps {
-        
-    kids: Kid[];
-
-}
-
-export function AppChoreManagement({ kids }: AppChoreManagementProps) { 
+export function AppChoreManagement() {
     const [activeTab, setActiveTab] = useState("pending");
 
-
-        const chores: Chore[] = mockChores as Chore[];
+    // Get all chores from mockDataService
+    const chores = mockDataService.getAllChores();
 
     // Filter chores by status
     const filteredChores = useMemo(() => {
@@ -46,22 +49,28 @@ export function AppChoreManagement({ kids }: AppChoreManagementProps) {
         });
     }, [chores, activeTab]);
 
+
+
+
+    
     // Separate chores by status for displaying in tabs
     const pendingChores = filteredChores.filter(chore => chore.status === "pending");
     const completedChores = filteredChores.filter(chore => chore.status === "completed");
 
+
+
+    
     // Function to get kid's name by ID
     const getKidName = (kidId: string) => {
-        const kid = kids.find(k => k.id === kidId);
+        const kid = mockDataService.getKidById(kidId);
         return kid?.name || 'Unknown Kid';
     };
 
     // Function to get kid's avatar by ID
     const getKidAvatar = (kidId: string): string | undefined => {
-                const kid = kids.find(k => k.id === kidId);
-    
-                    return kid?.avatar ?? undefined;
-            };
+        const kid = mockDataService.getKidById(kidId);
+        return kid?.avatar ?? undefined;
+    };
 
 
     return (
@@ -75,7 +84,7 @@ export function AppChoreManagement({ kids }: AppChoreManagementProps) {
                     <TabsList className="grid grid-cols-2 mb-4">
                         <TabsTrigger value="pending">Pending ({pendingChores.length})</TabsTrigger>
                         <TabsTrigger value="completed">Completed ({completedChores.length})</TabsTrigger>
-                        
+
                     </TabsList>
 
                     <TabsContent value="pending" className="space-y-4">

@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import mockChores from "../../mockdata/mockChores.json";
+import { mockDataService } from "@/lib/services/mockDataService";
 
 interface Chore {
     id: string;
@@ -10,11 +10,17 @@ interface Chore {
     description: string;
     reward: number;
     assignedTo: string;
-    status: "completed" | "pending";
+    status: "completed" | "pending" | "cancelled";
 }
 
 const AppStatCard = () => {
-    const [chores] = useState<Chore[]>(mockChores as Chore[]);
+    const [chores, setChores] = useState<Chore[]>([]);
+
+    useEffect(() => {
+        // Get all chores from the mock data service
+        const allChores = mockDataService.getAllChores();
+        setChores(allChores);
+    }, []);
 
     const totalChores = chores.length;
     const completedChores = chores.filter(chore => chore.status === "completed").length;
@@ -37,7 +43,7 @@ const AppStatCard = () => {
 
     return (
         <>
-        
+
             {stats.map((stat, index) => (
                 <Card key={index}>
                     <CardHeader className="pb-2">

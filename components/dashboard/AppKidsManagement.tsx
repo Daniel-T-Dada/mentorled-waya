@@ -4,19 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-
-import mockChores from "@/mockdata/mockChores.json";
-
 import { usePathname } from 'next/navigation';
 import { Users, PlusCircle } from 'lucide-react';
-
-interface Kid {
-    id: string;
-    name: string;
-    avatar?: string | null;
-    level: number;
-    balance: number;
-}
+import { mockDataService, type Kid } from '@/lib/services/mockDataService';
 
 interface AppKidsManagementProps {
     kids: Kid[];
@@ -26,16 +16,14 @@ const AppKidsManagement = ({ kids }: AppKidsManagementProps) => {
     const pathname = usePathname();
     const isTaskMasterPage = pathname === '/dashboard/parents/taskmaster';
 
-    // Calculate chore counts for each kid
+    // Calculate chore counts for each kid using mockDataService
     const kidsWithChoreData = kids.map(kid => {
-        const completedChoreCount = mockChores.filter(chore => chore.assignedTo === kid.id && chore.status === 'completed').length;
-        const pendingChoreCount = mockChores.filter(chore => chore.assignedTo === kid.id && chore.status === 'pending').length;
-        const totalAssignedChores = completedChoreCount + pendingChoreCount;
+        const completedChoreCount = mockDataService.getChoresByKidAndStatus(kid.id, "completed").length;
+        const pendingChoreCount = mockDataService.getChoresByKidAndStatus(kid.id, "pending").length;
+        
 
+        const progress = mockDataService.getKidProgress(kid.id);
 
-
-
-        const progress = totalAssignedChores > 0 ? (completedChoreCount / totalAssignedChores) * 100 : 0;
         return {
             ...kid,
             completedChoreCount,

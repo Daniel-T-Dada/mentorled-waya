@@ -1,0 +1,138 @@
+{
+    "parent": {
+        "id": "parent-001",
+        "name": "Eneje Promise",
+        "avatar": "https://ca.slack-edge.com/T07TDF7H2KB-U08K4MCEJTV-8a1370acfefd-72",
+        "children": [
+            {
+                "id": "kid-001",
+                "name": "Faith Joseph",
+                "avatar": "https://ca.slack-edge.com/T07TDF7H2KB-U08K4MBT0LB-ecf0557403b2-72",
+                "level": 5,
+                "balance": 10000,
+                "chores": [
+                    {
+                        "id": "chore-001",
+                        "title": "Make Bed",
+                        "description": "Make your bed neatly with sheets and blankets properly arranged",
+                        "reward": 500,
+                        "status": "completed",
+                        "createdAt": "2025-05-22T10:00:00.000Z"
+                    },
+                    {
+                        "id": "chore-003",
+                        "title": "Wash Dishes",
+                        "description": "Wash and dry all dishes after dinner",
+                        "reward": 750,
+                        "status": "pending",
+                        "createdAt": "2025-05-22T11:00:00.000Z"
+                    },
+                    {
+                        "id": "chore-007",
+                        "title": "Set Table",
+                        "description": "Set the dinner table with plates, utensils, and napkins",
+                        "reward": 350,
+                        "status": "completed",
+                        "createdAt": "2025-05-18T10:00:00.000Z"
+                    }
+                ],
+                "allowanceHistory": [
+                    {
+                        "date": "April 21",
+                        "allowanceGiven": 0,
+                        "allowanceSpent": 0
+                    },
+                    {
+                        "date": "April 22",
+                        "allowanceGiven": 500,
+                        "allowanceSpent": 900
+                    },
+                    {
+                        "date": "April 23",
+                        "allowanceGiven": 0,
+                        "allowanceSpent": 0
+                    },
+                    {
+                        "date": "April 24",
+                        "allowanceGiven": 0,
+                        "allowanceSpent": 0
+                    },
+                    {
+                        "date": "April 25",
+                        "allowanceGiven": 700,
+                        "allowanceSpent": 300
+                    }
+                ]
+            },
+            {
+                "id": "kid-002",
+                "name": "Oghosa Notie",
+                "avatar": "https://ca.slack-edge.com/T07TDF7H2KB-U08K4M7CP0T-517196f34e59-72",
+                "level": 3,
+                "balance": 7000,
+                "chores": [
+                    {
+                        "id": "chore-002",
+                        "title": "Clean Room",
+                        "description": "Organize toys, books, and clothes. Vacuum the floor",
+                        "reward": 1000,
+                        "status": "pending",
+                        "createdAt": "2025-05-21T10:00:00.000Z"
+                    },
+                    {
+                        "id": "chore-005",
+                        "title": "Water Plants",
+                        "description": "Water all indoor plants and check soil moisture",
+                        "reward": 400,
+                        "status": "completed",
+                        "createdAt": "2025-05-19T10:00:00.000Z"
+                    },
+                    {
+                        "id": "chore-008",
+                        "title": "Clean Bathroom",
+                        "description": "Clean sink, mirror, and toilet. Mop the floor",
+                        "reward": 1200,
+                        "status": "pending",
+                        "createdAt": "2025-05-21T12:00:00.000Z"
+                    }
+                ],
+                "allowanceHistory": []
+            },
+            {
+                "id": "kid-003",
+                "name": "Esther Ogunsola",
+                "avatar": "https://ca.slack-edge.com/T07TDF7H2KB-U08K4MB0WLB-b0dfd6ccbc33-72",
+                "level": 4,
+                "balance": 5000,
+                "chores": [
+                    {
+                        "id": "chore-004",
+                        "title": "Take Out Trash",
+                        "description": "Empty all trash bins and take to the main bin outside",
+                        "reward": 300,
+                        "status": "completed",
+                        "createdAt": "2025-05-20T10:00:00.000Z"
+                    },
+                    {
+                        "id": "chore-006",
+                        "title": "Fold Laundry",
+                        "description": "Fold and organize clean clothes from the dryer",
+                        "reward": 800,
+                        "status": "pending",
+                        "createdAt": "2025-05-22T09:00:00.000Z"
+                    }
+                ],
+                "allowanceHistory": []
+            },
+            {
+                "id": "kid-004",
+                "name": "Precious Ogunsemore",
+                "avatar": "https://ca.slack-edge.com/T07TDF7H2KB-U08K4M2B4NP-4e0011122c77-72",
+                "level": 2,
+                "balance": 3000,
+                "chores": [],
+                "allowanceHistory": []
+            }
+        ]
+    }
+}

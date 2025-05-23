@@ -3,71 +3,76 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { PieChart, Pie, Cell, Label } from "recharts";
-import mockChores from "@/mockdata/mockChores.json"; // Assuming mockchores.json exists with 'status' and 'createdAt'
 import { useState, useMemo } from "react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
-
+import { mockDataService } from '@/lib/services/mockDataService';
 
 const chartConfig = {
-    value: { 
-        label: "Chores", 
+    value: {
+        label: "Chores",
     },
     Completed: {
         label: "Completed",
-        color: "#7DE2D1", 
+        color: "#7DE2D1",
     },
     Pending: {
         label: "Pending",
-        color: "#FFB800", 
+        color: "#FFB800",
     },
 } satisfies ChartConfig;
 
 const AppPieChart = () => {
-    const [range, setRange] = useState("7days"); 
+    const [range, setRange] = useState("7days");
 
 
     const processedData = useMemo(() => {
         console.log('--- Pie Chart Data Processing ---');
-        console.log('Initial mockChores:', mockChores);
         console.log('Selected range:', range);
 
-        let filteredChores = mockChores;
+        // Get chores from mockDataService
+        const chores = mockDataService.getChoresByDateRange(range);
+        console.log('Filtered chores:', chores);
 
-        
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); 
 
-        if (range === "7") {
-            const sevenDaysAgo = new Date(today);
-            sevenDaysAgo.setDate(today.getDate() - 7);
-            console.log('Filtering for last 7 days, comparison date:', sevenDaysAgo.toISOString());
-            filteredChores = mockChores.filter(chore => {
-                const choreDate = new Date(chore.createdAt);
-                choreDate.setHours(0, 0, 0, 0); 
-                const isAfter = choreDate >= sevenDaysAgo;
-                console.log(`Chore ${chore.id} created at ${chore.createdAt} (normalized: ${choreDate.toISOString()}) >= ${sevenDaysAgo.toISOString()}? ${isAfter}`);
-                return isAfter;
-            });
-        } else if (range === "30") {
-            const thirtyDaysAgo = new Date(today);
-            thirtyDaysAgo.setDate(today.getDate() - 30);
-            console.log('Filtering for last 30 days, comparison date:', thirtyDaysAgo.toISOString());
-            filteredChores = mockChores.filter(chore => {
-                const choreDate = new Date(chore.createdAt);
-                choreDate.setHours(0, 0, 0, 0);
-                const isAfter = choreDate >= thirtyDaysAgo;
-                console.log(`Chore ${chore.id} created at ${chore.createdAt} (normalized: ${choreDate.toISOString()}) >= ${thirtyDaysAgo.toISOString()}? ${isAfter}`);
-                return isAfter;
-            });
-        } else { 
-            console.log('No date range filter applied');
-            filteredChores = mockChores;  
-        }
+        // const today = new Date();
+        // today.setHours(0, 0, 0, 0);
 
-        console.log('Filtered chores:', filteredChores);
+        // if (range === "7") {
+        //     const sevenDaysAgo = new Date(today);
+        //     sevenDaysAgo.setDate(today.getDate() - 7);
+        //     console.log('Filtering for last 7 days, comparison date:', sevenDaysAgo.toISOString());
+        //     filteredChores = mockChores.filter(chore => {
+        //         const choreDate = new Date(chore.createdAt);
+        //         choreDate.setHours(0, 0, 0, 0);
+        //         const isAfter = choreDate >= sevenDaysAgo;
+        //         console.log(`Chore ${chore.id} created at ${chore.createdAt} (normalized: ${choreDate.toISOString()}) >= $
+        //         {sevenDaysAgo.toISOString()}? ${isAfter}`);
+        //         return isAfter;
+        //     });
+        // } else if (range === "30") {
+        //     const thirtyDaysAgo = new Date(today);
+        //     thirtyDaysAgo.setDate(today.getDate() - 30);
+        //     console.log('Filtering for last 30 days, comparison date:', thirtyDaysAgo.toISOString());
+        //     filteredChores = mockChores.filter(chore => {
+        //         const choreDate = new Date(chore.createdAt);
+        //         choreDate.setHours(0, 0, 0, 0);
+        //         const isAfter = choreDate >= thirtyDaysAgo;
+        //         console.log(`Chore ${chore.id} created at ${chore.createdAt} (normalized: ${choreDate.toISOString()}) >= $
+        //         {thirtyDaysAgo.toISOString()}? ${isAfter}`);
+        //         return isAfter;
+        //     });
+        // } else {
+        //     console.log('No date range filter applied');
+        //     filteredChores = mockChores;
+        // }
 
-        const completedCount = filteredChores.filter(chore => chore.status === "completed").length;
-        const pendingCount = filteredChores.filter(chore => chore.status === "pending").length;
+        // console.log('Filtered chores:', filteredChores);
+
+        // const completedCount = filteredChores.filter(chore => chore.status === "completed").length;
+        // const pendingCount = filteredChores.filter(chore => chore.status === "pending").length;
+
+        const completedCount = chores.filter(chore => chore.status === "completed").length;
+        const pendingCount = chores.filter(chore => chore.status === "pending").length;
 
         console.log('Completed count:', completedCount);
         console.log('Pending count:', pendingCount);
@@ -82,7 +87,7 @@ const AppPieChart = () => {
         console.log('-----------------------------------');
 
         return chartData;
-    }, [range]); 
+    }, [range]);
 
     const totalChores = processedData.reduce((acc, curr) => acc + curr.value, 0);
 
@@ -129,7 +134,7 @@ const AppPieChart = () => {
                                 {processedData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={entry.color} />
                                 ))}
-                            
+
                                 {totalChores > 0 && (
                                     <Label
                                         content={({ viewBox }) => {
@@ -153,7 +158,7 @@ const AppPieChart = () => {
                         </PieChart>
                     </ChartContainer>
 
-                    
+
                     <div className="flex flex-col gap-2 w-full mt-4 text-sm">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
