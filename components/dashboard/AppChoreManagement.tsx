@@ -52,14 +52,14 @@ export function AppChoreManagement() {
 
 
 
-    
+
     // Separate chores by status for displaying in tabs
     const pendingChores = filteredChores.filter(chore => chore.status === "pending");
     const completedChores = filteredChores.filter(chore => chore.status === "completed");
 
 
 
-    
+
     // Function to get kid's name by ID
     const getKidName = (kidId: string) => {
         const kid = mockDataService.getKidById(kidId);

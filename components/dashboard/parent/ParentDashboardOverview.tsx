@@ -7,13 +7,16 @@ import AppPieChart from "../AppPiecChart"
 import AppStatCard from "../AppStatCard"
 // import DebugBarChart from "../DebugBarChart"
 
-import { useState } from "react";
-import mockKidsData from "@/mockdata/mockkid.json"; 
+import { useState, useEffect } from "react";
+import { mockDataService, type Kid } from '@/lib/services/mockDataService';
 
 const ParentDashboardOverview = () => {
-    
-    const [kids] = useState(mockKidsData); 
-    
+    const [kids, setKids] = useState<Kid[]>([]);
+
+    useEffect(() => {
+        const mockKids = mockDataService.getAllKids();
+        setKids(mockKids);
+    }, []);
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -35,16 +38,18 @@ const ParentDashboardOverview = () => {
 
 
 
+
+                <AppChoreManagement />
+
+
+
                 
-                <AppChoreManagement kids={kids} />
-
-
             </div>
 
             <div className="lg:col-span-1 h-64        self-start">
-                
-                    
-                    <AppKidsManagement kids={kids} />
+
+
+                <AppKidsManagement kids={kids} />
             </div>
 
 
