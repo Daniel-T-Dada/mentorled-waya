@@ -149,7 +149,11 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
                         <SidebarMenu className="space-y-8 mt-8">
                             {navItems.map((item) => (
                                 <SidebarMenuItem key={item.name}>
-                                    <SidebarMenuButton asChild className="text-xl hover:bg-primary ">
+                                    <SidebarMenuButton
+                                        asChild
+                                        className={`text-xl hover:bg-primary hover:p-4 h-10 hover:text-primary-foreground ${pathname === item.href ? 'bg-primary text-primary-foreground' : ''
+                                            }`}
+                                    >
                                         <Link href={item.href}>
                                             <item.icon />
                                             <span>{item.name}</span>
