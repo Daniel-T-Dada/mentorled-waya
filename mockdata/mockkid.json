@@ -1,29 +1,29 @@
 [
     {
         "id": "kid-001",
-        "name": "Tobi",
-        "avatar": "https://api.dicebear.com/7.x/lorelei/svg?seed=Tobi",
+        "name": "Faith Joseph",
+        "avatar": "https://ca.slack-edge.com/T07TDF7H2KB-U08K4MBT0LB-ecf0557403b2-72",
         "level": 5,
         "balance": 10000
     },
     {
         "id": "kid-002",
-        "name": "Fade",
-        "avatar": null,
+        "name": "Oghosa Notie ",
+        "avatar": "https://ca.slack-edge.com/T07TDF7H2KB-U08K4M7CP0T-517196f34e59-72",
         "level": 3,
         "balance": 7000
     },
     {
         "id": "kid-003",
-        "name": "Chris",
-        "avatar": "https://api.dicebear.com/7.x/lorelei/svg?seed=Chris",
+        "name": "Esther Ogunsola",
+        "avatar": "https://ca.slack-edge.com/T07TDF7H2KB-U08K4MB0WLB-b0dfd6ccbc33-72",
         "level": 4,
         "balance": 5000
     },
     {
         "id": "kid-004",
-        "name": "Wura",
-        "avatar": "https://api.dicebear.com/7.x/lorelei/svg?seed=Wura",
+        "name": "Precious Ogunsemore",
+        "avatar": "https://ca.slack-edge.com/T07TDF7H2KB-U08K4M2B4NP-4e0011122c77-72",
         "level": 2,
         "balance": 3000
     }
