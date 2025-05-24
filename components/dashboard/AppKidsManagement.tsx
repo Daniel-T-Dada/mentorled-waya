@@ -8,6 +8,8 @@ import { usePathname } from 'next/navigation';
 import { Users, PlusCircle } from 'lucide-react';
 import { mockDataService, type Kid } from '@/lib/services/mockDataService';
 import { ScrollArea } from "../ui/scroll-area";
+import { Skeleton } from "../ui/skeleton";
+import { useState, useEffect } from "react";
 
 interface AppKidsManagementProps {
     kids: Kid[];
@@ -16,6 +18,16 @@ interface AppKidsManagementProps {
 const AppKidsManagement = ({ kids }: AppKidsManagementProps) => {
     const pathname = usePathname();
     const isTaskMasterPage = pathname === '/dashboard/parents/taskmaster';
+
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, []);
 
     // Calculate chore counts for each kid using mockDataService
     const kidsWithChoreData = kids.map(kid => {
@@ -35,7 +47,7 @@ const AppKidsManagement = ({ kids }: AppKidsManagementProps) => {
 
     return (
         <>
-            <ScrollArea className="overflow-y-auto max-h-[680px]" type="scroll">
+            <ScrollArea className="overflow-y-auto min-h-[680px]" type="scroll">
 
                 <Card>
                     <CardHeader className="pb-4">
@@ -43,7 +55,31 @@ const AppKidsManagement = ({ kids }: AppKidsManagementProps) => {
                         <p className="text-sm text-muted-foreground">Track your kids progress</p>
                     </CardHeader>
                     <CardContent className="space-y-4 sm:space-y-6">
-                        {kidsWithChoreData.length === 0 ? (
+                        {isLoading ? (
+                            Array.from({ length: 2 }).map((_, index) => (
+                                <div key={index} className="border rounded-md p-3 sm:p-4 space-y-4">
+                                    <div className="flex items-center gap-4">
+                                        <Skeleton className="w-10 h-10 sm:w-12 sm:h-12 rounded-full" />
+                                        <div className="flex-1 space-y-2">
+                                            <Skeleton className="h-4 w-1/2" />
+                                            <Skeleton className="h-3 w-1/4" />
+                                            <Skeleton className="h-4 w-full mt-2" />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-4 text-center">
+                                        <Skeleton className="h-10 w-full" />
+                                        <Skeleton className="h-10 w-full" />
+                                        <Skeleton className="h-10 w-full" />
+                                    </div>
+                                    {isTaskMasterPage && (
+                                        <div className="flex gap-4">
+                                            <Skeleton className="h-10 w-1/2" />
+                                            <Skeleton className="h-10 w-1/2" />
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        ) : kidsWithChoreData.length === 0 ? (
                             <div className="text-center text-muted-foreground">No kids found.</div>
                         ) : (
                             kidsWithChoreData.map(kid => (
@@ -65,6 +101,7 @@ const AppKidsManagement = ({ kids }: AppKidsManagementProps) => {
                                             </div>
                                             {/* Progress bar */}
                                             <Progress value={kid.progress} className="w-full mt-2" />
+                                            
                                         </div>
                                     </div>
 

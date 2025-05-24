@@ -3,7 +3,7 @@
 import AppBarChart from "../AppBarChart"
 import AppChoreManagement from "../AppChoreManagement"
 import AppKidsManagement from "../AppKidsManagement"
-import AppPieChart from "../AppPiecChart"
+import AppPieChart from "../AppPieChart"
 import AppStatCard from "../AppStatCard"
 // import DebugBarChart from "../DebugBarChart"
 

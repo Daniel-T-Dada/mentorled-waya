@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Pencil, Trash } from "lucide-react";
 import { mockDataService } from '@/lib/services/mockDataService';
 import { usePathname } from 'next/navigation';
+import { Skeleton } from "@/components/ui/skeleton";
 
 // interface Kid {
 //     id: string;
@@ -42,6 +43,16 @@ export function AppChoreManagement() {
 
     const [activeKidTab, setActiveKidTab] = useState("all");
     const [activeStatusTab, setActiveStatusTab] = useState("pending");
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Simulate loading
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 500); // Simulate a 500ms loading delay
+
+        return () => clearTimeout(timer);
+    }, []);
 
     // Get all chores and kids from mockDataService
     const allChores = mockDataService.getAllChores();
@@ -89,7 +100,7 @@ export function AppChoreManagement() {
                                 <TabsTrigger key={kid.id} value={kid.id}>{kid.name}&apos;s Chore</TabsTrigger>
                             ))}
                         </TabsList>
-                        
+
 
                         <TabsContent value={activeKidTab} className="mt-0 space-y-4">
                             {/* This TabsContent is just a container for the structure, 
@@ -101,7 +112,7 @@ export function AppChoreManagement() {
                 <CardDescription className="text-muted-foreground">Assign and manage kid&apos;s chores</CardDescription>
             </CardHeader>
             <CardContent>
-                
+
 
                 {/* Status Tabs: Pending and Completed will always show when component is mounted */}
                 <Tabs value={activeStatusTab} onValueChange={setActiveStatusTab} className="w-full">
@@ -117,7 +128,22 @@ export function AppChoreManagement() {
 
                     {/* Content based on selected Status tab */}
                     <TabsContent value="pending" className="space-y-4 mt-4">
-                        {pendingFilteredChores.length === 0 ? (
+                        {isLoading ? (
+                            // Skeleton loading for pending chores
+                            Array.from({ length: 3 }).map((_, index) => (
+                                <div key={index} className="border rounded-md p-4 space-y-2">
+                                    <Skeleton className="h-4 w-3/4" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                    <div className="flex items-center justify-between mt-3">
+                                        <Skeleton className="h-4 w-1/6" />
+                                        <div className="flex items-center gap-2">
+                                            <Skeleton className="h-6 w-6 rounded-full" />
+                                            <Skeleton className="h-4 w-12" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : pendingFilteredChores.length === 0 ? (
                             <div className="text-center text-muted-foreground py-8">No pending chores found for {activeKidTab === "all" ? "all kids" : getKidName(activeKidTab)}.</div>
                         ) : (
                             pendingFilteredChores.map((chore) => (
@@ -155,7 +181,22 @@ export function AppChoreManagement() {
                     </TabsContent>
 
                     <TabsContent value="completed" className="space-y-4 mt-4">
-                        {completedFilteredChores.length === 0 ? (
+                        {isLoading ? (
+                            // Skeleton loading for completed chores
+                            Array.from({ length: 3 }).map((_, index) => (
+                                <div key={index} className="border rounded-md p-4 space-y-2">
+                                    <Skeleton className="h-4 w-3/4" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                    <div className="flex items-center justify-between mt-3">
+                                        <Skeleton className="h-4 w-1/6" />
+                                        <div className="flex items-center gap-2">
+                                            <Skeleton className="h-6 w-6 rounded-full" />
+                                            <Skeleton className="h-4 w-12" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : completedFilteredChores.length === 0 ? (
                             <div className="text-center text-muted-foreground py-8">No completed chores found for {activeKidTab === "all" ? "all kids" : getKidName(activeKidTab)}.</div>
                         ) : (
                             completedFilteredChores.map((chore) => (

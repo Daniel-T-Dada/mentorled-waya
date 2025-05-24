@@ -76,7 +76,7 @@
                         "title": "Clean Room",
                         "description": "Organize toys, books, and clothes. Vacuum the floor",
                         "reward": 1000,
-                        "status": "pending",
+                        "status": "completed",
                         "createdAt": "2025-05-21T10:00:00.000Z"
                     },
                     {

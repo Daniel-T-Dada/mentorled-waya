@@ -147,21 +147,33 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
                     {/* <SidebarGroupLabel>Application</SidebarGroupLabel> */}
                     <SidebarGroupContent>
                         <SidebarMenu className="space-y-8 mt-8">
-                            {navItems.map((item) => (
-                                <SidebarMenuItem key={item.name}>
-                                    <SidebarMenuButton
-                                        asChild
-                                        className={`text-xl hover:bg-primary hover:p-4 h-10 hover:text-primary-foreground ${pathname === item.href ? 'bg-primary text-primary-foreground' : ''
-                                            }`}
-                                    >
-                                        <Link href={item.href}>
-                                            <item.icon />
-                                            <span>{item.name}</span>
-                                        </Link>
-                                    </SidebarMenuButton>
+                            {isLoading ? (
+                                // Skeleton loading for navigation items
+                                Array.from({ length: navItems.length }).map((_, index) => (
+                                    <SidebarMenuItem key={index}>
+                                        <SidebarMenuButton className="w-full flex items-center gap-2">
+                                            <Skeleton className="h-6 w-6" />
+                                            {state !== 'collapsed' && <Skeleton className="h-4 w-24" />}
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                ))
+                            ) : (
+                                navItems.map((item) => (
+                                    <SidebarMenuItem key={item.name}>
+                                        <SidebarMenuButton
+                                            asChild
+                                            className={`text-xl hover:bg-primary hover:p-4 h-10 hover:text-primary-foreground ${pathname === item.href ? 'bg-primary text-primary-foreground' : ''
+                                                }`}
+                                        >
+                                            <Link href={item.href}>
+                                                <item.icon />
+                                                <span>{item.name}</span>
+                                            </Link>
+                                        </SidebarMenuButton>
 
-                                </SidebarMenuItem>
-                            ))}
+                                    </SidebarMenuItem>
+                                ))
+                            )}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
