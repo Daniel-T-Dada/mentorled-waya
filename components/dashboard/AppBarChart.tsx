@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { mockDataService } from '@/lib/services/mockDataService';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ChartDataPoint {
     date: string;
@@ -178,13 +179,10 @@ const AppBarChart = () => {
 
     if (isAllowanceLoading) {
         return (
-            <div className="lg:col-span-2 rounded-lg shadow-md">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Allowance Breakdown</CardTitle>
-                        <CardDescription>Loading...</CardDescription>
-                    </CardHeader>
-                </Card>
+            <div className="lg:col-span-2 rounded-lg shadow-md p-4">
+                <Skeleton className="h-4 w-1/4 mb-4" />
+                <Skeleton className="h-4 w-1/6 mb-6" />
+                <Skeleton className="h-48 w-full" />
             </div>
         );
     }

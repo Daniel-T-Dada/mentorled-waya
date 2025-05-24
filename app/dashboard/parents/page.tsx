@@ -3,7 +3,7 @@ import ParentDashboardOverview from "@/components/dashboard/parent/ParentDashboa
 
 const ParentsPage = () => {
     return (
-        <div className="">
+        <div className=" ">
             <ParentDashboardOverview/>
         </div>
     )
