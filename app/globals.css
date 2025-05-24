@@ -55,8 +55,7 @@ body,
   --background: oklch(
     98% 0.01 300
   ); /* Near-white, slight purple tint, Lc ≈ 90 vs foreground */
-  --foreground: oklch(
-    20% 0.05 318.87
+  --foreground: oklch(20% 0.05 318.87
   ); /* Darker for contrast, Lc ≥ 75 vs background */
   --card: oklch(
     95% 0.01 318.87

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { signIn } from "next-auth/react";
+import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 
 interface VerifyEmailFormProps {
   email: string;
@@ -52,7 +53,7 @@ export function VerifyEmailForm({ email }: VerifyEmailFormProps) {
   const handleResendEmail = async () => {
     try {
       setStatus("loading");
-      const response = await fetch("http://localhost:3001/api/resend-verification", {
+      const response = await fetch(getApiUrl(API_ENDPOINTS.RESEND_VERIFICATION), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
