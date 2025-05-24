@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { mockDataService } from '@/lib/services/mockDataService';
 import { Skeleton } from "@/components/ui/skeleton";
+import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 
 interface ChartDataPoint {
     date: string;
@@ -53,7 +54,7 @@ const AppBarChart = () => {
             setIsAllowanceLoading(true);
             setAllowanceError(null);
             try {
-                const res = await fetch(`http://localhost:3001/api/allowances?parentId=${session.user.id}`);
+                const res = await fetch(`${getApiUrl(API_ENDPOINTS.ALLOWANCES)}?parentId=${session.user.id}`);
                 if (!res.ok) {
                     console.log('API request failed, using mock data');
                     throw new Error('Failed to fetch allowance data');

@@ -5,6 +5,7 @@ import { ParentSignInSchema, SignUpSchema } from "./schemas";
 import Google from "next-auth/providers/google";
 import Facebook from "next-auth/providers/facebook";
 import bcrypt from "bcryptjs";
+import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 
 
 declare module "next-auth" {
@@ -87,14 +88,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         // Hash the password before sending to API decided to that cause I was seeing the plain password in the console...not good
                         const hashedPassword = await bcrypt.hash(validatedData.password, 10);
 
-                        const response = await fetch("http://localhost:3001/api/signup", {
+                        const response = await fetch(getApiUrl(API_ENDPOINTS.SIGNUP), {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
                                 name: validatedData.fullName,
                                 email: validatedData.email,
                                 password: hashedPassword,
-                                confirmPassword: hashedPassword 
+                                confirmPassword: hashedPassword
                             }),
                         });
 
@@ -124,7 +125,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     // TODO: Remember to re-add email verification later. Disabled for now cause the Backend Developer Blocker
                     // Handle email verification
                     if (credentials.token && credentials.email) {
-                        const response = await fetch("http://localhost:3001/api/verify-email", {
+                        const response = await fetch(getApiUrl(API_ENDPOINTS.VERIFY_EMAIL), {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
@@ -156,7 +157,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             password: credentials.password,
                         });
 
-                        const response = await fetch("http://localhost:3001/api/login", {
+                        const response = await fetch(getApiUrl(API_ENDPOINTS.LOGIN), {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify(validatedData),
