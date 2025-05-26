@@ -7,6 +7,8 @@ import { Skeleton } from "../ui/skeleton";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
+import { Badge } from "../ui/badge";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface Chore {
     id: string;
@@ -25,12 +27,20 @@ interface Wallet {
     updatedAt: string;
 }
 
+interface StatItem {
+    title: string;
+    value: string;
+    percentageChange?: number;
+    trend?: 'up' | 'down' | 'neutral';
+}
+
 const AppStatCard = () => {
     const [chores, setChores] = useState<Chore[]>([]);
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const pathname = usePathname();
     const { data: session } = useSession();
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -106,7 +116,7 @@ const AppStatCard = () => {
         });
     };
 
-    const getStats = () => {
+    const getStats = (): StatItem[] => {
         const totalChores = chores.length;
         const completedChores = chores.filter(chore => chore.status === "completed").length;
         const pendingChores = chores.filter(chore => chore.status === "pending").length;
@@ -123,17 +133,38 @@ const AppStatCard = () => {
                 {
                     title: 'Total Amount in Family Wallet',
                     value: formatCurrency(totalBalance),
+                    percentageChange: 20,
+                    trend: 'up'
                 },
                 {
                     title: 'Total Amount of Reward Sent',
                     value: formatCurrency(totalRewardSent),
+                    percentageChange: -10,
+                    trend: 'down'
                 },
                 {
                     title: 'Total Amount of Reward Pending',
                     value: formatCurrency(totalRewardPending),
+                    percentageChange: 8,
+                    trend: 'up'
                 },
             ];
         } else if (pathname.includes('/taskmaster')) {
+            return [
+                {
+                    title: 'Total Number of Chores Assigned',
+                    value: `${totalChores} Chores`,
+                },
+                {
+                    title: 'Total Number of Completed Chores',
+                    value: `${completedChores} Chores`,
+                },
+                {
+                    title: 'Total Number of Pending Chores',
+                    value: `${pendingChores} Chores`,
+                },
+            ];
+        } else if (pathname.includes('/insights')) {
             return [
                 {
                     title: 'Total Number of Chores Assigned',
@@ -154,14 +185,20 @@ const AppStatCard = () => {
                 {
                     title: 'Total Amount in Family Wallet',
                     value: formatCurrency(totalBalance),
+                    percentageChange: 15,
+                    trend: 'up'
                 },
                 {
                     title: 'Total Number of Chores Assigned',
                     value: `${totalChores} Chores`,
+                    percentageChange: -5,
+                    trend: 'down'
                 },
                 {
                     title: 'Total Number of Pending Chores',
                     value: `${pendingChores} Chores`,
+                    percentageChange: 12,
+                    trend: 'up'
                 },
             ];
         }
@@ -191,8 +228,20 @@ const AppStatCard = () => {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
+                            <div className="text-2xl font-bold flex items-center gap-2">
                                 {stat.value}
+                                {stat.percentageChange !== undefined && stat.trend && (
+                                    <Badge
+                                        className={`flex items-center gap-1 ${stat.trend === 'up' ? 'bg-green-100 text-green-800' : stat.trend === 'down' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}
+                                    >
+                                        {stat.trend === 'up' ? (
+                                            <TrendingUp size={12} />
+                                        ) : stat.trend === 'down' ? (
+                                            <TrendingDown size={12} />
+                                        ) : null}
+                                        {Math.abs(stat.percentageChange)}%
+                                    </Badge>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
