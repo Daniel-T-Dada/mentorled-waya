@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { mockDataService } from "@/lib/services/mockDataService";
 import { Skeleton } from "../ui/skeleton";
+import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 
 interface Chore {
     id: string;
@@ -14,40 +17,157 @@ interface Chore {
     status: "completed" | "pending" | "cancelled";
 }
 
+interface Wallet {
+    id: string;
+    kidId: string;
+    balance: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
 const AppStatCard = () => {
     const [chores, setChores] = useState<Chore[]>([]);
+    const [wallets, setWallets] = useState<Wallet[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const pathname = usePathname();
+    const { data: session } = useSession();
 
     useEffect(() => {
-        // Simulate loading
-        const timer = setTimeout(() => {
-            // Get all chores from the mock data service
-            const allChores = mockDataService.getAllChores();
-            setChores(allChores);
-            setIsLoading(false);
-        }, 500);
+        const fetchData = async () => {
+            setIsLoading(true);
 
-        return () => clearTimeout(timer);
-    }, []);
+            try {
+                // If no session, use mock data
+                if (!session?.user?.id) {
+                    console.log('No session user ID, using mock data');
+                    const mockChores = mockDataService.getAllChores();
+                    const mockWallets = mockDataService.getParent().children.map(child => ({
+                        id: child.id,
+                        kidId: child.id,
+                        balance: child.balance,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    }));
+                    setChores(mockChores);
+                    setWallets(mockWallets);
+                    setIsLoading(false);
+                    return;
+                }
 
-    const totalChores = chores.length;
-    const completedChores = chores.filter(chore => chore.status === "completed").length;
-    const pendingChores = chores.filter(chore => chore.status === "pending").length;
+                // Try to fetch from API
+                const [choresResponse, walletsResponse] = await Promise.all([
+                    fetch(getApiUrl(API_ENDPOINTS.CHORES)),
+                    fetch(getApiUrl(API_ENDPOINTS.WALLET))
+                ]);
 
-    const stats = [
-        {
-            title: 'Total Number of Chore Assigned',
-            value: `${totalChores} Chores`,
-        },
-        {
-            title: 'Total Number of Completed Chore',
-            value: `${completedChores} Chores`,
-        },
-        {
-            title: 'Total Number of Pending Chore',
-            value: `${pendingChores} Chores`,
-        },
-    ]
+                if (!choresResponse.ok || !walletsResponse.ok) {
+                    console.log('API request failed, using mock data');
+                    throw new Error('Failed to fetch data');
+                }
+
+                const choresData = await choresResponse.json();
+                const walletsData = await walletsResponse.json();
+
+                if (!Array.isArray(choresData) || !Array.isArray(walletsData)) {
+                    console.log('Invalid data format, using mock data');
+                    throw new Error('Fetched data is not in expected array format');
+                }
+
+                setChores(choresData);
+                setWallets(walletsData);
+
+            } catch (err) {
+                console.error("Error fetching data:", err);
+                // Fallback to mock data
+                console.log('Error occurred, using mock data');
+                const mockChores = mockDataService.getAllChores();
+                const mockWallets = mockDataService.getParent().children.map(child => ({
+                    id: child.id,
+                    kidId: child.id,
+                    balance: child.balance,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                }));
+                setChores(mockChores);
+                setWallets(mockWallets);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [session?.user?.id]);
+
+    const formatCurrency = (amount: number) => {
+        return amount.toLocaleString('en-NG', {
+            style: 'currency',
+            currency: 'NGN',
+            maximumFractionDigits: 0
+        });
+    };
+
+    const getStats = () => {
+        const totalChores = chores.length;
+        const completedChores = chores.filter(chore => chore.status === "completed").length;
+        const pendingChores = chores.filter(chore => chore.status === "pending").length;
+        const totalBalance = wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
+        const totalRewardSent = chores
+            .filter(chore => chore.status === "completed")
+            .reduce((sum, chore) => sum + chore.reward, 0);
+        const totalRewardPending = chores
+            .filter(chore => chore.status === "pending")
+            .reduce((sum, chore) => sum + chore.reward, 0);
+
+        if (pathname.includes('/wallet')) {
+            return [
+                {
+                    title: 'Total Amount in Family Wallet',
+                    value: formatCurrency(totalBalance),
+                },
+                {
+                    title: 'Total Amount of Reward Sent',
+                    value: formatCurrency(totalRewardSent),
+                },
+                {
+                    title: 'Total Amount of Reward Pending',
+                    value: formatCurrency(totalRewardPending),
+                },
+            ];
+        } else if (pathname.includes('/taskmaster')) {
+            return [
+                {
+                    title: 'Total Number of Chores Assigned',
+                    value: `${totalChores} Chores`,
+                },
+                {
+                    title: 'Total Number of Completed Chores',
+                    value: `${completedChores} Chores`,
+                },
+                {
+                    title: 'Total Number of Pending Chores',
+                    value: `${pendingChores} Chores`,
+                },
+            ];
+        } else {
+            // Default dashboard/parents view
+            return [
+                {
+                    title: 'Total Amount in Family Wallet',
+                    value: formatCurrency(totalBalance),
+                },
+                {
+                    title: 'Total Number of Chores Assigned',
+                    value: `${totalChores} Chores`,
+                },
+                {
+                    title: 'Total Number of Pending Chores',
+                    value: `${pendingChores} Chores`,
+                },
+            ];
+        }
+    };
+
+    const stats = getStats();
 
     return (
         <>
@@ -79,6 +199,7 @@ const AppStatCard = () => {
                 ))
             )}
         </>
-    )
-}
-export default AppStatCard
+    );
+};
+
+export default AppStatCard;
