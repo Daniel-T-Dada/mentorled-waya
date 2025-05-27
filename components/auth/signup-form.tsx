@@ -1,6 +1,5 @@
 'use client'
 
-
 import * as z from "zod"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
@@ -8,45 +7,42 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import CardWrapper from "./card-wrapper"
 import { SignUpSchema } from "@/schemas"
 
-
-
-
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form"
 
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import FormError from "../form-error"
 import FormSuccess from "../form-sucess"
-import { useRouter } from "next/navigation"
+// We're using window.location.href directly instead of the router
+// import { useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
 import Link from "next/link"
 import { Checkbox } from "../ui/checkbox"
 import { Eye, EyeOff } from "lucide-react"
 
-
-
 type SignUpFormValues = z.infer<typeof SignUpSchema>;
 
-
+interface SignInResult {
+    error?: string;
+    ok?: boolean;
+    url?: string;
+    data?: {
+        token?: string;
+        uidb64?: string;
+        email?: string;
+        message?: string;
+        is_verified?: boolean;
+    };
+}
 
 const SignUpForm = () => {
-    const router = useRouter();
+    // Using window.location.href for navigation instead of router
     const [isLoading, setIsLoading] = useState(false);
     const [success, setSuccess] = useState<string | undefined>("")
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-
-
-    // const form = useForm<z.infer<typeof SignInSchema>>({
-    //     resolver: zodResolver(SignInSchema),
-    //     defaultValues: {
-    //         email: "",
-    //         password: "",
-    //     },
-    //     mode: "onChange"
-    // })
     const signUpForm = useForm<SignUpFormValues>({
         resolver: zodResolver(SignUpSchema),
         defaultValues: {
@@ -61,11 +57,7 @@ const SignUpForm = () => {
 
     // Sign up submission
     async function onSignUpSubmit(values: SignUpFormValues) {
-        // console.log("Signup Form Values:", {
-        //     name: values.fullName,
-        //     email: values.email,
-        //     password: values.password
-        // });
+        console.log('Starting signup submission with values:', values);
         setIsLoading(true);
         setError(null);
         setSuccess("");
@@ -78,12 +70,10 @@ const SignUpForm = () => {
                 password: values.password,
                 confirmPassword: values.confirmPassword,
                 redirect: false,
-                // TODO: Temporarily commented out email verification redirect
-                // callbackUrl: `/auth/verify-email?email=${encodeURIComponent(values.email)}`
-                callbackUrl: "/auth/signin"
-            });
+            }) as SignInResult;
 
             console.log("SignIn result:", result);
+            console.log("Form values:", values);
 
             if (result?.error) {
                 console.error("Signup error:", result.error);
@@ -91,15 +81,22 @@ const SignUpForm = () => {
                 return;
             }
 
-            if (!result?.ok) {
-                console.error("Signup failed:", result);
-                setError("Failed to create account. Please try again.");
-                return;
-            }
+            // Check if we have a success message from the backend
+            const successMessage = result?.data?.message || "Account created successfully! Please sign in.";
+            setSuccess(successMessage);
 
-            // TODO: Temporarily commented out email verification redirect
-            // router.push(`/auth/verify-email?email=${encodeURIComponent(values.email)}`);
-            router.push("/auth/signin");
+            console.log('Account created successfully, redirecting to signin page');
+            console.log('Email being used:', values.email);
+            console.log('Backend response:', result?.data);
+            console.log('Full result object:', result);
+
+            // Redirect to signin page after a short delay
+            setTimeout(() => {
+                console.log('Now redirecting to signin page...');
+                window.location.href = '/auth/signin';
+                // Prevent any other code from executing after redirect
+                return;
+            }, 1500);
         } catch (error) {
             console.error("Registration failed:", error);
             setError("Something went wrong. Please try again.");
@@ -108,14 +105,6 @@ const SignUpForm = () => {
         }
     }
 
-
-    // const onSubmit = (values: z.infer<typeof SignInSchema>) => {
-    //     startTransition(() => {
-    //         console.log(values)
-    //     })
-    // }
-
-
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
@@ -123,7 +112,6 @@ const SignUpForm = () => {
     const toggleConfirmPasswordVisibility = () => {
         setShowConfirmPassword(!showConfirmPassword);
     };
-
 
     return (
         <CardWrapper
@@ -182,8 +170,6 @@ const SignUpForm = () => {
                             name="password"
                             render={({ field }) => (
                                 <FormItem>
-
-
                                     <FormLabel className="text-sm sm:text-base">Password</FormLabel>
                                     <FormControl>
                                         <div className="relative">
@@ -201,9 +187,6 @@ const SignUpForm = () => {
                                             </button>
                                         </div>
                                     </FormControl>
-
-
-
                                     <FormMessage className="text-xs sm:text-sm" />
                                 </FormItem>
                             )}
@@ -274,7 +257,6 @@ const SignUpForm = () => {
                 </form>
             </Form>
         </CardWrapper>
-
     )
 }
 export default SignUpForm

@@ -2,7 +2,15 @@
  * Get the base API URL from environment variables
  */
 export const getBaseApiUrl = () => {
-    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    // Use environment variable if set
+    if (process.env.NEXT_PUBLIC_API_URL) {
+        return process.env.NEXT_PUBLIC_API_URL;
+    }
+
+    // Use Django backend by default, but allow Node backend as fallback
+    return process.env.NODE_ENV === 'development'
+        ? 'http://127.0.0.1:8000'  // Django backend
+        : 'http://localhost:3001'; // Node backend
 };
 
 /**
@@ -26,7 +34,7 @@ export const API_ENDPOINTS = {
     PARENT_KIDS: '/api/parent/:parentId/kids',
     CREATE_KID: '/api/create-kid',
     RESEND_VERIFICATION: '/api/resend-verification',
-    SIGNUP: '/api/signup',
-    VERIFY_EMAIL: '/api/verify-email',
+    SIGNUP: '/api/register',
+    VERIFY_EMAIL: '/api/email-verify',
     LOGIN: '/api/login',
 } as const; 

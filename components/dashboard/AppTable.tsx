@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     Table,
     TableBody,
@@ -46,7 +46,7 @@ const AppTable = ({ parentId }: AppTableProps) => {
     const itemsPerPage = 5;
 
     // Function to fetch data
-    const fetchActivities = async () => {
+    const fetchActivities = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
@@ -77,13 +77,13 @@ const AppTable = ({ parentId }: AppTableProps) => {
                     const kid = allKids.find(k => k.id === chore.assignedTo);
 
                     // Map mock data status to display status from the image
-                    let displayStatus: ActivityRow['status'] = 'processing'; // Defaulting to processing if status is unexpected
+                    let displayStatus: ActivityRow['status'] = 'processing'; 
                     if (chore.status === 'completed') {
-                        displayStatus = 'paid'; // Map 'completed' to 'Paid'
+                        displayStatus = 'paid'; 
                     } else if (chore.status === 'pending') {
-                        displayStatus = 'pending'; // Map 'pending' to 'Pending'
+                        displayStatus = 'pending'; 
                     } else if (chore.status === 'cancelled') {
-                        displayStatus = 'cancelled'; // Map 'cancelled' to 'Cancelled'
+                        displayStatus = 'cancelled'; 
                     }
 
                     return {
@@ -91,12 +91,10 @@ const AppTable = ({ parentId }: AppTableProps) => {
                         name: kid ? kid.name : 'Unknown Kid',
                         activity: chore.title,
                         amount: chore.reward,
-                        status: displayStatus, // Use mapped status
+                        status: displayStatus, 
                         date: new Date(chore.createdAt).toLocaleDateString('en-US'),
                     };
                 });
-
-
 
                 setActivities(mockActivities);
 
@@ -109,12 +107,12 @@ const AppTable = ({ parentId }: AppTableProps) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [parentId]);
 
     // Initial data fetch and refresh handler
     useEffect(() => {
         fetchActivities();
-    }, [parentId]); // Re-fetch when parentId changes
+    }, [fetchActivities]);
 
     const handleRefresh = () => {
         fetchActivities();

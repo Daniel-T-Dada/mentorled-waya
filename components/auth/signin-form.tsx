@@ -93,6 +93,12 @@ const SignInForm = () => {
                 return;
             }
 
+            // User is already verified by the backend (is_verified: true)
+            console.log("User authenticated successfully, redirecting to dashboard");
+
+            // Log the response for debugging
+            console.log("Authentication result:", result);
+
             setSuccess("Successfully signed in!");
             if (result?.url) {
                 router.push(result.url);

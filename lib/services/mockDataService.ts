@@ -95,7 +95,26 @@ class MockDataService {
 
     // Chores related methods
     getAllChores(): Chore[] {
-        return this.getAllKids().flatMap(kid => kid.chores);
+        // Directly flatMap the children's chore arrays from the original data
+        return this.data.parent.children.flatMap(kid =>
+            kid.chores.map(chore => {
+                const processedChore = ({
+                    ...chore,
+                    assignedTo: kid.id, // Explicitly add assignedTo from kid's ID
+                    // Ensure status is correctly typed when mapping
+                    status: chore.status as "completed" | "pending" | "cancelled",
+                    // Provide default values/checks for other properties if they could be missing in source
+                    id: chore.id || '',
+                    title: chore.title || 'Untitled Activity',
+                    description: chore.description || 'No description provided.',
+                    reward: typeof chore.reward === 'number' ? chore.reward : 0,
+                    createdAt: chore.createdAt || new Date().toISOString(),
+                });
+                // Add logging here to inspect each processed chore object
+                console.log('Processed chore in getAllChores:', processedChore);
+                return processedChore;
+            })
+        );
     }
 
     getChoresByKidId(kidId: string): Chore[] {
