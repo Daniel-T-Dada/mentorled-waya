@@ -7,6 +7,8 @@ import { useSearchParams } from "next/navigation";
 export default function VerifyEmailPage() {
     const searchParams = useSearchParams();
     const email = searchParams.get("email");
+    const token = searchParams.get("token");
+    const uidb64 = searchParams.get("uidb64");
 
     if (!email) {
         return (
@@ -23,7 +25,11 @@ export default function VerifyEmailPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4">
-            <VerifyEmailForm email={email} />
+            <VerifyEmailForm
+                email={email}
+                token={token || ""}
+                uidb64={uidb64 || ""}
+            />
         </div>
     );
 } 
