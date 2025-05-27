@@ -1,5 +1,6 @@
 'use client'
 
+import AppKidsActivities from "../AppKidsActivities"
 import AppStatCard from "../AppStatCard"
 
 const InsightTrackerDashboard = () => {
@@ -10,7 +11,11 @@ const InsightTrackerDashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <AppStatCard/>
+                <AppStatCard />
+
+                <div className="lg:col-span-3 h-64 rounded">
+                    <AppKidsActivities />
+                </div>
             </div>
         </div>
     )

@@ -2,53 +2,76 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { signIn } from "next-auth/react";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 
 interface VerifyEmailFormProps {
   email: string;
+  token: string;
+  uidb64: string;
 }
 
-export function VerifyEmailForm({ email }: VerifyEmailFormProps) {
+export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) {
   const [status, setStatus] = useState<"loading" | "success" | "error" | "waiting">("loading");
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
     const verifyToken = async () => {
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get("token");
+      console.log('VerifyEmailForm mounted with props:', { email, token, uidb64 });
 
-        if (!token) {
+      try {
+        if (!token || !uidb64) {
+          console.log('Missing token or uidb64:', { token, uidb64 });
           setStatus("waiting");
           return;
         }
 
-        const result = await signIn("parent-credentials", {
-          token,
-          email,
-          redirect: false,
+        if (!email) {
+          console.log('Missing email parameter');
+          setStatus("error");
+          setError("Email parameter is missing");
+          return;
+        }
+
+        console.log('Attempting to verify email with:', { uidb64, token, email });
+        const apiUrl = getApiUrl(API_ENDPOINTS.VERIFY_EMAIL);
+        console.log('Making request to:', apiUrl);
+
+        const requestBody = {
+          uidb64,
+          token
+        };
+        console.log('Request body:', requestBody);
+
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(requestBody)
         });
 
-        if (result?.error) {
-          setStatus("error");
-          setError(result.error);
-        } else if (result?.ok) {
-          setStatus("success");
-        } else {
-          setStatus("error");
-          setError("Failed to verify email");
+        console.log('Verification response status:', response.status);
+        const responseData = await response.json();
+        console.log('Verification response data:', responseData);
+
+        if (!response.ok) {
+          const errorMessage = responseData.detail || responseData.message || "Failed to verify email";
+          console.error('Verification failed:', errorMessage);
+          throw new Error(errorMessage);
         }
-      } catch {
+
+        console.log('Email verification successful');
+        setStatus("success");
+      } catch (error) {
+        console.error('Email verification error:', error);
         setStatus("error");
-        setError("Failed to verify email");
+        setError(error instanceof Error ? error.message : "Failed to verify email");
       }
     };
 
-    if (email) {
-      verifyToken();
-    }
-  }, [email]);
+    verifyToken();
+  }, [email, token, uidb64]);
 
   const handleResendEmail = async () => {
     try {
@@ -182,7 +205,6 @@ export function VerifyEmailForm({ email }: VerifyEmailFormProps) {
     );
   }
 
-  // fallback
   return null;
 }
 

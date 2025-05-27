@@ -4,7 +4,6 @@ import { ZodError } from "zod";
 import { ParentSignInSchema, SignUpSchema } from "./schemas";
 import Google from "next-auth/providers/google";
 import Facebook from "next-auth/providers/facebook";
-import bcrypt from "bcryptjs";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 
 
@@ -61,6 +60,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 password: { label: "Password", type: "password" },
                 confirmPassword: { label: "Confirm Password", type: "password" },
                 token: { label: "Token", type: "text" },
+                uidb64: { label: "User ID", type: "text" },
+                csrfToken: { label: "CSRF Token", type: "text" },
             },
             async authorize(credentials) {
                 console.log("Received credentials:", credentials);
@@ -73,7 +74,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 try {
                     // Handle signup
                     if (credentials.name && credentials.email && credentials.password && credentials.confirmPassword) {
-                        console.log("Validating credentials with schema...");
                         const validatedData = SignUpSchema.parse({
                             fullName: credentials.name,
                             email: credentials.email,
@@ -82,70 +82,69 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             agreeToTerms: true,
                         });
 
-                        console.log("Validated data:", validatedData);
-
-                        // TODO: Remember to hash the password later
-                        // Hash the password before sending to API decided to that cause I was seeing the plain password in the console...not good
-                        const hashedPassword = await bcrypt.hash(validatedData.password, 10);
-
                         const response = await fetch(getApiUrl(API_ENDPOINTS.SIGNUP), {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
-                                name: validatedData.fullName,
+                                full_name: validatedData.fullName,
                                 email: validatedData.email,
-                                password: hashedPassword,
-                                confirmPassword: hashedPassword
+                                password: validatedData.password,
+                                password2: validatedData.confirmPassword,
+                                terms_accepted: true,
                             }),
                         });
 
-                        console.log("API Response status:", response.status);
-                        const data = await response.json();
-                        console.log("API Response data:", data);
-
                         if (!response.ok) {
-                            console.error("Signup failed:", {
-                                status: response.status,
-                                statusText: response.statusText,
-                                data: data
-                            });
-                            throw new Error(data.error || data.message || "Failed to sign up");
+                            const data = await response.json();
+                            if (data.email && Array.isArray(data.email)) {
+                                if (data.email[0].includes('already exists')) {
+                                    throw new Error('This email is already registered. Please use a different email or sign in.');
+                                }
+                            }
+                            throw new Error(data.detail || "Failed to sign up");
                         }
 
-                        // Return the user data
+                        const data = await response.json();
+                        console.log("Signup response data:", data);
+
+                        // Return the user data - note that backend doesn't include token/uidb64
                         return {
-                            id: data.user.id,
-                            name: data.user.name,
-                            email: data.user.email,
-                            role: data.user.role,
-                            emailVerified: new Date(),
-                            avatar: data.user.avatar || null,
+                            id: data.id || '',
+                            name: data.full_name,
+                            email: data.email,
+                            role: data.role,
+                            emailVerified: new Date(), // Auto-verify email for now
+                            avatar: data.avatar || null,
+                            data: {
+                            
+                                email: data.email
+                            }
                         };
                     }
                     // TODO: Remember to re-add email verification later. Disabled for now cause the Backend Developer Blocker
                     // Handle email verification
-                    if (credentials.token && credentials.email) {
+                    if (credentials.token && credentials.uidb64) {
                         const response = await fetch(getApiUrl(API_ENDPOINTS.VERIFY_EMAIL), {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
+                                uidb64: credentials.uidb64,
                                 token: credentials.token,
-                                email: credentials.email,
                             }),
                         });
 
                         if (!response.ok) {
                             const error = await response.json();
-                            throw new Error(error.error || "Failed to verify email");
+                            throw new Error(error.message || "Failed to verify email");
                         }
 
                         const data = await response.json();
                         return {
-                            id: data.id,
+                            id: data.id || '',
                             name: data.name,
                             email: data.email,
-                            role: data.role,
-                            emailVerified: data.emailVerified ? new Date(data.emailVerified) : null,
+                            role: data.role || 'parent',
+                            emailVerified: new Date(),
                             avatar: data.avatar || null,
                         };
                     }
@@ -157,28 +156,55 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             password: credentials.password,
                         });
 
-                        const response = await fetch(getApiUrl(API_ENDPOINTS.LOGIN), {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(validatedData),
-                        });
+                        try {
+                            const response = await fetch(getApiUrl(API_ENDPOINTS.LOGIN), {
+                                method: "POST",
+                                headers: {
+                                    'accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFTOKEN': credentials.csrfToken?.toString() || ''
+                                },
+                                credentials: 'include',
+                                body: JSON.stringify({
+                                    email: validatedData.email,
+                                    password: validatedData.password
+                                }),
+                            });
 
-                        if (!response.ok) {
-                            const error = await response.json();
-                            throw new Error(error.error || "Failed to log in");
+                            const data = await response.json();
+
+                            if (!response.ok) {
+                                // Handle specific error cases
+                                if (data.detail === "Invalid credentials") {
+                                    throw new Error("Invalid email or password. Please try again.");
+                                }
+                                throw new Error(data.detail || data.error || "Failed to log in");
+                            }
+
+                            // Handle the specific response format from the backend
+                            const userData = data.user || data;
+
+                            return {
+                                id: userData.id || '',
+                                name: userData.full_name || userData.name,
+                                email: userData.email,
+                                role: userData.role || 'parent',
+
+
+
+                                // Use is_verified from the response if available
+                                emailVerified: userData.is_verified ? new Date() : null,
+                                avatar: userData.avatar || null,
+                                parentId: userData.parent_id || null,
+                                username: userData.username || null
+
+
+
+                            };
+                        } catch (error) {
+                            console.error('Login error:', error);
+                            throw new Error(error instanceof Error ? error.message : 'Failed to log in');
                         }
-
-                        const data = await response.json();
-
-                        // Let the backend handle password verification from what I saw in her implementation during our Standup
-                        return {
-                            id: data.id,
-                            name: data.name,
-                            email: data.email,
-                            role: data.role,
-                            emailVerified: data.emailVerified ? new Date(data.emailVerified) : null,
-                            avatar: data.avatar || null,
-                        };
                     }
 
                     return null;
@@ -209,12 +235,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 session.user.name = token.name as string | undefined;
                 session.user.emailVerified = token.emailVerified ? new Date(token.emailVerified as string) : null;
                 session.user.avatar = token.avatar as string | null;
+                // Add any additional user data from the token
+                if (token.user) {
+                    session.user = {
+                        ...session.user,
+                        ...token.user
+                    };
+                }
             }
             return session;
         },
 
         async jwt({ token, user }) {
             if (user) {
+                // Store the complete user object in the token
+                token.user = {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    emailVerified: user.emailVerified,
+                    avatar: user.avatar
+                };
+                // Also store individual fields for backward compatibility
                 token.role = user.role;
                 token.email = user.email;
                 token.name = user.name;
