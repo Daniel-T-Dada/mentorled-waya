@@ -162,7 +162,7 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
                                     <SidebarMenuItem key={item.name}>
                                         <SidebarMenuButton
                                             asChild
-                                            className={`text-xl hover:bg-primary hover:p-4 h-10 hover:text-primary-foreground ${pathname === item.href ? 'bg-primary text-primary-foreground' : ''
+                                            className={`text-lg hover:bg-primary hover:p-4 h-10 hover:text-primary-foreground ${pathname === item.href ? 'bg-primary text-primary-foreground' : ''
                                                 }`}
                                         >
                                             <Link href={item.href}>
