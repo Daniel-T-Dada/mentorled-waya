@@ -11,11 +11,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { BellIcon, LogOut, Menu, Settings, SlidersHorizontal, User } from "lucide-react"
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { signOut } from "next-auth/react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { mockDataService } from "@/lib/services/mockDataService";
 import {
     Sheet,
     SheetContent,
@@ -28,31 +27,15 @@ const DashboardNavbar = () => {
     const [filter, setFilter] = useState("");
     const { user, isLoading } = useUser();
     const [avatarError, setAvatarError] = useState(false);
-    const [mockUser, setMockUser] = useState<{ name: string; avatar: string } | null>(null);
-
-    useEffect(() => {
-        // Get mock parent data when API data is not available
-        if (!user && !isLoading) {
-            const parent = mockDataService.getParent();
-            setMockUser({
-                name: parent.name,
-                avatar: parent.avatar
-            });
-        }
-    }, [user, isLoading]);
 
     const handleLogout = () => {
         signOut({ callbackUrl: "/" });
     };
 
     const getAvatarFallback = () => {
-        const displayName = user?.name || mockUser?.name;
-        if (!displayName) return "U";
-        return displayName.charAt(0).toUpperCase();
+        if (!user?.name) return "U";
+        return user.name.charAt(0).toUpperCase();
     };
-
-    // Use either API user data or mock data
-    const displayUser = user || mockUser;
 
     return (
         <nav className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-12 sticky top-0 z-10 shrink-0 items-center gap-2 border-b bg-background transition-[width,height] ease-linear py-8">
@@ -72,7 +55,7 @@ const DashboardNavbar = () => {
                             </>
                         ) : (
                             <>
-                                <h1 className="text-xl md:text-2xl font-semibold">Hello {displayUser?.name || "User"}</h1>
+                                <h1 className="text-xl md:text-2xl font-semibold">Hello {user?.name || "User"}</h1>
                                 <p className="text-muted-foreground text-xs md:text-sm">Building Smart Money Habits, One Chore at a Time.</p>
                             </>
                         )}
@@ -164,10 +147,10 @@ const DashboardNavbar = () => {
                                     <Skeleton className="h-full w-full rounded-full" />
                                 ) : (
                                     <>
-                                        {(displayUser?.avatar && !avatarError) ? (
+                                        {(user?.avatar && !avatarError) ? (
                                             <AvatarImage
-                                                src={displayUser.avatar}
-                                                alt={displayUser.name || "User avatar"}
+                                                src={user.avatar}
+                                                alt={user.name || "User avatar"}
                                                 onError={() => setAvatarError(true)}
                                                 loading="lazy"
                                             />

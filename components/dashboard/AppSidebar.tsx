@@ -13,8 +13,6 @@ import ThemeToggle from "@/components/theme-toggle";
 import { useUser } from "@/contexts/UserContext";
 import { signOut } from "next-auth/react";
 import { Skeleton } from "../ui/skeleton";
-import { mockDataService } from "@/lib/services/mockDataService";
-import { useEffect, useState } from "react";
 
 
 
@@ -28,21 +26,8 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
     const { theme } = useTheme();
     const { state } = useSidebar();
     const { user, isLoading } = useUser();
-    const [fallbackUser, setFallbackUser] = useState<{ name: string; avatar: string; email: string } | null>(null);
 
     const isParentRoute = pathname?.startsWith('/dashboard/parents');
-
-    useEffect(() => {
-        // If user data is not available, use mock data as fallback
-        if (!isLoading && !user) {
-            const mockParent = mockDataService.getParent();
-            setFallbackUser({
-                name: mockParent.name,
-                avatar: mockParent.avatar,
-                email: "mock@example.com" // Mock email since it's not in the mock data
-            });
-        }
-    }, [isLoading, user]);
 
     const navItems = isParentRoute
         ? [
@@ -104,9 +89,8 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
     };
 
     const getAvatarFallback = () => {
-        const displayName = user?.name || fallbackUser?.name;
-        if (!displayName) return "U";
-        return displayName
+        if (!user?.name) return "U";
+        return user.name
             .split(" ")
             .map(n => n[0])
             .join("")
@@ -122,9 +106,6 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
             router.push('/dashboard/parents');
         }
     };
-
-    // Use either API user data or fallback mock data
-    const displayUser = user || fallbackUser;
 
     return (
         <Sidebar collapsible="icon" >
@@ -222,10 +203,10 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
                                         <Skeleton className="h-full w-full rounded-full" />
                                     ) : (
                                         <>
-                                            {displayUser?.avatar ? (
+                                            {user?.avatar ? (
                                                 <AvatarImage
-                                                    src={displayUser.avatar}
-                                                    alt={displayUser.name || "User avatar"}
+                                                    src={user.avatar}
+                                                    alt={user.name || "User avatar"}
                                                     onError={(e) => {
                                                         const target = e.target as HTMLImageElement;
                                                         target.style.display = 'none';
@@ -245,9 +226,9 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
                                             </>
                                         ) : (
                                             <>
-                                                <span className="truncate font-medium">{displayUser?.name || "User"}</span>
+                                                <span className="truncate font-medium">{user?.name || "User"}</span>
                                                 <span className="truncate text-xs text-muted-foreground">
-                                                    {displayUser?.email || "No email"}
+                                                    {user?.email || "No email"}
                                                 </span>
                                             </>
                                         )}
