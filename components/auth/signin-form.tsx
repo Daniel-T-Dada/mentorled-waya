@@ -100,11 +100,9 @@ const SignInForm = () => {
             console.log("Authentication result:", result);
 
             setSuccess("Successfully signed in!");
-            if (result?.url) {
-                router.push(result.url);
-            } else {
-                router.push("/dashboard/parents");
-            }
+
+            // Always use router.push for client-side navigation
+            router.push(result?.url || "/dashboard/parents");
             router.refresh();
         } catch (error) {
             console.error("Login error:", error);
@@ -139,11 +137,9 @@ const SignInForm = () => {
             }
 
             setSuccess("Successfully signed in!");
-            if (result?.url) {
-                router.push(result.url);
-            } else {
-                router.push("/dashboard/kids");
-            }
+
+            // Always use router.push for client-side navigation
+            router.push(result?.url || "/dashboard/kids");
             router.refresh();
         } catch (error) {
             console.error("Login error:", error);

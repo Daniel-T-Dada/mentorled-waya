@@ -224,14 +224,14 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
                                                 <Skeleton className="h-4 w-24" />
                                                 <Skeleton className="h-3 w-32 mt-1" />
                                             </>
-                                        ) : (
+                                        ) : user ? (
                                             <>
-                                                <span className="truncate font-medium">{user?.name || "User"}</span>
+                                                <span className="truncate font-medium">{user.name}</span>
                                                 <span className="truncate text-xs text-muted-foreground">
-                                                    {user?.email || "No email"}
+                                                    {user.email}
                                                 </span>
                                             </>
-                                        )}
+                                        ) : null}
                                     </div>
                                 )}
                             </SidebarMenuButton>

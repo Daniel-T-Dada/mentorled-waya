@@ -53,12 +53,12 @@ const DashboardNavbar = () => {
                                 <Skeleton className="h-7 w-48 mb-1" />
                                 <Skeleton className="h-4 w-64" />
                             </>
-                        ) : (
+                        ) : user ? (
                             <>
-                                <h1 className="text-xl md:text-2xl font-semibold">Hello {user?.name || "User"}</h1>
+                                <h1 className="text-xl md:text-2xl font-semibold">Hello {user.name}</h1>
                                 <p className="text-muted-foreground text-xs md:text-sm">Building Smart Money Habits, One Chore at a Time.</p>
                             </>
-                        )}
+                        ) : null}
                     </div>
                 </div>
 
