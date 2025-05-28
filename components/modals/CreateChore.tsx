@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
+import { mockDataService } from "@/lib/services/mockDataService";
 
 interface Kid {
   id: string;
@@ -51,6 +52,7 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
   const [step, setStep] = useState<"form" | "success">("form");
   const [kids, setKids] = useState<Kid[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [usedMockData, setUsedMockData] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -70,7 +72,14 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
           setKids(data);
         } catch (error) {
           console.error('Error fetching kids:', error);
-          toast.error('Failed to load kids list');
+          toast.warning('Using mock data for kids list');
+          // Use mock data for kids
+          const mockKids = mockDataService.getAllKids().map(kid => ({
+            id: kid.id,
+            name: kid.name,
+            username: kid.name.toLowerCase().replace(/\s+/g, '.')
+          }));
+          setKids(mockKids);
         }
       }
     };
@@ -110,6 +119,9 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
     setIsLoading(true);
 
     try {
+      // Parse the reward value to a number, removing any non-numeric characters
+      const rewardValue = Number(formData.reward.replace(/[^0-9]/g, ''));
+
       const response = await fetch(getApiUrl(API_ENDPOINTS.CHORES), {
         method: 'POST',
         headers: {
@@ -119,7 +131,7 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
           ...formData,
           parentId: session?.user?.id,
           dueDate: formData.dueDate.toISOString(),
-          reward: Number(formData.reward.replace(/[^0-9]/g, ''))
+          reward: rewardValue
         }),
       });
 
@@ -132,9 +144,25 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error('Error creating chore:', error);
-      toast.error('Failed to create chore', {
-        description: error instanceof Error ? error.message : 'Please try again'
+
+      // Use mock data as fallback
+      toast.warning("Using mock data", {
+        description: "API call failed. Creating a mock chore for development."
       });
+
+      // Create a mock chore using mockDataService
+      mockDataService.createMockChore(
+        formData.title,
+        formData.description,
+        Number(formData.reward.replace(/[^0-9]/g, '')),
+        formData.assignedTo,
+        formData.dueDate,
+        session?.user?.id || 'mock-parent-id'
+      );
+
+      setUsedMockData(true);
+      setStep("success");
+      if (onSuccess) onSuccess();
     } finally {
       setIsLoading(false);
     }
@@ -152,6 +180,7 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
         assignedTo: ""
       });
       setStep("form");
+      setUsedMockData(false);
     }, 300);
   };
 
@@ -301,6 +330,11 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
             <h3 className="text-lg font-semibold mb-2">Chore Created!</h3>
             <p className="text-sm text-muted-foreground text-center mb-6">
               The chore has been successfully created and assigned.
+              {usedMockData && (
+                <span className="block text-xs mt-2 text-yellow-500">
+                  (Mock data - API connection failed)
+                </span>
+              )}
             </p>
             <Button onClick={handleSuccess}>
               Done

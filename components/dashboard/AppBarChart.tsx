@@ -39,6 +39,7 @@ const AppBarChart = () => {
     const [allowanceData, setAllowanceData] = useState<ChartDataPoint[]>([]);
     const [isAllowanceLoading, setIsAllowanceLoading] = useState(true);
     const [allowanceError, setAllowanceError] = useState<string | null>(null);
+    const [usedMockData, setUsedMockData] = useState(false);
     const { data: session } = useSession();
 
     useEffect(() => {
@@ -48,11 +49,14 @@ const AppBarChart = () => {
                 const mockData = mockDataService.getBarChartData();
                 console.log('Raw mock data:', mockData);
                 setAllowanceData(mockData);
+                setUsedMockData(true);
+                setAllowanceError(null);
                 setIsAllowanceLoading(false);
                 return;
             }
             setIsAllowanceLoading(true);
             setAllowanceError(null);
+            setUsedMockData(false);
             try {
                 const res = await fetch(`${getApiUrl(API_ENDPOINTS.ALLOWANCES)}?parentId=${session.user.id}`);
                 if (!res.ok) {
@@ -111,6 +115,7 @@ const AppBarChart = () => {
                         const mockData = mockDataService.getBarChartData();
                         console.log('Raw mock data:', mockData);
                         setAllowanceData(mockData);
+                        setUsedMockData(true);
                     } else {
                         setAllowanceData(transformedData);
                     }
@@ -120,14 +125,15 @@ const AppBarChart = () => {
                 }
             } catch (err: unknown) {
                 console.error("Error fetching allowance data:", err);
-                setAllowanceError(err instanceof Error ? err.message : 'Unknown error');
-
 
                 // Fallback to mock data on error
                 console.log('Error occurred, using mock data');
                 const mockData = mockDataService.getBarChartData();
                 console.log('Raw mock data:', mockData);
                 setAllowanceData(mockData);
+                setUsedMockData(true);
+
+
             } finally {
                 setIsAllowanceLoading(false);
             }
@@ -187,8 +193,9 @@ const AppBarChart = () => {
             </div>
         );
     }
-    // I want to catch all possible error here
-    if (allowanceError) {
+
+    // Only show error if we're not using mock data
+    if (allowanceError && !usedMockData) {
         return (
             <div className="lg:col-span-2 rounded-lg shadow-md">
                 <Card>
@@ -206,7 +213,12 @@ const AppBarChart = () => {
             <Card>
 
                 <CardHeader>
-                    <CardTitle>Allowance Breakdown</CardTitle>
+                    <CardTitle>
+                        Allowance Breakdown
+                        {usedMockData && (
+                            <span className="text-xs text-yellow-500 font-normal ml-2">(Mock Data)</span>
+                        )}
+                    </CardTitle>
                     <CardDescription>
                         <div className="flex items-center justify-between mb-2">
                             <div className="flex gap-4 text-xs">
