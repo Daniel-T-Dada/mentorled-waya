@@ -1,1 +1,116 @@
-if(!self.define){let e,s={};const a=(a,n)=>(a=new URL(a+".js",n).href,s[a]||new Promise((s=>{if("document"in self){const e=document.createElement("script");e.src=a,e.onload=s,document.head.appendChild(e)}else e=a,importScripts(a),s()})).then((()=>{let e=s[a];if(!e)throw new Error(`Module ${a} didn’t register its module`);return e})));self.define=(n,i)=>{const c=e||("document"in self?document.currentScript.src:"")||location.href;if(s[c])return;let t={};const r=e=>a(e,c),o={module:{uri:c},exports:t,require:r};s[c]=Promise.all(n.map((e=>o[e]||r(e)))).then((e=>(i(...e),t)))}}define(["./workbox-4754cb34"],(function(e){"use strict";importScripts(),self.skipWaiting(),e.clientsClaim(),e.precacheAndRoute([{url:"/Logo/Black.png",revision:"3808bfc35809567250c7b45876d00136"},{url:"/Logo/Black.svg",revision:"49f3a0b52ef7045f28a652da76a7b165"},{url:"/Logo/Purple and White.png",revision:"cc44e6ca3d0ccaadf866275db8e2235f"},{url:"/Logo/Purple and White.svg",revision:"a99d0a311f030cbc66a0e1c1f4b003e5"},{url:"/Logo/Purple.png",revision:"b4d8f56268106671e7253aed2d98a198"},{url:"/Logo/Purple.svg",revision:"9f15260323f34f594f852658777afda1"},{url:"/Logo/White and Purple.png",revision:"8399d764f131867dfe5ae1fbd9f43cd4"},{url:"/Logo/White and Purple.svg",revision:"278eb6cb59f740b489f9bfae2bd10d25"},{url:"/Logo/White.png",revision:"1ddb41140b388273ca27ab35a77a287c"},{url:"/Logo/White.svg",revision:"88b67eb5ea4f9506469561071188f2c0"},{url:"/_next/app-build-manifest.json",revision:"c666d723a27405bb2ddc9081bf7aa2e6"},{url:"/_next/static/IXu7mSut0dvkjamPr7ORK/_buildManifest.js",revision:"708ab632096db0fbee1d0794df587ed7"},{url:"/_next/static/IXu7mSut0dvkjamPr7ORK/_ssgManifest.js",revision:"b6652df95db52feb4daf4eca35380933"},{url:"/_next/static/chunks/332-71f6c83fd6c8f3a6.js",revision:"IXu7mSut0dvkjamPr7ORK"},{url:"/_next/static/chunks/341.df3329d77a5faa19.js",revision:"df3329d77a5faa19"},{url:"/_next/static/chunks/472.a3826d29d6854395.js",revision:"a3826d29d6854395"},{url:"/_next/static/chunks/4bd1b696-c6a29db23a163452.js",revision:"IXu7mSut0dvkjamPr7ORK"},{url:"/_next/static/chunks/63-5293e1c7d4019161.js",revision:"IXu7mSut0dvkjamPr7ORK"},{url:"/_next/static/chunks/684-16cbd106845c1c51.js",revision:"IXu7mSut0dvkjamPr7ORK"},{url:"/_next/static/chunks/app/_not-found/page-12ab3c1c18856560.js",revision:"IXu7mSut0dvkjamPr7ORK"},{url:"/_next/static/chunks/app/layout-c91cee7c8bf275a8.js",revision:"IXu7mSut0dvkjamPr7ORK"},{url:"/_next/static/chunks/app/page-b861d3e047aacd7f.js",revision:"IXu7mSut0dvkjamPr7ORK"},{url:"/_next/static/chunks/framework-f593a28cde54158e.js",revision:"IXu7mSut0dvkjamPr7ORK"},{url:"/_next/static/chunks/main-app-c9afdbae87437504.js",revision:"IXu7mSut0dvkjamPr7ORK"},{url:"/_next/static/chunks/main-e23f1c3af7e0b0b1.js",revision:"IXu7mSut0dvkjamPr7ORK"},{url:"/_next/static/chunks/pages/_app-92f2aae776f86b9c.js",revision:"IXu7mSut0dvkjamPr7ORK"},{url:"/_next/static/chunks/pages/_error-71d2b6a7b832d02a.js",revision:"IXu7mSut0dvkjamPr7ORK"},{url:"/_next/static/chunks/polyfills-42372ed130431b0a.js",revision:"846118c33b2c0e922d7b3a7676f81f6f"},{url:"/_next/static/chunks/webpack-0ea266808994c592.js",revision:"IXu7mSut0dvkjamPr7ORK"},{url:"/_next/static/css/d0b73d42c39c7fe4.css",revision:"d0b73d42c39c7fe4"},{url:"/_next/static/media/569ce4b8f30dc480-s.p.woff2",revision:"ef6cefb32024deac234e82f932a95cbd"},{url:"/_next/static/media/747892c23ea88013-s.woff2",revision:"a0761690ccf4441ace5cec893b82d4ab"},{url:"/_next/static/media/8d697b304b401681-s.woff2",revision:"cc728f6c0adb04da0dfcb0fc436a8ae5"},{url:"/_next/static/media/93f479601ee12b01-s.p.woff2",revision:"da83d5f06d825c5ae65b7cca706cb312"},{url:"/_next/static/media/9610d9e46709d722-s.woff2",revision:"7b7c0ef93df188a852344fc272fc096b"},{url:"/_next/static/media/ba015fad6dcf6784-s.woff2",revision:"8ea4f719af3312a055caf09f34c89a77"},{url:"/android-chrome-192x192.png",revision:"cd4fddf2b76fd366715fa266ebc62801"},{url:"/android-chrome-512x512.png",revision:"0e394e355220029391fc351c3d22ca27"},{url:"/apple-touch-icon.png",revision:"71667120a946d8c69b9e9aaae2369f80"},{url:"/assets/Group-5.png",revision:"a354731fd78d6c2d160c8661ca85f09e"},{url:"/assets/Group-6.png",revision:"6ed2fa9e1df6a552fe21de1fa5759f8a"},{url:"/assets/amico-going-offline.png",revision:"2e2b5e0cdfab80dbc4c5cf4eb176d45f"},{url:"/assets/amico.png",revision:"fbed82cfa342d068152666a9192eb065"},{url:"/favicon-16x16.png",revision:"47657e425c229ceec9972495d3b406b8"},{url:"/favicon-32x32.png",revision:"e580bc36083db38ad33025ed5937f088"},{url:"/favicon_links.md",revision:"0998836dbe9f9ec3d52947673db0d24c"},{url:"/manifest.json",revision:"66d5371548be8c790410b4a31da1aaaf"},{url:"/site.webmanifest",revision:"c7731e01fa2694bbc23c95c0d87909ab"}],{ignoreURLParametersMatching:[]}),e.cleanupOutdatedCaches(),e.registerRoute("/",new e.NetworkFirst({cacheName:"start-url",plugins:[{cacheWillUpdate:async({request:e,response:s,event:a,state:n})=>s&&"opaqueredirect"===s.type?new Response(s.body,{status:200,statusText:"OK",headers:s.headers}):s}]}),"GET"),e.registerRoute(/^https:\/\/fonts\.(?:gstatic)\.com\/.*/i,new e.CacheFirst({cacheName:"google-fonts-webfonts",plugins:[new e.ExpirationPlugin({maxEntries:4,maxAgeSeconds:31536e3})]}),"GET"),e.registerRoute(/^https:\/\/fonts\.(?:googleapis)\.com\/.*/i,new e.StaleWhileRevalidate({cacheName:"google-fonts-stylesheets",plugins:[new e.ExpirationPlugin({maxEntries:4,maxAgeSeconds:604800})]}),"GET"),e.registerRoute(/\.(?:eot|otf|ttc|ttf|woff|woff2|font.css)$/i,new e.StaleWhileRevalidate({cacheName:"static-font-assets",plugins:[new e.ExpirationPlugin({maxEntries:4,maxAgeSeconds:604800})]}),"GET"),e.registerRoute(/\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,new e.StaleWhileRevalidate({cacheName:"static-image-assets",plugins:[new e.ExpirationPlugin({maxEntries:64,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\/_next\/image\?url=.+$/i,new e.StaleWhileRevalidate({cacheName:"next-image",plugins:[new e.ExpirationPlugin({maxEntries:64,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:mp3|wav|ogg)$/i,new e.CacheFirst({cacheName:"static-audio-assets",plugins:[new e.RangeRequestsPlugin,new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:mp4)$/i,new e.CacheFirst({cacheName:"static-video-assets",plugins:[new e.RangeRequestsPlugin,new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:js)$/i,new e.StaleWhileRevalidate({cacheName:"static-js-assets",plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:css|less)$/i,new e.StaleWhileRevalidate({cacheName:"static-style-assets",plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\/_next\/data\/.+\/.+\.json$/i,new e.StaleWhileRevalidate({cacheName:"next-data",plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\.(?:json|xml|csv)$/i,new e.NetworkFirst({cacheName:"static-data-assets",plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute((({url:e})=>{if(!(self.origin===e.origin))return!1;const s=e.pathname;return!s.startsWith("/api/auth/")&&!!s.startsWith("/api/")}),new e.NetworkFirst({cacheName:"apis",networkTimeoutSeconds:10,plugins:[new e.ExpirationPlugin({maxEntries:16,maxAgeSeconds:86400})]}),"GET"),e.registerRoute((({url:e})=>{if(!(self.origin===e.origin))return!1;return!e.pathname.startsWith("/api/")}),new e.NetworkFirst({cacheName:"others",networkTimeoutSeconds:10,plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:86400})]}),"GET"),e.registerRoute((({url:e})=>!(self.origin===e.origin)),new e.NetworkFirst({cacheName:"cross-origin",networkTimeoutSeconds:10,plugins:[new e.ExpirationPlugin({maxEntries:32,maxAgeSeconds:3600})]}),"GET")}));
+// Simple service worker for PWA
+
+const CACHE_NAME = 'waya-cache-v3';
+
+// Add list of files to cache here
+const urlsToCache = [
+    '/',
+    '/offline',
+    '/manifest.json',
+    '/site.webmanifest',
+    '/favicon.ico',
+    '/android-chrome-192x192.png',
+    '/android-chrome-512x512.png',
+    '/apple-touch-icon.png',
+    '/favicon-16x16.png',
+    '/favicon-32x32.png'
+];
+
+// Icon mapping for 404 icon requests
+// const iconRedirects = {
+//     '/icons/icon-72x72.png': '/favicon-32x32.png',
+//     '/icons/icon-96x96.png': '/favicon-32x32.png',
+//     '/icons/icon-128x128.png': '/favicon-32x32.png',
+//     '/icons/icon-144x144.png': '/apple-touch-icon.png',
+//     '/icons/icon-152x152.png': '/apple-touch-icon.png',
+//     '/icons/icon-192x192.png': '/android-chrome-192x192.png',
+//     '/icons/icon-384x384.png': '/android-chrome-512x512.png',
+//     '/icons/icon-512x512.png': '/android-chrome-512x512.png',
+//     '/icons/maskable-icon.png': '/android-chrome-512x512.png'
+// };
+
+// Install a service worker
+self.addEventListener('install', event => {
+    // Perform install steps
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => {
+                console.log('Opened cache');
+                return cache.addAll(urlsToCache);
+            })
+    );
+    self.skipWaiting();
+});
+
+// Cache and return requests
+self.addEventListener('fetch', event => {
+    const url = new URL(event.request.url);
+
+    // Handle missing icon files by redirecting to existing ones
+    if (iconRedirects[url.pathname]) {
+        event.respondWith(
+            fetch(new Request(iconRedirects[url.pathname], {
+                method: event.request.method,
+                headers: event.request.headers,
+                mode: event.request.mode,
+                credentials: event.request.credentials,
+                redirect: event.request.redirect
+            }))
+        );
+        return;
+    }
+
+    event.respondWith(
+        caches.match(event.request)
+            .then(response => {
+                // Cache hit - return response
+                if (response) {
+                    return response;
+                }
+                return fetch(event.request)
+                    .then(response => {
+                        // Check if we received a valid response
+                        if (!response || response.status !== 200 || response.type !== 'basic') {
+                            return response;
+                        }
+
+                        // Clone the response
+                        const responseToCache = response.clone();
+
+                        caches.open(CACHE_NAME)
+                            .then(cache => {
+                                // Don't cache API responses or dynamic data
+                                if (!event.request.url.includes('/api/')) {
+                                    cache.put(event.request, responseToCache);
+                                }
+                            });
+
+                        return response;
+                    })
+                    .catch(() => {
+                        // If fetch fails (e.g., offline), show fallback page for navigation requests
+                        if (event.request.mode === 'navigate') {
+                            return caches.match('/offline');
+                        }
+                    });
+            })
+    );
+});
+
+// Update a service worker
+self.addEventListener('activate', event => {
+    // Delete all caches that aren't named in CACHE_NAME
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (cacheName !== CACHE_NAME) {
+                        console.log('Deleting old cache:', cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        })
+    );
+    self.clients.claim();
+});

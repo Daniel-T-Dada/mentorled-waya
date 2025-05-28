@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { metadata, viewport } from "./metadata";
 import ClientWrapper from "@/components/ClientWrapper";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+
 
 import { SessionProvider } from "next-auth/react";
 
@@ -29,19 +31,19 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-        <SessionProvider>
-          <SidebarProvider>
-
-            <main className="min-h-screen w-full">
-              <ClientWrapper>
-                <div className="">
-                  {children}
-                </div>
-              </ClientWrapper>
-            </main>
-            <Toaster />
-          </SidebarProvider>
-        </SessionProvider>
+          <SessionProvider>
+            <SidebarProvider>
+              <ServiceWorkerRegistration />
+              <main className="min-h-screen w-full">
+                <ClientWrapper>
+                  <div className="">
+                    {children}
+                  </div>
+                </ClientWrapper>
+              </main>
+              <Toaster />
+            </SidebarProvider>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

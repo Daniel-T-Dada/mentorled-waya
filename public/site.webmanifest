@@ -9,12 +9,6 @@
     "orientation": "portrait",
     "scope": "/",
     "id": "/",
-    "categories": [
-        "finance",
-        "education",
-        "kids",
-        "family"
-    ],
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
@@ -47,5 +41,4 @@
             "purpose": "any"
         }
     ]
-    
 }
