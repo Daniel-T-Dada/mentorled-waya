@@ -13,9 +13,9 @@ import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import FormError from "../form-error"
 import FormSuccess from "../form-sucess"
-// We're using window.location.href directly instead of the router
-// import { useRouter } from "next/navigation"
-import { signIn } from "next-auth/react"
+// Use the router for client-side navigation
+import { useRouter } from "next/navigation"
+import { signIn, signOut } from "next-auth/react"
 import Link from "next/link"
 import { Checkbox } from "../ui/checkbox"
 import { Eye, EyeOff } from "lucide-react"
@@ -36,7 +36,8 @@ interface SignInResult {
 }
 
 const SignUpForm = () => {
-    // Using window.location.href for navigation instead of router
+    // Use Next.js router for navigation
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [success, setSuccess] = useState<string | undefined>("")
     const [error, setError] = useState<string | null>(null);
@@ -90,12 +91,13 @@ const SignUpForm = () => {
             console.log('Backend response:', result?.data);
             console.log('Full result object:', result);
 
-            // Redirect to signin page after a short delay
+            // Sign out the user first to ensure they need to explicitly log in
+            await signOut({ redirect: false });
+
+            // Redirect to signin page after a short delay using Next.js router
             setTimeout(() => {
                 console.log('Now redirecting to signin page...');
-                window.location.href = '/auth/signin';
-                // Prevent any other code from executing after redirect
-                return;
+                router.push('/auth/signin');
             }, 1500);
         } catch (error) {
             console.error("Registration failed:", error);

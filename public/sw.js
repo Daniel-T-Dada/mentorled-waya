@@ -1,6 +1,6 @@
 // Simple service worker for PWA
 
-const CACHE_NAME = 'waya-cache-v3';
+const CACHE_NAME = 'waya-cache-v4';
 
 // Add list of files to cache here
 const urlsToCache = [
@@ -13,21 +13,20 @@ const urlsToCache = [
     '/android-chrome-512x512.png',
     '/apple-touch-icon.png',
     '/favicon-16x16.png',
-    '/favicon-32x32.png'
+    '/favicon-32x32.png',
+    '/screenshots/screenshot1.png',
+    '/screenshots/screenshot2.png',
+    // From here sha
+    '/icons/icon-72x72.png',
+    '/icons/icon-96x96.png',
+    '/icons/icon-128x128.png',
+    '/icons/icon-144x144.png',
+    '/icons/icon-152x152.png',
+    '/icons/icon-192x192.png',
+    '/icons/icon-384x384.png',
+    '/icons/icon-512x512.png',
+    '/icons/maskable-icon.png'
 ];
-
-// Icon mapping for 404 icon requests
-// const iconRedirects = {
-//     '/icons/icon-72x72.png': '/favicon-32x32.png',
-//     '/icons/icon-96x96.png': '/favicon-32x32.png',
-//     '/icons/icon-128x128.png': '/favicon-32x32.png',
-//     '/icons/icon-144x144.png': '/apple-touch-icon.png',
-//     '/icons/icon-152x152.png': '/apple-touch-icon.png',
-//     '/icons/icon-192x192.png': '/android-chrome-192x192.png',
-//     '/icons/icon-384x384.png': '/android-chrome-512x512.png',
-//     '/icons/icon-512x512.png': '/android-chrome-512x512.png',
-//     '/icons/maskable-icon.png': '/android-chrome-512x512.png'
-// };
 
 // Install a service worker
 self.addEventListener('install', event => {
@@ -44,22 +43,6 @@ self.addEventListener('install', event => {
 
 // Cache and return requests
 self.addEventListener('fetch', event => {
-    const url = new URL(event.request.url);
-
-    // Handle missing icon files by redirecting to existing ones
-    if (iconRedirects[url.pathname]) {
-        event.respondWith(
-            fetch(new Request(iconRedirects[url.pathname], {
-                method: event.request.method,
-                headers: event.request.headers,
-                mode: event.request.mode,
-                credentials: event.request.credentials,
-                redirect: event.request.redirect
-            }))
-        );
-        return;
-    }
-
     event.respondWith(
         caches.match(event.request)
             .then(response => {

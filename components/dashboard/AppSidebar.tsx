@@ -3,7 +3,7 @@
 import { BarChart, ChartSpline, Clipboard, Goal, HandCoins, Home, List, LogOut, Settings, UsersRound, Wallet } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator, useSidebar } from "../ui/sidebar"
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes"
@@ -24,6 +24,7 @@ import { useEffect, useState } from "react";
 
 const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
     const pathname = usePathname();
+    const router = useRouter();
     const { theme } = useTheme();
     const { state } = useSidebar();
     const { user, isLoading } = useUser();
@@ -111,6 +112,15 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
             .join("")
             .toUpperCase()
             .slice(0, 2);
+    };
+
+    // Function to navigate between parent and kid views using Next.js router
+    const navigateToView = (isParent: boolean) => {
+        if (isParent) {
+            router.push('/dashboard/kids');
+        } else {
+            router.push('/dashboard/parents');
+        }
     };
 
     // Use either API user data or fallback mock data
@@ -256,12 +266,6 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
         </Sidebar>
     )
 }
+
 export default AppSidebar
 
-const navigateToView = (isParent: boolean) => {
-    if (isParent) {
-        window.location.href = '/dashboard/kids';
-    } else {
-        window.location.href = '/dashboard/parents';
-    }
-}
