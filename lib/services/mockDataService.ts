@@ -20,6 +20,8 @@ export interface Chore {
     assignedTo: string;
     createdAt: string;
     completedAt?: string | null;
+    dueDate?: string;
+    parentId?: string;
 }
 
 export interface AllowanceHistory {
@@ -33,6 +35,24 @@ export interface Parent {
     name: string;
     avatar: string;
     children: Kid[];
+}
+
+export interface KidAccount {
+    id: string;
+    name: string;
+    username: string;
+    parentId: string;
+    avatar?: string | null;
+}
+
+export interface Allowance {
+    id: string;
+    kidId: string;
+    parentId: string;
+    amount: number;
+    frequency: "once" | "daily" | "weekly" | "monthly";
+    status: "pending" | "approved" | "rejected";
+    createdAt: string;
 }
 
 // Helper functions
@@ -91,6 +111,69 @@ class MockDataService {
 
     getKidsByLevel(level: number): Kid[] {
         return this.getAllKids().filter(kid => kid.level === level);
+    }
+
+    // Create a mock kid account
+    createMockKidAccount(name: string, username: string, parentId: string, pin: string, avatar?: string | null): KidAccount {
+        // Generate a unique mock ID
+        const mockId = `kid-mock-${Date.now()}`;
+
+        // Create a mock kid data object
+        const mockKidAccount: KidAccount = {
+            id: mockId,
+            name,
+            username,
+            parentId,
+            avatar
+        };
+
+        console.log("Created mock kid account:", mockKidAccount);
+        return mockKidAccount;
+    }
+
+    // Create a mock chore
+    createMockChore(title: string, description: string, reward: number, assignedTo: string, dueDate: Date, parentId: string): Chore {
+        // Generate a unique mock ID
+        const mockId = `chore-mock-${Date.now()}`;
+
+        // Create a mock chore object
+        const mockChore: Chore = {
+            id: mockId,
+            title,
+            description,
+            reward,
+            status: "pending",
+            assignedTo,
+            createdAt: new Date().toISOString(),
+            dueDate: dueDate.toISOString(),
+            parentId
+        };
+
+        console.log("Created mock chore:", mockChore);
+        return mockChore;
+    }
+
+    // Create a mock allowance
+    createMockAllowance(kidId: string, parentId: string, amount: number, frequency: string): Allowance {
+        // Generate a unique mock ID
+        const mockId = `allowance-mock-${Date.now()}`;
+
+        // Map frequency to allowed values if needed
+        const mappedFrequency = frequency === 'once' ? 'daily' : frequency as "daily" | "weekly" | "monthly";
+
+        // Create a mock allowance object
+        const mockAllowance: Allowance = {
+            id: mockId,
+            kidId,
+            parentId,
+            amount,
+            frequency: mappedFrequency,
+            status: "pending",
+            createdAt: new Date().toISOString()
+        };
+
+        console.log("Created mock allowance:", mockAllowance);
+        return mockAllowance;
     }
 
     // Chores related methods

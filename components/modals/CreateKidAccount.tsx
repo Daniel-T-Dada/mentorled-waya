@@ -16,6 +16,7 @@ import { CheckIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
+import { mockDataService } from "@/lib/services/mockDataService";
 
 interface CreateKidAccountProps {
   isOpen: boolean;
@@ -37,6 +38,7 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
   const [createdKid, setCreatedKid] = useState<KidData | null>(null);
   const { data: session } = useSession();
   const user = session?.user;
+  const [usedMockData, setUsedMockData] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -113,9 +115,24 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
 
     } catch (error: unknown) {
       console.error("Error creating kid account:", error);
-      toast.error("Error", {
-        description: error instanceof Error ? error.message : "Failed to create kid account"
+
+      // Use mock data as fallback
+      toast.warning("Using mock data", {
+        description: "API call failed. Creating a mock kid account for development."
       });
+
+      // Create a mock kid account using the mockDataService
+      const mockKidData = mockDataService.createMockKidAccount(
+        formData.name,
+        formData.username,
+        user?.id || 'mock-parent-id',
+        formData.pin,
+        formData.avatar
+      );
+
+      setCreatedKid(mockKidData);
+      setUsedMockData(true);
+      setStep("success");
     } finally {
       setIsLoading(false);
     }
@@ -128,6 +145,7 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
       setFormData({ name: "", username: "", pin: "", avatar: null });
       setStep("form");
       setCreatedKid(null);
+      setUsedMockData(false);
     }, 300);
   };
 
@@ -271,6 +289,11 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
                   <p className="font-medium">Login Details</p>
                   <p>Username: <span className="font-medium">{createdKid.username}</span></p>
                   <p>Name: {createdKid.name}</p>
+                  {usedMockData && (
+                    <p className="text-xs mt-2 text-yellow-500">
+                      (Mock data - API connection failed)
+                    </p>
+                  )}
                 </div>
               )}
             </div>
