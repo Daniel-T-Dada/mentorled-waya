@@ -30,7 +30,7 @@ const CardWrapper = ({
     const { theme } = useTheme()
 
     return (
-        <Card className={className || "w-[320px] sm:w-[450px] md:w-[600px] lg:w-[700px] max-w-md mx-auto sm:p-6"}>
+        <Card className={className || "w-[320px] sm:w-[450px] md:w-[600px] lg:w-[700px] max-w-md mx-auto sm:p-4"}>
             <CardHeader>
                 <div className="flex flex-col items-center gap-4">
                 

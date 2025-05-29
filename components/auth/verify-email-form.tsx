@@ -3,68 +3,84 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface VerifyEmailFormProps {
-  email: string;
-  token: string;
-  uidb64: string;
+  email?: string;
+  token?: string;
+  uidb64?: string;
 }
 
 export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState<"loading" | "success" | "error" | "waiting">("loading");
   const [error, setError] = useState<string>("");
 
+  // Allow for the parameters to come from URL search params if not provided as props
+  const emailParam = email || searchParams.get('email') || '';
+  const tokenParam = token || searchParams.get('token') || '';
+  const uidb64Param = uidb64 || searchParams.get('uidb64') || '';
+
   useEffect(() => {
     const verifyToken = async () => {
-      console.log('VerifyEmailForm mounted with props:', { email, token, uidb64 });
+      console.log('VerifyEmailForm mounted with:', { email: emailParam, token: tokenParam, uidb64: uidb64Param });
 
       try {
-        if (!token || !uidb64) {
-          console.log('Missing token or uidb64:', { token, uidb64 });
+        if (!tokenParam || !uidb64Param) {
+          console.log('Missing token or uidb64:', { token: tokenParam, uidb64: uidb64Param });
           setStatus("waiting");
           return;
         }
 
-        if (!email) {
-          console.log('Missing email parameter');
-          setStatus("error");
-          setError("Email parameter is missing");
-          return;
+        // Email might be missing from params but we can still proceed with verification
+        // The backend should be able to verify with just token and uidb64
+        if (!emailParam) {
+          console.log('Email parameter is missing, but continuing with verification attempt');
         }
 
-        console.log('Attempting to verify email with:', { uidb64, token, email });
-        const apiUrl = getApiUrl(API_ENDPOINTS.VERIFY_EMAIL);
-        console.log('Making request to:', apiUrl);
+        // Directly verify with the API instead of using NextAuth to avoid creating a session
+        console.log('Attempting to verify email via direct API...');
+        const baseUrl = getApiUrl(API_ENDPOINTS.VERIFY_EMAIL);
+        const apiUrl = `${baseUrl}/${uidb64Param}/${tokenParam}`;
 
-        const requestBody = {
-          uidb64,
-          token
-        };
-        console.log('Request body:', requestBody);
+        console.log('Verification API URL:', apiUrl);
 
         const response = await fetch(apiUrl, {
-          method: "POST",
+          method: "GET",
           headers: {
-            "Content-Type": "application/json",
             "Accept": "application/json"
-          },
-          body: JSON.stringify(requestBody)
+          }
         });
 
         console.log('Verification response status:', response.status);
-        const responseData = await response.json();
-        console.log('Verification response data:', responseData);
 
-        if (!response.ok) {
+        if (response.ok) {
+          try {
+            const responseData = await response.json();
+            console.log('Verification response data:', responseData);
+          } catch {
+            console.log('Verification successful but response is not JSON');
+          }
+
+          console.log('Email verification successful via API');
+          setStatus("success");
+          return;
+        }
+
+        // Handle error response
+        try {
+          const responseData = await response.json();
+          console.log('Verification error response data:', responseData);
           const errorMessage = responseData.detail || responseData.message || "Failed to verify email";
           console.error('Verification failed:', errorMessage);
           throw new Error(errorMessage);
+        } catch {
+          // If error response is not JSON
+          const text = await response.text();
+          console.error('Non-JSON error response:', text.substring(0, 200));
+          throw new Error(`Verification failed with status: ${response.status}`);
         }
-
-        console.log('Email verification successful');
-        setStatus("success");
       } catch (error) {
         console.error('Email verification error:', error);
         setStatus("error");
@@ -73,7 +89,7 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
     };
 
     verifyToken();
-  }, [email, token, uidb64]);
+  }, [emailParam, tokenParam, uidb64Param]);
 
   const handleResendEmail = async () => {
     try {
@@ -83,8 +99,10 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: emailParam }),
       });
+
+      console.log('Resend verification response status:', response.status);
 
       if (!response.ok) {
         const error = await response.json();
@@ -98,8 +116,20 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
     }
   };
 
-  // Mask email for privacy
-  const maskedEmail = email.replace(/(.{2})(.*)(@.*)/, "$1***$3");
+  // Mask email for privacy - handle case when email is missing
+  const maskedEmail = emailParam ? emailParam.replace(/(.{2})(.*)(@.*)/, "$1***$3") : "your email";
+
+  // For development testing only - allows bypassing the email verification
+  const handleDevBypass = async () => {
+    if (process.env.NODE_ENV !== 'development') return;
+
+    try {
+      console.log('Using developer bypass to mark email as verified');
+      setStatus("success");
+    } catch (error) {
+      console.error('Developer bypass error:', error);
+    }
+  };
 
   if (status === "loading") {
     return (
@@ -140,6 +170,17 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
         >
           Resend Verification Email
         </Button>
+
+        {process.env.NODE_ENV === 'development' && (
+          <Button
+            onClick={handleDevBypass}
+            variant="destructive"
+            className="w-full mt-2"
+            size="sm"
+          >
+            [DEV] Mark as Verified
+          </Button>
+        )}
       </div>
     );
   }

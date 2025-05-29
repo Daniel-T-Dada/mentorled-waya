@@ -87,13 +87,29 @@ const SignInForm = () => {
                 callbackUrl: "/dashboard/parents"
             });
 
+            console.log("SignIn result:", result);
+
             if (result?.error) {
                 console.log("Authentication error:", result.error);
-                setError("Invalid email or password. Please try again.");
+
+                // Check if the error is about email verification
+                if (result.error.includes("verify your email")) {
+                    setError("Please verify your email before logging in.");
+
+                    // Redirect to verification page after a short delay
+                    setTimeout(() => {
+                        router.push(`/auth/verify-email?email=${encodeURIComponent(values.email)}`);
+                    }, 2000);
+
+                    return;
+                }
+
+                // Display the actual error message from the backend
+                setError(result.error || "Invalid email or password. Please try again.");
                 return;
             }
 
-            // User is already verified by the backend (is_verified: true)
+            // User is successfully authenticated
             console.log("User authenticated successfully, redirecting to dashboard");
 
             // Log the response for debugging
@@ -108,7 +124,7 @@ const SignInForm = () => {
             router.refresh();
         } catch (error) {
             console.error("Login error:", error);
-            setError("Something went wrong. Please try again.");
+            setError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
         } finally {
             setIsLoading(false);
         }
