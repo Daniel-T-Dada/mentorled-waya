@@ -116,7 +116,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             emailVerified: new Date(), // Auto-verify email for now
                             avatar: data.avatar || null,
                             data: {
-                            
+
                                 email: data.email
                             }
                         };
@@ -267,5 +267,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return token;
         },
     },
-    debug: true,
+    debug: process.env.NODE_ENV === 'development',
 })

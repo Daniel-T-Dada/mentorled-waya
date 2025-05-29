@@ -174,20 +174,21 @@ const SignInForm = () => {
             backButtonLabel="Don't have an account? Sign up"
             backButtonHref="/auth/signup"
             showSocial
+            className=""
         >
             <Tabs
                 defaultValue="parent"
-                className="w-full mb-4 sm:mb-6"
+                className="w-full mb-3 sm:mb-4"
                 onValueChange={handleTabChange}
             >
-                <TabsList className="w-full grid grid-cols-2 h-10 sm:h-12 dark:bg-secondary rounded-md dark:border">
-                    <TabsTrigger value="parent" className="rounded-l-md text-sm sm:text-base">Parent</TabsTrigger>
-                    <TabsTrigger value="kid" className="rounded-r-md text-sm sm:text-base">Kid</TabsTrigger>
+                <TabsList className="w-full grid grid-cols-2 h-9 sm:h-11 dark:bg-secondary rounded-md dark:border">
+                    <TabsTrigger value="parent" className="rounded-l-md text-xs sm:text-sm">Parent</TabsTrigger>
+                    <TabsTrigger value="kid" className="rounded-r-md text-xs sm:text-sm">Kid</TabsTrigger>
                 </TabsList>
             </Tabs>
 
             {error && (
-                <div className="p-2 sm:p-3 text-xs sm:text-sm bg-destructive/15 text-destructive rounded-md mb-3 sm:mb-4">
+                <div className="p-2 sm:p-3 text-xs sm:text-sm bg-destructive/15 text-destructive rounded-md mb-2 sm:mb-3">
                     {error}
                 </div>
             )}
@@ -195,23 +196,23 @@ const SignInForm = () => {
             {userType === "parent" && (
                 <Form {...parentForm}>
                     <form onSubmit={parentForm.handleSubmit(onParentSubmit)}
-                        className="space-y-4 sm:space-y-6"
+                        className="space-y-3 sm:space-y-4"
                     >
-                        <div className="space-y-3 sm:space-y-4">
+                        <div className="space-y-2 sm:space-y-3">
                             <FormField
                                 control={parentForm.control}
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-sm sm:text-base">Email</FormLabel>
+                                        <FormLabel className="text-xs sm:text-sm">Email</FormLabel>
                                         <FormControl>
                                             <Input {...field}
                                                 placeholder="Enter your email"
                                                 type="email"
-                                                className="h-9 sm:h-10 text-sm sm:text-base"
+                                                className="h-8 sm:h-9 text-xs sm:text-sm"
                                             />
                                         </FormControl>
-                                        <FormMessage className="text-xs sm:text-sm" />
+                                        <FormMessage className="text-[10px] sm:text-xs" />
                                     </FormItem>
                                 )}
                             />
@@ -220,24 +221,24 @@ const SignInForm = () => {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-sm sm:text-base">Password</FormLabel>
+                                        <FormLabel className="text-xs sm:text-sm">Password</FormLabel>
                                         <FormControl>
                                             <div className="relative">
                                                 <Input {...field}
                                                     placeholder="******"
                                                     type={showPassword ? "text" : "password"}
-                                                    className="h-9 sm:h-10 text-sm sm:text-base"
+                                                    className="h-8 sm:h-9 text-xs sm:text-sm"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={togglePasswordVisibility}
-                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                                                    className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
                                                 >
-                                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                                 </button>
                                             </div>
                                         </FormControl>
-                                        <FormMessage className="text-xs sm:text-sm" />
+                                        <FormMessage className="text-[10px] sm:text-xs" />
                                     </FormItem>
                                 )}
                             />
@@ -247,7 +248,7 @@ const SignInForm = () => {
                         <Button
                             disabled={isLoading}
                             type="submit"
-                            className="w-full h-9 sm:h-10 text-sm sm:text-base dark:text-secondary-foreground"
+                            className="w-full h-8 sm:h-9 text-xs sm:text-sm dark:text-secondary-foreground"
                         >
                             {isLoading ? "Signing in..." : "Sign in"}
                         </Button>
@@ -255,30 +256,27 @@ const SignInForm = () => {
                 </Form>
             )}
 
-
-
-
             {/* Kid Form */}
             {userType === "kid" && (
                 <Form {...kidForm}>
                     <form onSubmit={kidForm.handleSubmit(onKidSubmit)}
-                        className="space-y-4 sm:space-y-6"
+                        className="space-y-3 sm:space-y-4"
                     >
-                        <div className="space-y-3 sm:space-y-4">
+                        <div className="space-y-2 sm:space-y-3">
                             <FormField
                                 control={kidForm.control}
                                 name="username"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-sm sm:text-base">Username</FormLabel>
+                                        <FormLabel className="text-xs sm:text-sm">Username</FormLabel>
                                         <FormControl>
                                             <Input {...field}
                                                 placeholder="Enter your username"
                                                 type="text"
-                                                className="h-9 sm:h-10 text-sm sm:text-base"
+                                                className="h-8 sm:h-9 text-xs sm:text-sm"
                                             />
                                         </FormControl>
-                                        <FormMessage className="text-xs sm:text-sm" />
+                                        <FormMessage className="text-[10px] sm:text-xs" />
                                     </FormItem>
                                 )}
                             />
@@ -287,25 +285,25 @@ const SignInForm = () => {
                                 name="pin"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-sm sm:text-base">Pin</FormLabel>
+                                        <FormLabel className="text-xs sm:text-sm">Pin</FormLabel>
                                         <FormControl>
                                             <div className="relative">
                                                 <Input {...field}
                                                     placeholder="******"
                                                     type={showPin ? "text" : "password"}
                                                     maxLength={4}
-                                                    className="h-9 sm:h-10 text-sm sm:text-base"
+                                                    className="h-8 sm:h-9 text-xs sm:text-sm"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={togglePinVisibility}
-                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                                                    className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
                                                 >
-                                                    {showPin ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                    {showPin ? <EyeOff size={16} /> : <Eye size={16} />}
                                                 </button>
                                             </div>
                                         </FormControl>
-                                        <FormMessage className="text-xs sm:text-sm" />
+                                        <FormMessage className="text-[10px] sm:text-xs" />
                                     </FormItem>
                                 )}
                             />
@@ -315,7 +313,7 @@ const SignInForm = () => {
                         <Button
                             disabled={isLoading}
                             type="submit"
-                            className="w-full h-9 sm:h-10 text-sm sm:text-base dark:text-secondary-foreground"
+                            className="w-full h-8 sm:h-9 text-xs sm:text-sm dark:text-secondary-foreground"
                         >
                             {isLoading ? "Signing in..." : "Sign in"}
                         </Button>
