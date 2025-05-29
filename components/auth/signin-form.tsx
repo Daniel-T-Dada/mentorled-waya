@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import CardWrapper from "./card-wrapper"
 import { ParentSignInSchema, KidSignInSchema } from "@/schemas"
 import { signIn } from "next-auth/react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 
 
@@ -20,6 +20,9 @@ import FormError from "../form-error"
 import FormSuccess from "../form-sucess"
 import { useRouter } from "next/navigation"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox"
+import Link from "next/link"
+import { parseLoginError, parseKidLoginError } from "@/lib/utils/auth-errors";
 
 
 type ParentFormValues = z.infer<typeof ParentSignInSchema>;
@@ -34,6 +37,7 @@ const SignInForm = () => {
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showPin, setShowPin] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
 
 
     const parentForm = useForm<ParentFormValues>({
@@ -92,9 +96,9 @@ const SignInForm = () => {
             if (result?.error) {
                 console.log("Authentication error:", result.error);
 
-                // Check if the error is about email verification
+                // Check if the error is about email verification for redirect
                 if (result.error.includes("verify your email")) {
-                    setError("Please verify your email before logging in.");
+                    setError(parseLoginError(result.error));
 
                     // Redirect to verification page after a short delay
                     setTimeout(() => {
@@ -104,8 +108,8 @@ const SignInForm = () => {
                     return;
                 }
 
-                // Display the actual error message from the backend
-                setError(result.error || "Invalid email or password. Please try again.");
+                // Use the utility function to parse all other errors
+                setError(parseLoginError(result.error));
                 return;
             }
 
@@ -150,7 +154,9 @@ const SignInForm = () => {
 
             if (result?.error) {
                 console.log("Authentication error:", result.error);
-                setError("Invalid username or PIN. Please try again.");
+
+                // Use the utility function to parse kid login errors
+                setError(parseKidLoginError(result.error));
                 return;
             }
 
@@ -259,6 +265,30 @@ const SignInForm = () => {
                                 )}
                             />
                         </div>
+
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="remember-me"
+                                    checked={rememberMe}
+                                    onCheckedChange={(checked) => setRememberMe(!!checked)}
+                                    className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                                />
+                                <label
+                                    htmlFor="remember-me"
+                                    className="text-xs sm:text-sm text-muted-foreground cursor-pointer"
+                                >
+                                    Remember me
+                                </label>
+                            </div>
+                            <Link
+                                href="/auth/forgot-password"
+                                className="text-xs sm:text-sm text-primary hover:underline"
+                            >
+                                Forgot password?
+                            </Link>
+                        </div>
+
                         <FormError message="" />
                         <FormSuccess message={success} />
                         <Button
@@ -266,7 +296,12 @@ const SignInForm = () => {
                             type="submit"
                             className="w-full h-8 sm:h-9 text-xs sm:text-sm dark:text-secondary-foreground"
                         >
-                            {isLoading ? "Signing in..." : "Sign in"}
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Signing in...
+                                </>
+                            ) : "Sign in"}
                         </Button>
                     </form>
                 </Form>
@@ -331,7 +366,12 @@ const SignInForm = () => {
                             type="submit"
                             className="w-full h-8 sm:h-9 text-xs sm:text-sm dark:text-secondary-foreground"
                         >
-                            {isLoading ? "Signing in..." : "Sign in"}
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Signing in...
+                                </>
+                            ) : "Sign in"}
                         </Button>
                     </form>
                 </Form>
