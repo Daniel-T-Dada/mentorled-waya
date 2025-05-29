@@ -35,6 +35,6 @@ export const API_ENDPOINTS = {
     CREATE_KID: '/api/create-kid',
     RESEND_VERIFICATION: '/api/resend-verification',
     SIGNUP: '/api/register',
-    VERIFY_EMAIL: '/api/email-verify',
+    VERIFY_EMAIL: '/api/verify-email',
     LOGIN: '/api/login',
 } as const; 

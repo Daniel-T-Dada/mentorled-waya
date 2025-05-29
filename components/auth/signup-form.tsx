@@ -27,11 +27,21 @@ interface SignInResult {
     ok?: boolean;
     url?: string;
     data?: {
+        id?: string;
+        email?: string;
+        full_name?: string;
+        role?: string;
+        is_verified?: boolean;
+        avatar?: string | null;
         token?: string;
         uidb64?: string;
-        email?: string;
+        verification_email_sent?: boolean;
         message?: string;
-        is_verified?: boolean;
+        verification?: {
+            token: string;
+            uidb64: string;
+            email_sent: boolean;
+        };
     };
 }
 
@@ -82,26 +92,40 @@ const SignUpForm = () => {
                 return;
             }
 
+            // Get verification data from the response
+            const userData = result?.data || {};
+            const email = userData.email || values.email;
+
             // Check if we have a success message from the backend
-            const successMessage = result?.data?.message || "Account created successfully! Please sign in.";
+            const successMessage = userData.message || "Account created successfully! Please verify your email.";
             setSuccess(successMessage);
 
-            console.log('Account created successfully, redirecting to signin page');
-            console.log('Email being used:', values.email);
-            console.log('Backend response:', result?.data);
+            console.log('Account created successfully, redirecting to verification page');
+            console.log('Email being used:', email);
+            console.log('Backend response:', userData);
             console.log('Full result object:', result);
 
-            // Sign out the user first to ensure they need to explicitly log in
+            // Sign out the user first to ensure they need to explicitly log in after verification
             await signOut({ redirect: false });
 
-            // Redirect to signin page after a short delay 
+            // Redirect to verification page after a short delay
             setTimeout(() => {
-                console.log('Now redirecting to signin page...');
-                router.push('/auth/signin');
+                console.log('Now redirecting to verification page...');
+
+                // If we have verification data, include it in the URL
+                if (userData.token && userData.uidb64) {
+                    router.push(`/auth/verify-email?email=${encodeURIComponent(email)}&token=${encodeURIComponent(userData.token)}&uidb64=${encodeURIComponent(userData.uidb64)}`);
+                } else if (userData.verification?.token && userData.verification?.uidb64) {
+                    // Alternative format
+                    router.push(`/auth/verify-email?email=${encodeURIComponent(email)}&token=${encodeURIComponent(userData.verification.token)}&uidb64=${encodeURIComponent(userData.verification.uidb64)}`);
+                } else {
+                    // Otherwise just redirect with the email
+                    router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
+                }
             }, 1500);
         } catch (error) {
             console.error("Registration failed:", error);
-            setError("Something went wrong. Please try again.");
+            setError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -231,7 +255,7 @@ const SignUpForm = () => {
                                         />
                                     </FormControl>
                                     <div className="space-y-1 leading-none">
-                                        <label className="font-medium text-[12px] sm:text-sm">
+                                        <label className=" text-[12px] sm:text-[12px]">
                                             By signing up you agree to the{" "}
                                             <Link href="/#terms" className="text-blue-500 hover:underline">
                                                 Terms of Service
