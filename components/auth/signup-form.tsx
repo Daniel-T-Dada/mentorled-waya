@@ -36,7 +36,7 @@ interface SignInResult {
 }
 
 const SignUpForm = () => {
-    // Use Next.js router for navigation
+
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [success, setSuccess] = useState<string | undefined>("")
@@ -94,7 +94,7 @@ const SignUpForm = () => {
             // Sign out the user first to ensure they need to explicitly log in
             await signOut({ redirect: false });
 
-            // Redirect to signin page after a short delay using Next.js router
+            // Redirect to signin page after a short delay 
             setTimeout(() => {
                 console.log('Now redirecting to signin page...');
                 router.push('/auth/signin');

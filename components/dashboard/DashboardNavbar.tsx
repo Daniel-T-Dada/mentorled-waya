@@ -22,6 +22,8 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 const DashboardNavbar = () => {
     const [filter, setFilter] = useState("");
@@ -53,17 +55,18 @@ const DashboardNavbar = () => {
                                 <Skeleton className="h-7 w-48 mb-1" />
                                 <Skeleton className="h-4 w-64" />
                             </>
-                        ) : user ? (
+                        ) : (
                             <>
-                                <h1 className="text-xl md:text-2xl font-semibold">Hello {user.name}</h1>
+                                <h1 className="text-xl md:text-2xl font-semibold">Hello {user?.name || "User"}</h1>
                                 <p className="text-muted-foreground text-xs md:text-sm">Building Smart Money Habits, One Chore at a Time.</p>
                             </>
-                        ) : null}
+                        )}
                     </div>
                 </div>
 
                 {/* Right Side */}
                 <div className="flex items-center gap-4">
+                    
                     {/* Search - Hidden on mobile */}
                     <div className="relative hidden md:block">
                         <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -87,9 +90,9 @@ const DashboardNavbar = () => {
                     {/* Mobile Menu Trigger - Hidden on mobile */}
                     <Sheet>
                         <SheetTrigger asChild>
-                            <button className="hidden md:hidden" aria-label="Open mobile menu">
+                            <Button className="hidden md:hidden" aria-label="Open mobile menu">
                                 <Menu className="w-6 h-6" />
-                            </button>
+                            </Button>
                         </SheetTrigger>
                         <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                             <SheetHeader>
@@ -99,7 +102,7 @@ const DashboardNavbar = () => {
                                 {/* Mobile Search */}
                                 <div className="relative">
                                     <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                    <input
+                                    <Input
                                         type="text"
                                         placeholder="Filter"
                                         className="w-full pl-9 pr-4 py-2 text-sm rounded-md bg-muted/50 border-0 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -109,31 +112,31 @@ const DashboardNavbar = () => {
                                 </div>
 
                                 {/* Mobile Notifications */}
-                                <button className="relative flex items-center gap-2 p-2 rounded-md hover:bg-muted">
+                                <Button className="relative flex items-center gap-2 p-2 rounded-md hover:bg-muted">
                                     <BellIcon className="w-5 h-5" />
                                     <span>Notifications</span>
                                     <span className="ml-auto w-4 h-4 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center">
                                         3
                                     </span>
-                                </button>
+                                </Button>
 
                                 {/* Mobile Menu Items */}
                                 <div className="flex flex-col gap-2">
-                                    <button className="flex items-center gap-2 p-2 rounded-md hover:bg-muted">
+                                    <Button className="flex items-center gap-2 p-2 rounded-md hover:bg-muted">
                                         <User className="w-5 h-5" />
                                         <span>Profile</span>
-                                    </button>
-                                    <button className="flex items-center gap-2 p-2 rounded-md hover:bg-muted">
+                                    </Button>
+                                    <Button className="flex items-center gap-2 p-2 rounded-md hover:bg-muted">
                                         <Settings className="w-5 h-5" />
                                         <span>Settings</span>
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         className="flex items-center gap-2 p-2 rounded-md hover:bg-destructive/10 text-destructive"
                                         onClick={handleLogout}
                                     >
                                         <LogOut className="w-5 h-5" />
                                         <span>Logout</span>
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </SheetContent>
