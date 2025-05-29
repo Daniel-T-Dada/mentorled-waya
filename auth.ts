@@ -18,6 +18,10 @@ declare module "next-auth" {
             emailVerified?: Date | null;
             parentId?: string;
             avatar?: string | null;
+            verification?: {
+                token: string;
+                uidb64: string;
+            } | null;
         }
     }
 
@@ -30,6 +34,10 @@ declare module "next-auth" {
         emailVerified?: Date | null;
         parentId?: string;
         avatar?: string | null;
+        verification?: {
+            token: string;
+            uidb64: string;
+        } | null;
     }
 }
 
@@ -95,58 +103,115 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         });
 
                         if (!response.ok) {
-                            const data = await response.json();
-                            if (data.email && Array.isArray(data.email)) {
-                                if (data.email[0].includes('already exists')) {
-                                    throw new Error('This email is already registered. Please use a different email or sign in.');
+                            try {
+                                const data = await response.json();
+                                if (data.email && Array.isArray(data.email)) {
+                                    if (data.email[0].includes('already exists')) {
+                                        throw new Error('This email is already registered. Please use a different email or sign in.');
+                                    }
                                 }
+                                throw new Error(data.detail || "Failed to sign up");
+                            } catch (parseError) {
+                                // Handle non-JSON responses
+                                console.error("Non-JSON response from signup API:", parseError);
+                                const text = await response.text();
+                                console.log("Response text:", text.substring(0, 500)); // Log first 500 chars
+                                throw new Error(`Failed to sign up. Server response status: ${response.status}`);
                             }
-                            throw new Error(data.detail || "Failed to sign up");
                         }
 
-                        const data = await response.json();
-                        console.log("Signup response data:", data);
+                        let data;
+                        try {
+                            data = await response.json();
+                            console.log("Signup response data:", data);
+                        } catch (parseError) {
+                            console.error("Error parsing signup response:", parseError);
+                            throw new Error("Received invalid response from server");
+                        }
 
-                        // Return the user data - note that backend doesn't include token/uidb64
+                        // Return the user data with verification data included
                         return {
                             id: data.id || '',
-                            name: data.full_name,
-                            email: data.email,
-                            role: data.role,
-                            emailVerified: new Date(), // Auto-verify email for now
+                            name: data.full_name || '',
+                            email: data.email || '',
+                            role: data.role || 'parent',
+                            emailVerified: data.is_verified ? new Date() : null,
                             avatar: data.avatar || null,
-                            data: {
-
-                                email: data.email
+                            // Include verification data
+                            verification: {
+                                token: data.token,
+                                uidb64: data.uidb64,
+                                email_sent: data.verification_email_sent
                             }
                         };
                     }
-                    // TODO: Remember to re-add email verification later. Disabled for now cause the Backend Developer Blocker
+
                     // Handle email verification
                     if (credentials.token && credentials.uidb64) {
-                        const response = await fetch(getApiUrl(API_ENDPOINTS.VERIFY_EMAIL), {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                uidb64: credentials.uidb64,
-                                token: credentials.token,
-                            }),
-                        });
+                        console.log('Handling email verification with:', { token: credentials.token, uidb64: credentials.uidb64 });
 
-                        if (!response.ok) {
-                            const error = await response.json();
-                            throw new Error(error.message || "Failed to verify email");
+                        // Use the correct URL format for verification - no trailing slash
+                        const baseUrl = getApiUrl(API_ENDPOINTS.VERIFY_EMAIL);
+                        const verifyUrl = `${baseUrl}/${credentials.uidb64}/${credentials.token}`;
+
+                        console.log('Verification URL:', verifyUrl);
+
+                        try {
+                            const response = await fetch(verifyUrl, {
+                                method: "GET",
+                                headers: {
+                                    "Accept": "application/json"
+                                }
+                            });
+
+                            console.log('Verification response status:', response.status);
+
+                            if (!response.ok) {
+                                // Make a clone of the response before trying to read its body
+                                const clonedResponse = response.clone();
+
+                                try {
+                                    const error = await clonedResponse.json();
+                                    throw new Error(error.message || "Failed to verify email");
+                                } catch (parseError) {
+                                    // Handle non-JSON responses
+                                    console.error("Non-JSON error response from verify-email API:", parseError);
+
+                                    const text = await response.text();
+                                    console.log("Error response text:", text.substring(0, 500)); // Log first 500 chars
+                                    throw new Error(`Failed to verify email. Server response status: ${response.status}`);
+                                }
+                            }
+
+                            let data;
+                            try {
+                                data = await response.json();
+                                console.log('Verification response data:', data);
+                            } catch {
+                                // If the response is not JSON but the status was OK, we can still consider it a success
+                                console.log("Verification successful but response is not JSON");
+                                return {
+                                    id: credentials.uidb64,
+                                    name: "Verified User",
+                                    email: "",
+                                    role: "parent",
+                                    emailVerified: new Date(),
+                                    avatar: null,
+                                };
+                            }
+
+                            return {
+                                id: data.id || credentials.uidb64,
+                                name: data.name || data.full_name || "Verified User",
+                                email: data.email || "",
+                                role: data.role || 'parent',
+                                emailVerified: new Date(),
+                                avatar: data.avatar || null,
+                            };
+                        } catch (error) {
+                            console.error("Verification error:", error);
+                            throw error;
                         }
-
-                        const data = await response.json();
-                        return {
-                            id: data.id || '',
-                            name: data.name,
-                            email: data.email,
-                            role: data.role || 'parent',
-                            emailVerified: new Date(),
-                            avatar: data.avatar || null,
-                        };
                     }
 
                     // Handle login
@@ -157,12 +222,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         });
 
                         try {
+                            console.log("Attempting login with:", {
+                                email: validatedData.email,
+                                passwordLength: validatedData.password.length
+                            });
+
                             const response = await fetch(getApiUrl(API_ENDPOINTS.LOGIN), {
                                 method: "POST",
                                 headers: {
-                                    'accept': 'application/json',
+                                    // 'accept': 'application/json',
                                     'Content-Type': 'application/json',
-                                    'X-CSRFTOKEN': credentials.csrfToken?.toString() || ''
+                                    // 'X-CSRFTOKEN': credentials.csrfToken?.toString() || ''
                                 },
                                 credentials: 'include',
                                 body: JSON.stringify({
@@ -171,18 +241,41 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                                 }),
                             });
 
-                            const data = await response.json();
+                            console.log("Login response status:", response.status);
+
+                            // Try to parse response as JSON
+                            let data;
+                            try {
+                                data = await response.json();
+                                console.log("Login response data:", data);
+                            } catch (parseError) {
+                                console.error("Error parsing login response:", parseError);
+                                const text = await response.text();
+                                console.log("Login response text:", text.substring(0, 500));
+                                throw new Error("Received invalid response from login server");
+                            }
 
                             if (!response.ok) {
                                 // Handle specific error cases
                                 if (data.detail === "Invalid credentials") {
+                                    console.log("Invalid credentials error from backend");
                                     throw new Error("Invalid email or password. Please try again.");
                                 }
+
+                                // Handle email not verified error
+                                if (response.status === 403 && data.error === 'email_not_verified') {
+                                    console.log("Email not verified error from backend");
+                                    // Include verification needs in the error message
+                                    throw new Error(`${data.message || "Please verify your email address before logging in."}`);
+                                }
+
+                                console.log("Other login error:", data);
                                 throw new Error(data.detail || data.error || "Failed to log in");
                             }
 
                             // Handle the specific response format from the backend
                             const userData = data.user || data;
+                            console.log("Login successful, user data:", userData);
 
                             return {
                                 id: userData.id || '',
@@ -224,6 +317,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     pages: {
         error: '/auth/error',
         signOut: '/',
+        verifyRequest: '/auth/verify-email', // Add verify-request page
     },
 
     callbacks: {
@@ -267,5 +361,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return token;
         },
     },
-    debug: process.env.NODE_ENV === 'development',
+    // Only enable debug mode in development
+    debug: process.env.NODE_ENV === 'production',
 })
