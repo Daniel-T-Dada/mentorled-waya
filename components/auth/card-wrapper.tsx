@@ -15,6 +15,7 @@ interface CardWrapperProps {
     backButtonLabel: string;
     backButtonHref: string;
     showSocial?: boolean;
+    className?: string;
 }
 
 const CardWrapper = ({
@@ -23,14 +24,16 @@ const CardWrapper = ({
     titleLabel,
     backButtonLabel,
     backButtonHref,
-    showSocial
+    showSocial,
+    className
 }: CardWrapperProps) => {
     const { theme } = useTheme()
 
     return (
-        <Card className="w-[450px] max-w-md mx-auto p-6">
+        <Card className={className || "w-[320px] sm:w-[450px] md:w-[600px] lg:w-[700px] max-w-md mx-auto sm:p-6"}>
             <CardHeader>
                 <div className="flex flex-col items-center gap-4">
+                
                     <Image
                         src={theme === 'dark' ? "/Logo/White.svg" : "/Logo/Purple.svg"}
                         alt="Waya Logo"
@@ -57,7 +60,7 @@ const CardWrapper = ({
                     href={backButtonHref}
                 />
             </CardFooter>
-        </Card>
+        </Card >
     )
 }
 

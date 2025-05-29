@@ -11,7 +11,7 @@ const Header = ({ label }: HeaderProps) => {
         <div className="flex items-center flex-col  justify-center w-full">
             {/* <h1 className={cn("text-xl font-semibold tracking-tight")}>Waya</h1> */}
 
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-xs sm:text-sm">
                 {label}
             </p>
         </div>

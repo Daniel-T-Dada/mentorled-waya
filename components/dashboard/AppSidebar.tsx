@@ -3,7 +3,7 @@
 import { BarChart, ChartSpline, Clipboard, Goal, HandCoins, Home, List, LogOut, Settings, UsersRound, Wallet } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator, useSidebar } from "../ui/sidebar"
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes"
@@ -13,8 +13,6 @@ import ThemeToggle from "@/components/theme-toggle";
 import { useUser } from "@/contexts/UserContext";
 import { signOut } from "next-auth/react";
 import { Skeleton } from "../ui/skeleton";
-import { mockDataService } from "@/lib/services/mockDataService";
-import { useEffect, useState } from "react";
 
 
 
@@ -24,24 +22,12 @@ import { useEffect, useState } from "react";
 
 const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
     const pathname = usePathname();
+    const router = useRouter();
     const { theme } = useTheme();
     const { state } = useSidebar();
     const { user, isLoading } = useUser();
-    const [fallbackUser, setFallbackUser] = useState<{ name: string; avatar: string; email: string } | null>(null);
 
     const isParentRoute = pathname?.startsWith('/dashboard/parents');
-
-    useEffect(() => {
-        // If user data is not available, use mock data as fallback
-        if (!isLoading && !user) {
-            const mockParent = mockDataService.getParent();
-            setFallbackUser({
-                name: mockParent.name,
-                avatar: mockParent.avatar,
-                email: "mock@example.com" // Mock email since it's not in the mock data
-            });
-        }
-    }, [isLoading, user]);
 
     const navItems = isParentRoute
         ? [
@@ -103,9 +89,8 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
     };
 
     const getAvatarFallback = () => {
-        const displayName = user?.name || fallbackUser?.name;
-        if (!displayName) return "U";
-        return displayName
+        if (!user?.name) return "U";
+        return user.name
             .split(" ")
             .map(n => n[0])
             .join("")
@@ -113,8 +98,14 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
             .slice(0, 2);
     };
 
-    // Use either API user data or fallback mock data
-    const displayUser = user || fallbackUser;
+    // Function to navigate between parent and kid views
+    const navigateToView = (isParent: boolean) => {
+        if (isParent) {
+            router.push('/dashboard/kids');
+        } else {
+            router.push('/dashboard/parents');
+        }
+    };
 
     return (
         <Sidebar collapsible="icon" >
@@ -212,10 +203,10 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
                                         <Skeleton className="h-full w-full rounded-full" />
                                     ) : (
                                         <>
-                                            {displayUser?.avatar ? (
+                                            {user?.avatar ? (
                                                 <AvatarImage
-                                                    src={displayUser.avatar}
-                                                    alt={displayUser.name || "User avatar"}
+                                                    src={user.avatar}
+                                                    alt={user.name || "User avatar"}
                                                     onError={(e) => {
                                                         const target = e.target as HTMLImageElement;
                                                         target.style.display = 'none';
@@ -235,9 +226,9 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
                                             </>
                                         ) : (
                                             <>
-                                                <span className="truncate font-medium">{displayUser?.name || "User"}</span>
+                                                <span className="truncate font-medium">{user?.name || "User"}</span>
                                                 <span className="truncate text-xs text-muted-foreground">
-                                                    {displayUser?.email || "No email"}
+                                                    {user?.email || "No email"}
                                                 </span>
                                             </>
                                         )}
@@ -256,12 +247,6 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
         </Sidebar>
     )
 }
+
 export default AppSidebar
 
-const navigateToView = (isParent: boolean) => {
-    if (isParent) {
-        window.location.href = '/dashboard/kids';
-    } else {
-        window.location.href = '/dashboard/parents';
-    }
-}

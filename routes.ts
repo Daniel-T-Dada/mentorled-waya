@@ -7,7 +7,18 @@
 
 export const publicRoutes = [
     '/',
-    '/auth/verify-email'
+    '/about',
+    '/features',
+    '/contact',
+    '/auth/verify-email',
+    '/manifest.json',
+    '/site.webmanifest',
+    '/sw.js',
+    '/workbox-*.js',
+    '/worker-*.js',
+    '/fallback-*.js',
+    '/not-found',
+    '/offline'
 ]
 
 /**

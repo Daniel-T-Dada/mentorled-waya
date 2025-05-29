@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
+import { useRouter } from "next/navigation";
 
 interface VerifyEmailFormProps {
   email: string;
@@ -11,6 +12,7 @@ interface VerifyEmailFormProps {
 }
 
 export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) {
+  const router = useRouter();
   const [status, setStatus] = useState<"loading" | "success" | "error" | "waiting">("loading");
   const [error, setError] = useState<string>("");
 
@@ -165,7 +167,7 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
           Your email has been successfully verified. You can now log in to your account.
         </p>
         <Button
-          onClick={() => window.location.href = "/auth/signin"}
+          onClick={() => router.push("/auth/signin")}
           className="w-full"
         >
           Go to Login
