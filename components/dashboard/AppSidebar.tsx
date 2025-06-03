@@ -27,9 +27,7 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
     const { state } = useSidebar();
     const { user, isLoading } = useUser();
 
-    const isParentRoute = pathname?.startsWith('/dashboard/parents');
-
-    const navItems = isParentRoute
+    const isParentRoute = pathname?.startsWith('/dashboard/parents');    const navItems = isParentRoute
         ? [
             {
                 name: "Dashboard",
@@ -40,6 +38,11 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
                 name: "TaskMaster",
                 href: "/dashboard/parents/taskmaster",
                 icon: List,
+            },
+            {
+                name: "Kids Management",
+                href: "/dashboard/parents/kids",
+                icon: UsersRound,
             },
             {
                 name: "Family Wallet",

@@ -11,6 +11,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import { Skeleton } from "../ui/skeleton";
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Link from "next/link";
 
 interface AppKidsManagementProps {
     kids: Kid[];
@@ -162,12 +163,13 @@ const AppKidsManagement = ({ kids }: AppKidsManagementProps) => {
                                                             <span className="font-semibold">{stat.value}</span>
                                                             <span className="text-xs text-muted-foreground">{stat.label}</span>
                                                         </div>
-                                                    ))}
-                                                </div>
+                                                    ))}                                                </div>
 
                                                 {isTaskMasterPage && (
                                                     <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-4">
-                                                        <Button variant="outline" className="flex-1"><Users className="mr-2 h-4 w-4 bg-m" /> View Profile</Button>
+                                                        <Link href={`/dashboard/parents/kids/${kid.id}`} className="flex-1">
+                                                            <Button variant="outline" className="w-full"><Users className="mr-2 h-4 w-4" /> View Profile</Button>
+                                                        </Link>
                                                         <Button className="flex-1"><PlusCircle className="mr-2 h-4 w-4" /> Assign Chore</Button>
                                                     </div>
                                                 )}
@@ -266,12 +268,12 @@ const AppKidsManagement = ({ kids }: AppKidsManagementProps) => {
                                                             <span className="text-xs text-muted-foreground">{stat.label}</span>
                                                         </div>
                                                     ))}
-                                                </div>
-
-                                                {/* Action buttons - visible only on TaskMaster page */}
+                                                </div>                                                {/* Action buttons - visible only on TaskMaster page */}
                                                 {isTaskMasterPage && (
                                                     <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-4">
-                                                        <Button variant="outline" className="flex-1"><Users className="mr-2 h-4 w-4 bg-m" /> View Profile</Button>
+                                                        <Link href={`/dashboard/parents/kids/${kid.id}`} className="flex-1">
+                                                            <Button variant="outline" className="w-full"><Users className="mr-2 h-4 w-4" /> View Profile</Button>
+                                                        </Link>
                                                         <Button className="flex-1"><PlusCircle className="mr-2 h-4 w-4" /> Assign Chore</Button>
                                                     </div>
                                                 )}
