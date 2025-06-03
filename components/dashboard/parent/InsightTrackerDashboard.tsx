@@ -10,7 +10,7 @@ const InsightTrackerDashboard = () => {
                 <h2 className="text-xl font-semibold">Overview</h2>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 ">
                 <AppStatCard />
 
                 <div className="lg:col-span-3 h-64 rounded">

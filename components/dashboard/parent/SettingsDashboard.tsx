@@ -19,26 +19,78 @@ interface SettingsDashboardProps {
     rewardSettings?: React.ReactNode;
 }
 
+const SettingsCardSkeleton = () => {
+    return (
+        <div className="mb-6">
+            <div className="border rounded-lg">
+                <div className="p-6 border-b">
+                    <Skeleton className="h-6 w-48" />
+                </div>
+                <div className="p-6">
+                    <div className="border rounded-lg">
+                        <div className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="flex flex-col space-y-1.5">
+                                    <Skeleton className="h-4 w-20 mb-2" />
+                                    <Skeleton className="h-10 w-full" />
+                                </div>
+                                <div className="flex flex-col space-y-1.5">
+                                    <Skeleton className="h-4 w-24 mb-2" />
+                                    <Skeleton className="h-10 w-full" />
+                                </div>
+                                <div className="flex flex-col space-y-1.5">
+                                    <Skeleton className="h-4 w-32 mb-2" />
+                                    <Skeleton className="h-10 w-full" />
+                                </div>
+                                <div className="flex flex-col space-y-1.5">
+                                    <Skeleton className="h-4 w-28 mb-2" />
+                                    <Skeleton className="h-10 w-full" />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="p-6 border-t flex justify-center">
+                            <Skeleton className="h-10 w-32" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+const AccountSettingsSkeleton = () => {
+    return (
+        <div className="w-full mx-auto space-y-6">
+            {/* Profile Settings Card */}
+            <SettingsCardSkeleton />
+
+            {/* Kid's Account Settings Card */}
+            <SettingsCardSkeleton />
+
+            {/* Password Reset Settings Card */}
+            <SettingsCardSkeleton />
+        </div>
+    )
+}
+
 const SettingsPageSkeleton = () => {
     return (
         <div className="w-full space-y-4">
+            {/* Header */}
             <Skeleton className="h-8 w-1/3" />
             <Skeleton className="h-4 w-1/4" />
 
             <div className="mt-8">
-                <Skeleton className="h-10 w-full mb-8" />
-
-                <div className="space-y-6">
-                    <div>
-                        <Skeleton className="h-6 w-1/4 mb-4" />
-                        <div className="space-y-3">
-                            <Skeleton className="h-16 w-full" />
-                            <Skeleton className="h-16 w-full" />
-                            <Skeleton className="h-16 w-full" />
-                        </div>
+                {/* Tabs */}
+                <div className="gap-8 mb-8">
+                    <div className="grid w-full grid-cols-3 h-10 mb-8">
+                        <Skeleton className="h-full rounded-l-md" />
+                        <Skeleton className="h-full" />
+                        <Skeleton className="h-full rounded-r-md" />
                     </div>
 
-                    <Skeleton className="h-10 w-1/4 mx-auto" />
+                    {/* Tab Content - showing account settings skeleton as default */}
+                    <AccountSettingsSkeleton />
                 </div>
             </div>
         </div>
@@ -73,7 +125,7 @@ const SettingsDashboard = ({
             </div>
 
             <div>
-                <Tabs defaultValue="account" className="gap-6 mb-8">
+                <Tabs defaultValue="account" className="gap-8 mb-8">
                     <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="account">Account Settings</TabsTrigger>
                         <TabsTrigger value="notification">Notification Settings</TabsTrigger>

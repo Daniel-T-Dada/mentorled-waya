@@ -34,7 +34,7 @@ export default function RootLayout({
           <SessionProvider>
             <SidebarProvider>
               <ServiceWorkerRegistration />
-              <main className="min-h-screen w-full">
+              <main className=" w-full">
                 <ClientWrapper>
                   <div className="">
                     {children}

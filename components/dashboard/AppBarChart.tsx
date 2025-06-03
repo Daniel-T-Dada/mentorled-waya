@@ -40,7 +40,58 @@ const AppBarChart = () => {
     const [isAllowanceLoading, setIsAllowanceLoading] = useState(true);
     const [allowanceError, setAllowanceError] = useState<string | null>(null);
     const [usedMockData, setUsedMockData] = useState(false);
+    const [screenSize, setScreenSize] = useState('sm');
     const { data: session } = useSession();
+
+
+
+    // Custom hook for lg breakpoint detection to sort out the barchart overshooting its parent container.
+    useEffect(() => {
+        const getScreenSize = () => {
+            const width = window.innerWidth;
+            if (width >= 1024) return 'xl';      // xl: 1280px+
+            if (width >= 1024) return 'lg';      // lg: 1024px+
+            if (width >= 768) return 'md';       // md: 768px+
+            if (width >= 640) return 'sm';       // sm: 640px+
+            return 'xs';                         // xs: <640px
+        };
+
+        const handleResize = () => {
+            setScreenSize(getScreenSize());
+        };
+
+        // Set initial value
+        handleResize();
+
+        // Add event listener
+        window.addEventListener('resize', handleResize);
+
+        // Cleanup
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Responsive margin configuration based on screen size
+    const getChartMargin = () => {
+        const baseMargin = { top: 5, right: 10, left: 5 };
+
+        switch (screenSize) {
+            case 'xl':
+                return { ...baseMargin, bottom: 300 };  // Extra large screens
+            case 'lg':
+                return { ...baseMargin, bottom: 300 };  // Large screens (desktop)
+            case 'md':
+                return { ...baseMargin, bottom: 30 };  // Medium screens (tablet)
+            case 'sm':
+                return { ...baseMargin, bottom: 15 };  // Small screens (large mobile)
+            case 'xs':
+            default:
+                return { ...baseMargin, bottom: 5 };   // Extra small screens (mobile)
+        }
+    };
+
+    const chartMargin = getChartMargin();
+
+
 
     useEffect(() => {
         const fetchAllowanceData = async () => {
@@ -183,13 +234,28 @@ const AppBarChart = () => {
     console.log('Current allowance data:', allowanceData);
     console.log('Filtered allowance data:', filteredAllowanceData);
     console.log('Data to display:', dataToDisplay);
+    console.log('Current screen size:', screenSize, 'Chart margin bottom:', chartMargin.bottom);
 
     if (isAllowanceLoading) {
         return (
-            <div className="lg:col-span-2 rounded-lg shadow-md p-4">
-                <Skeleton className="h-4 w-1/4 mb-4" />
-                <Skeleton className="h-4 w-1/6 mb-6" />
-                <Skeleton className="h-48 w-full" />
+            <div>
+                <Card className="h-[280px] sm:h-[320px] md:h-[360px] lg:h-[400px] xl:h-[420px] flex flex-col">
+                    <CardHeader className="flex-shrink-0">
+                        <div className="space-y-2">
+                            <Skeleton className="h-6 w-1/3" />
+                            <div className="flex items-center justify-between">
+                                <div className="flex gap-4">
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-4 w-24" />
+                                </div>
+                                <Skeleton className="h-8 w-32" />
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="flex-1">
+                        <Skeleton className="h-full w-full rounded-lg" />
+                    </CardContent>
+                </Card>
             </div>
         );
     }
@@ -209,10 +275,10 @@ const AppBarChart = () => {
     }
 
     return (
-        <div className="lg:col-span-1">
-            <Card>
+        <div >
+            <Card className=" sm:h-[320px] md:h-[360px] lg:h-[400px] xl:h-[420px] flex flex-col">
 
-                <CardHeader>
+                <CardHeader className="flex-shrink-0">
                     <CardTitle>
                         Allowance Breakdown
                         {usedMockData && (
@@ -244,18 +310,13 @@ const AppBarChart = () => {
                     </CardDescription>
                 </CardHeader>
 
-                <CardContent>
-                    <ChartContainer config={chartConfig}>
-                        <ResponsiveContainer width="100%" height={180}>
+                <CardContent className="flex-1">
+                    <ChartContainer config={chartConfig} className="flex-1">
+                        <ResponsiveContainer width="100%" height="100%">
                             <BarChart
                                 accessibilityLayer
                                 data={dataToDisplay}
-                                margin={{
-                                    top: 5,
-                                    right: 10,
-                                    left: 5,
-                                    bottom: 5
-                                }}
+                                margin={chartMargin}
                             >
                                 <CartesianGrid vertical={false} />
                                 <XAxis

@@ -49,131 +49,126 @@ body,
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* 1. Background and Surfaces */
+/* Light Mode */
 :root {
   --radius: 0.625rem;
-  --background: oklch(
-    98% 0.01 300
-  ); /* Near-white, slight purple tint, Lc ≈ 90 vs foreground */
-  --foreground: oklch(20% 0.05 318.87
-  ); /* Darker for contrast, Lc ≥ 75 vs background */
-  --card: oklch(
-    95% 0.01 318.87
-  ); /* Slightly tinted, Lc ≈ 85 vs card-foreground */
-  --card-foreground: oklch(
-    20% 0.05 318.87
-  ); /* Matches foreground, Lc ≥ 75 vs card */
-  --popover: oklch(95% 0.01 318.87); /* Same as card for consistency */
-  --popover-foreground: oklch(
-    20% 0.05 318.87
-  ); /* Matches foreground, Lc ≥ 75 vs popover */
+
+  /* 1. Background and Surfaces */
+  --background: #ffffff; /* All Background (#ffffff) */
+  --foreground: #3d3d3d; /* Landing page text (#3d3d3d) */
+  --card: #f8f8f8ed; /* Cards fill (#f8f8f8 at 92%) */
+  --card-foreground: #525252; /* Bigger text (#525252) */
+  --popover: #ffffff; /* Same as background for consistency */
+  --popover-foreground: #525252; /* Same as card-foreground */
 
   /* 2. Primary */
-  --primary: oklch(
-    31.59% 0.15 318.87
-  ); /* Brand color, Lc ≥ 60 vs primary-foreground */
-  --primary-foreground: oklch(95% 0.01 318.87); /* Near-white, high contrast */
+  --primary: #500061; /* Deep purple (#500061) */
+  --primary-foreground: #ffffff; /* White for contrast */
 
   /* 3. Secondary */
-  --secondary: oklch(
-    85% 0.05 318.87
-  ); /* Lighter, desaturated brand color, Lc ≥ 60 vs secondary-foreground */
-  --secondary-foreground: oklch(20% 0.05 318.87); /* Matches foreground */
+  --secondary: #79166a; /* Light purple (#79166a) */
+  --secondary-foreground: #ffffff; /* White for contrast */
 
   /* 4. Muted / Accent / Neutrals */
-
-  --muted: oklch(
-    92% 0.02 318.87
-  ); /* Slightly lighter muted for better contrast with muted-foreground */
-  --muted-foreground: oklch(
-    40% 0.05 318.87
-  ); /* Darker muted-foreground for improved readability */
-  --accent: oklch(92% 0.02 318.87); /* Matches muted */
-  --accent-foreground: oklch(20% 0.05 318.87); /* Matches foreground */
+  --muted: #e7e7e7; /* Stroke in landing page footer (#f6f6f6) */
+  --muted-foreground: #888888; /* Normal text (#888888) */
+  --accent: #EAEAEA; /* Pie/Bar chart Yellow (#ffb938) */
+  --accent-foreground: #454545; /* Smaller heading (#454545) */
 
   /* 5. Destructive / Status */
-
-  --destructive: oklch(60% 0.2 25); /* Red for errors, Lc ≥ 60 vs background */
-  --border: oklch(
-    80% 0.02 318.87
-  ); /* Slightly darker border for better visibility */
-  --input: oklch(80% 0.02 318.87); /* Matches border */
-  --ring: oklch(
-    50% 0.1 318.87
-  ); /* Brand-tinted outline, Lc ≥ 45 vs background */
+  --destructive: #ff5757; /* Delete red (#ff5757) */
+  --border: #e7e7e7; /* All strokes (#e7e7e7) */
+  --input: #e7e7e7; /* Same as border */
+  --ring: #6d6d6d; /* Landing page Contact us stroke (#6d6d6d) */
 
   /* 6. Chart Accents */
-  --chart-1: oklch(31.59% 0.15 318.87); /* Brand color */
-  --chart-2: oklch(60% 0.1 200); /* Cyan for contrast */
-  --chart-3: oklch(70% 0.15 80); /* Yellow-green */
-  --chart-4: oklch(65% 0.12 260); /* Blue */
-  --chart-5: oklch(55% 0.18 30); /* Orange-red */
+  --chart-1: #500061; /* Deep purple (#500061) */
+  --chart-2: #79166a; /* Light purple (#79166a) */
+  --chart-3: #8ad6bd; /* Bar chart Green (#8ad6bd) */
+  --chart-4: #ffb938; /* Pie/Bar chart Yellow (#ffb938) */
+  --chart-5: #ff5757; /* Delete red (#ff5757) */
 
   /* 7. Sidebar */
-  --sidebar: oklch(95% 0.01 318.87); /* Matches card */
-  --sidebar-foreground: oklch(20% 0.05 318.87); /* Matches foreground */
-  --sidebar-primary: oklch(31.59% 0.15 318.87); /* Brand color */
-  --sidebar-primary-foreground: oklch(95% 0.01 318.87); /* High contrast */
-  --sidebar-accent: oklch(90% 0.03 318.87); /* Matches muted */
-  --sidebar-accent-foreground: oklch(20% 0.05 318.87); /* Matches foreground */
-  --sidebar-border: oklch(85% 0.02 318.87); /* Matches border */
-  --sidebar-ring: oklch(50% 0.1 318.87); /* Matches ring */
+  --sidebar: #ffffff; /* All Background (#ffffff) */
+  --sidebar-foreground: #626262; /* Menu Bar text and icon (#626262) */
+  --sidebar-primary: #500061; /* Deep purple (#500061) */
+  --sidebar-primary-foreground: #ffffff; /* White for contrast */
+  --sidebar-accent: #f8f8f8; /* Similar to card fill */
+  --sidebar-accent-foreground: #626262; /* Menu Bar text and icon (#626262) */
+  --sidebar-border: #e7e7e7; /* All strokes (#e7e7e7) */
+  --sidebar-ring: #6d6d6d; /* Landing page Contact us stroke (#6d6d6d) */
+
+  /* 8. Status Colors */
+  --status-success-bg: #dff6f0; /* Percentage/paid green: frame fill */
+  --status-success-text: #75ceb1; /* Percentage/paid green: text */
+  --status-success: #13d998; /* Amount green */
+  --status-warning-bg: #ffefd3; /* Percentage/pending yellow: frame fill */
+  --status-warning-text: #ffb938; /* Percentage/pending yellow: text */
+  --status-error-bg: #ffcece; /* Percentage/Over-due red: frame fill */
+  --status-error-text: #ff5757; /* Percentage/Over-due red: text */
+  --status-error: #d70000; /* Error */
 }
 
 /* Dark Mode */
 .dark {
   /* 1. Background and Surfaces */
-  --background: oklch(12.25% 0 0); /* #111111 as specified */
-  --foreground: oklch(
-    80% 0.02 280
-  ); /* Slightly lighter for better contrast against dark backgrounds */
-  --card: oklch(14.51% 0 0); /* #1b1b1b as specified */
-  --card-foreground: oklch(80% 0.02 280); /* Matches foreground */
-  --popover: oklch(14.51% 0 0); /* Matches card */
-  --popover-foreground: oklch(80% 0.02 280); /* Matches foreground */
+  --background: #111111; /* All Background (#111111) */
+  --foreground: #d1d1d1; /* Landing page text (#d1d1d1) */
+  --card: #1b1b1b; /* Card colour (#1b1b1b) */
+  --card-foreground: #ffffff; /* Bigger text (#ffffff) */
+  --popover: #1b1b1b; /* Same as card for consistency */
+  --popover-foreground: #ffffff; /* Same as card-foreground */
 
   /* 2. Primary */
-  --primary: oklch(40% 0.15 318.87); /* Slightly darker primary */
-  --primary-foreground: oklch(
-    90% 0.05 318.87
-  ); /* Much lighter for contrast against primary */
+  --primary: #500061; /* Deep purple (#500061) */
+  --primary-foreground: #ffffff; /* White for contrast */
 
   /* 3. Secondary */
-  --secondary: oklch(
-    20% 0.02 318.87
-  ); /* Darker secondary for better separation */
-  --secondary-foreground: oklch(80% 0.02 280); /* Matches foreground */
+  --secondary: #79166a; /* Light purple (#79166a) */
+  --secondary-foreground: #ffffff; /* White for contrast */
 
   /* 4. Muted / Accent / Neutrals */
-  --muted: oklch(25% 0.03 318.87); /* Darker muted */
-  --muted-foreground: oklch(75% 0.05 318.87); /* Lighter for readability */
-  --accent: oklch(25% 0.03 318.87); /* Matches muted */
-  --accent-foreground: oklch(80% 0.02 280); /* Matches foreground */
+  --muted: #292929; /* Cards fill (#292929 at 38%) but solid */
+  --muted-foreground: #888888; /* Normal text (#888888) */
+  --accent: #2A2A2A; /* Pie/Bar chart Yellow (#ffb938) */
+  --accent-foreground: #e7e7e7; /* Smaller heading (#e7e7e7) */
 
   /* 5. Destructive / Status */
-  --destructive: oklch(55% 0.18 25); /* Slightly lighter red */
-  --border: oklch(35% 0.02 318.87); /* Slightly lighter border */
-  --input: oklch(35% 0.02 318.87); /* Matches border */
-  --ring: oklch(65% 0.1 318.87); /* Slightly lighter ring */
+  --destructive: #ff5757; /* Delete red (#ff5757) */
+  --border: #3d3d3d; /* All strokes (#3d3d3d) */
+  --input: #3d3d3d; /* Same as border */
+  --ring: #4f4f4f; /* Card stroke (#4f4f4f) */
 
   /* 6. Chart Accents */
-  --chart-1: oklch(40% 0.15 318.87); /* Matches primary */
-  --chart-2: oklch(60% 0.1 200); /* Cyan */
-  --chart-3: oklch(70% 0.15 80); /* Yellow-green */
-  --chart-4: oklch(65% 0.12 260); /* Blue */
-  --chart-5: oklch(55% 0.18 30); /* Orange-red */
+  --chart-1: #500061; /* Deep purple (#500061) */
+  --chart-2: #79166a; /* Light purple (#79166a) */
+  --chart-3: #8ad6bd; /* Bar chart Green (#8ad6bd) */
+  --chart-4: #ffb938; /* Pie/Bar chart Yellow (#ffb938) */
+  --chart-5: #ff5757; /* Delete red (#ff5757) */
 
   /* 7. Sidebar */
-  --sidebar: oklch(14.51% 0 0); /* #1b1b1b */
-  --sidebar-foreground: oklch(80% 0.02 280); /* Matches foreground */
-  --sidebar-primary: oklch(40% 0.15 318.87); /* Matches primary */
-  --sidebar-primary-foreground: oklch(
-    90% 0.05 318.87
-  ); /* Matches primary-foreground */
-  --sidebar-accent: oklch(25% 0.03 318.87); /* Matches muted */
-  --sidebar-accent-foreground: oklch(80% 0.02 280); /* Matches foreground */
-  --sidebar-border: oklch(35% 0.02 318.87); /* Matches border */
-  --sidebar-ring: oklch(65% 0.1 318.87); /* Matches ring */
+  --sidebar: #111111; /* All Background (#111111) */
+  --sidebar-foreground: #989898; /* Menu Bar text and icon (#989898) */
+  --sidebar-primary: #500061; /* Deep purple (#500061) */
+  --sidebar-primary-foreground: #ffffff; /* White for contrast */
+  --sidebar-accent: #1b1b1b; /* Same as card */
+  --sidebar-accent-foreground: #989898; /* Menu Bar text and icon (#989898) */
+  --sidebar-border: #3d3d3d; /* All strokes (#3d3d3d) */
+  --sidebar-ring: #4f4f4f; /* Card stroke (#4f4f4f) */
+
+  /* 8. Status Colors - Same as light mode since these are consistent */
+  --status-success-bg: #dff6f0; /* Percentage/paid green: frame fill */
+  --status-success-text: #75ceb1; /* Percentage/paid green: text */
+  --status-success: #13d998; /* Amount green */
+  --status-warning-bg: #ffefd3; /* Percentage/pending yellow: frame fill */
+  --status-warning-text: #ffb938; /* Percentage/pending yellow: text */
+  --status-error-bg: #ffcece; /* Percentage/Over-due red: frame fill */
+  --status-error-text: #ff5757; /* Percentage/Over-due red: text */
+  --status-error: #d70000; /* Error */
+
+  /* 9. Landing Page Specific (Dark Mode) */
+  --landing-bg-translucent: rgba(27,27,27,0.3); /* Landing page Background at 30% */
+  --waves-bg: rgba(80, 0, 97, 0.7); /* Waves at 70% */
 }
 
 /* Custom animations */
@@ -248,10 +243,6 @@ body,
     animation-delay: 100ms;
   }
 
-  .animate-delay-150 {
-    animation-delay: 150ms;
-  }
-
   .animate-delay-200 {
     animation-delay: 200ms;
   }
@@ -279,4 +270,43 @@ body,
   .animate-duration-\[3000ms\] {
     animation-duration: 3000ms;
   }
+}
+
+/* CSS to handle card drop shadows */
+.card-with-shadow {
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Custom utility classes for status indicators */
+.status-success-bg {
+  background-color: var(--status-success-bg);
+}
+.status-success-text {
+  color: var(--status-success-text);
+}
+.status-warning-bg {
+  background-color: var(--status-warning-bg);
+}
+.status-warning-text {
+  color: var(--status-warning-text);
+}
+.status-error-bg {
+  background-color: var(--status-error-bg);
+}
+.status-error-text {
+  color: var(--status-error-text);
+}
+
+/* Dark mode specific utilities */
+.dark .landing-bg-translucent {
+  background-color: var(--landing-bg-translucent);
+}
+.dark .waves-bg {
+  background-color: var(--waves-bg);
+}
+.dark .card-with-shadow {
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.25);
+}
+.dark .card-fill-translucent {
+  background-color: rgba(41, 41, 42, 0.38); /* Cards fill (#292929 at 38%) */
 }

@@ -47,7 +47,7 @@ const DashboardNavbar = () => {
                     <SidebarTrigger className="-ml-1" />
                     <Separator
                         orientation="vertical"
-                        className="mx-2 data-[orientation=vertical]:h-4 hidden sm:block"
+                        className="ml-2 data-[orientation=vertical]:h-4 hidden sm:block"
                     />
                     <div className="hidden sm:block">
                         {isLoading ? (
@@ -65,7 +65,7 @@ const DashboardNavbar = () => {
                 </div>
 
                 {/* Right Side */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 mr-10">
                     
                     {/* Search - Hidden on mobile */}
                     <div className="relative hidden md:block">

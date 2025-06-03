@@ -5,6 +5,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { PieChart, Pie, Cell, Label } from "recharts";
 import { useState, useEffect } from "react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
+import { Skeleton } from "@/components/ui/skeleton";
 import { mockDataService } from '@/lib/services/mockDataService';
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -220,17 +221,30 @@ const AppPieChart = () => {
 
     if (isLoading) {
         return (
-            <Card>
-                <CardHeader className="pb-2">
+            <Card className="lg:h-[400px] flex flex-col">
+                <CardHeader className="pb-2 flex-shrink-0">
                     <div className="flex items-center justify-between">
-                        <CardTitle className="text-base font-semibold">
-                            {pathname.includes('/wallet') ? 'Savings Breakdown' : 'Chore Breakdown'}
-                        </CardTitle>
+                        <Skeleton className="h-5 w-32" /> {/* Title skeleton */}
+                        <Skeleton className="h-8 w-32" /> {/* Select dropdown skeleton */}
                     </div>
                 </CardHeader>
-                <CardContent>
-                    <div className="flex flex-col items-center">
+                <CardContent className="flex-1">
+                    <div className="flex flex-col items-center h-full">
+                        {/* Chart skeleton */}
                         <div className="mx-auto aspect-square max-h-[200px] w-[200px] animate-pulse bg-muted rounded-full" />
+
+                        {/* Legend skeleton */}
+                        <div className="flex flex-col gap-2 w-full mt-4">
+                            {[...Array(2)].map((_, index) => (
+                                <div key={index} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Skeleton className="w-3 h-3 rounded-full" />
+                                        <Skeleton className="h-4 w-24" />
+                                    </div>
+                                    <Skeleton className="h-4 w-16" />
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -238,8 +252,8 @@ const AppPieChart = () => {
     }
 
     return (
-        <Card className="">
-            <CardHeader className="pb-2">
+        <Card className=" lg:h-[400px] xl:h-[420px] flex flex-col">
+            <CardHeader className="pb-2 flex-shrink-0">
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-base font-semibold">
                         {pathname.includes('/wallet') ? 'Savings Breakdown' : 'Chore Breakdown'}
@@ -257,8 +271,8 @@ const AppPieChart = () => {
                     </div>
                 </div>
             </CardHeader>
-            <CardContent>
-                <div className="flex flex-col items-center">
+            <CardContent className="flex-1">
+                <div className="flex flex-col items-center h-full">
                     <ChartContainer
                         config={currentConfig}
                         className="mx-auto aspect-square max-h-[200px] w-[200px]"
