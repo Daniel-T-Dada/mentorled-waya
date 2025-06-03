@@ -29,7 +29,7 @@ const FamilyWalletDashboard = ({ onAddAllowanceClick }: FamilyWalletDashboardPro
                     Make Payment
                 </Button>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 <AppStatCard />
 
                 <div className="md:col-span-2">

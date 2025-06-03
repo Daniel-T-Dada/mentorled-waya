@@ -28,20 +28,20 @@ const ParentDashboardOverview = ({ onCreateKidClick }: ParentDashboardProps = {}
         <main className="">
             <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Overview</h2>
-                    <Button
-                        className="bg-primary hover:bg-primary/90"
-                        onClick={onCreateKidClick}
-                    >
-                        Create kid&apos;s account
-                        
-                    </Button>
-                
+                <Button
+                    className="bg-primary hover:bg-primary/90"
+                    onClick={onCreateKidClick}
+                >
+                    Create kid&apos;s account
+
+                </Button>
+
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 <AppStatCard />
                 {/* <DebugBarChart/> */}
 
-                <div className="lg:col-span-2  self-start">
+                <div className="lg:col-span-2 ">
                     <AppBarChart />
                 </div>
 
@@ -52,7 +52,7 @@ const ParentDashboardOverview = ({ onCreateKidClick }: ParentDashboardProps = {}
 
 
 
-                <div className="lg:col-span-2 h-64 rounded">
+                <div className="lg:col-span-2 min-h-[400px] rounded">
 
 
 
@@ -64,7 +64,7 @@ const ParentDashboardOverview = ({ onCreateKidClick }: ParentDashboardProps = {}
 
                 </div>
 
-                <div className="lg:col-span-1 h-64        self-start">
+                <div className="lg:col-span-1 min-h-[400px] self-start">
 
 
                     <AppKidsManagement kids={kids} />
