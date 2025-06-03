@@ -34,7 +34,11 @@ interface StatItem {
     trend?: 'up' | 'down' | 'neutral';
 }
 
-const AppStatCard = () => {
+interface AppStatCardProps {
+    kidId?: string; // Optional prop for kid-specific stats
+}
+
+const AppStatCard = ({ kidId }: AppStatCardProps = {}) => {
     const [chores, setChores] = useState<Chore[]>([]);
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -117,17 +121,49 @@ const AppStatCard = () => {
     };
 
     const getStats = (): StatItem[] => {
-        const totalChores = chores.length;
-        const completedChores = chores.filter(chore => chore.status === "completed").length;
-        const pendingChores = chores.filter(chore => chore.status === "pending").length;
-        const totalBalance = wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
-        const totalRewardSent = chores
+        // Filter data by kidId if provided
+        const filteredChores = kidId ? chores.filter(chore => chore.assignedTo === kidId) : chores;
+        const filteredWallets = kidId ? wallets.filter(wallet => wallet.kidId === kidId) : wallets;
+
+        const totalChores = filteredChores.length;
+        const completedChores = filteredChores.filter(chore => chore.status === "completed").length;
+        const pendingChores = filteredChores.filter(chore => chore.status === "pending").length;
+        const totalBalance = filteredWallets.reduce((sum, wallet) => sum + wallet.balance, 0);
+        const totalRewardSent = filteredChores
             .filter(chore => chore.status === "completed")
             .reduce((sum, chore) => sum + chore.reward, 0);
-        const totalRewardPending = chores
+        const totalRewardPending = filteredChores
             .filter(chore => chore.status === "pending")
             .reduce((sum, chore) => sum + chore.reward, 0);
 
+        // Kid-specific stats for individual kid dashboard
+        if (kidId) {
+            const kid = mockDataService.getKidById(kidId);
+            const kidName = kid?.name || 'Kid';
+            
+            return [
+                {
+                    title: `${kidName}'s Current Balance`,
+                    value: formatCurrency(totalBalance),
+                    percentageChange: 12,
+                    trend: 'up'
+                },
+                {
+                    title: `${kidName}'s Completed Chores`,
+                    value: `${completedChores} Chores`,
+                    percentageChange: 8,
+                    trend: 'up'
+                },
+                {
+                    title: `${kidName}'s Pending Chores`,
+                    value: `${pendingChores} Chores`,
+                    percentageChange: -5,
+                    trend: 'down'
+                },
+            ];
+        }
+
+        // Existing logic for different pages
         if (pathname.includes('/wallet')) {
             return [
                 {

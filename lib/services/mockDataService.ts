@@ -9,6 +9,17 @@ export interface Kid {
     balance: number;
     chores: Chore[];
     allowanceHistory: AllowanceHistory[];
+    // Additional properties for profile management
+    age?: number;
+    grade?: string;
+    school?: string;
+    interests?: string[];
+    allowanceAmount?: number;
+    goals?: string;
+    progress: number;
+    // Properties for dashboard stats
+    completedChoreCount: number;
+    pendingChoreCount: number;
 }
 
 export interface Chore {
@@ -22,6 +33,7 @@ export interface Chore {
     completedAt?: string | null;
     dueDate?: string;
     parentId?: string;
+    category?: string;
 }
 
 export interface AllowanceHistory {
@@ -81,31 +93,65 @@ class MockDataService {
     // Parent related methods
     getParent(): Parent {
         return this.data.parent as Parent;
-    }
-
-    // Kids related methods
+    }    // Kids related methods
     getAllKids(): Kid[] {
-        return this.data.parent.children.map(kid => ({
-            ...kid,
-            chores: kid.chores.map(chore => ({
+        return this.data.parent.children.map(kid => {
+            const kidChores = kid.chores.map(chore => ({
                 ...chore,
                 assignedTo: kid.id,
-                status: chore.status as "completed" | "pending" | "cancelled"
-            }))
-        })) as Kid[];
-    }
+                status: chore.status as "completed" | "pending" | "cancelled",
+                category: (chore as any).category || 'General'
+            }));
+            
+            const completedCount = kidChores.filter(chore => chore.status === "completed").length;
+            const pendingCount = kidChores.filter(chore => chore.status === "pending").length;
+            const totalCount = kidChores.length;
+            const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
-    getKidById(id: string): Kid | undefined {
+            return {
+                ...kid,
+                chores: kidChores,
+                progress,
+                completedChoreCount: completedCount,
+                pendingChoreCount: pendingCount,
+                // Add default values for new optional properties
+                age: (kid as any).age || 12,
+                grade: (kid as any).grade || '6th Grade',
+                school: (kid as any).school || 'Local Elementary School',
+                interests: (kid as any).interests || ['Reading', 'Sports'],
+                allowanceAmount: (kid as any).allowanceAmount || 1000,
+                goals: (kid as any).goals || 'Earn enough to buy a new bike'
+            };
+        }) as Kid[];
+    }    getKidById(id: string): Kid | undefined {
         const kid = this.data.parent.children.find(k => k.id === id);
         if (!kid) return undefined;
 
+        const kidChores = kid.chores.map(chore => ({
+            ...chore,
+            assignedTo: kid.id,
+            status: chore.status as "completed" | "pending" | "cancelled",
+            category: (chore as any).category || 'General'
+        }));
+        
+        const completedCount = kidChores.filter(chore => chore.status === "completed").length;
+        const pendingCount = kidChores.filter(chore => chore.status === "pending").length;
+        const totalCount = kidChores.length;
+        const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+
         return {
             ...kid,
-            chores: kid.chores.map(chore => ({
-                ...chore,
-                assignedTo: kid.id,
-                status: chore.status as "completed" | "pending" | "cancelled"
-            }))
+            chores: kidChores,
+            progress,
+            completedChoreCount: completedCount,
+            pendingChoreCount: pendingCount,
+            // Add default values for new optional properties
+            age: (kid as any).age || 12,
+            grade: (kid as any).grade || '6th Grade',
+            school: (kid as any).school || 'Local Elementary School',
+            interests: (kid as any).interests || ['Reading', 'Sports'],
+            allowanceAmount: (kid as any).allowanceAmount || 1000,
+            goals: (kid as any).goals || 'Earn enough to buy a new bike'
         } as Kid;
     }
 
@@ -174,9 +220,7 @@ class MockDataService {
 
         console.log("Created mock allowance:", mockAllowance);
         return mockAllowance;
-    }
-
-    // Chores related methods
+    }    // Chores related methods
     getAllChores(): Chore[] {
         // Directly flatMap the children's chore arrays from the original data
         return this.data.parent.children.flatMap(kid =>
@@ -192,17 +236,21 @@ class MockDataService {
                     description: chore.description || 'No description provided.',
                     reward: typeof chore.reward === 'number' ? chore.reward : 0,
                     createdAt: chore.createdAt || new Date().toISOString(),
+                    category: (chore as any).category || 'General',
                 });
                 // Add logging here to inspect each processed chore object
                 console.log('Processed chore in getAllChores:', processedChore);
                 return processedChore;
             })
         );
-    }
-
-    getChoresByKidId(kidId: string): Chore[] {
+    }getChoresByKidId(kidId: string): Chore[] {
         const kid = this.getKidById(kidId);
         return kid?.chores || [];
+    }
+
+    // Alias method for compatibility
+    getChoresByKid(kidId: string): Chore[] {
+        return this.getChoresByKidId(kidId);
     }
 
     getChoresByStatus(status: "completed" | "pending"): Chore[] {

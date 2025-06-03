@@ -130,8 +130,23 @@
                 "avatar": "https://ca.slack-edge.com/T07TDF7H2KB-U08K4M2B4NP-4e0011122c77-72",
                 "level": 2,
                 "balance": 3000,
-                "chores": [],
-                "allowanceHistory": []
+                "chores": [
+                    {
+                        "id": "chore-004",
+                        "title": "Take Out Trash",
+                        "description": "Empty all trash bins and take to the main bin outside",
+                        "reward": 300,
+                        "status": "completed",
+                        "createdAt": "2025-05-29T10:00:00.000Z"
+                    }
+                ],
+                "allowanceHistory": [
+                    {
+                        "date": "May 01",
+                        "allowanceGiven": 700,
+                        "allowanceSpent": 300
+                    }
+                ]
             }
         ]
     }

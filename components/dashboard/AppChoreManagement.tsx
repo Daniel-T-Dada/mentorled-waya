@@ -29,17 +29,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 // }
 
 // interface AppChoreManagementProps {
-
 //     kids: Kid[];
-
 // }
+
+interface AppChoreManagementProps {
+    kidId?: string; // Optional prop for kid-specific chore management
+}
 
 // export function AppChoreManagement({ kids }: AppChoreManagementProps) {
 
-
-
-
-export function AppChoreManagement() {
+export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
     const pathname = usePathname();
 
     const [activeKidTab, setActiveKidTab] = useState("all");
@@ -63,12 +62,20 @@ export function AppChoreManagement() {
 
     // Select the first 3 kids for dynamic tabs (limitation with current mock data for 'recent activity')
     // TODO: Implement dynamic selection based on actual 'recent activity' which I am yet to do. 
-    const kidsForTabs = allKids.slice(0, 3);
-
-    // Filter chores by the selected kid tab only (not by status)
+    const kidsForTabs = allKids.slice(0, 3);    // Filter chores by the selected kid tab or kidId prop
     const filteredChores = useMemo(() => {
-        return activeKidTab === "all" ? allChores : allChores.filter(chore => chore.assignedTo === activeKidTab);
-    }, [allChores, activeKidTab]);
+        let filtered = allChores;
+        
+        // If kidId prop is provided, filter by that specific kid
+        if (kidId) {
+            filtered = allChores.filter(chore => chore.assignedTo === kidId);
+        } else if (activeKidTab !== "all") {
+            // Otherwise, use the existing tab-based filtering
+            filtered = allChores.filter(chore => chore.assignedTo === activeKidTab);
+        }
+        
+        return filtered;
+    }, [allChores, activeKidTab, kidId]);
 
     // Separate filtered chores by status for displaying counts
     const pendingFilteredChores = filteredChores.filter(chore => chore.status === "pending");
@@ -123,13 +130,11 @@ export function AppChoreManagement() {
         const kid = mockDataService.getKidById(kidId);
         return kid?.avatar ?? undefined;
     };
-
-
     return (
         <Card className="h-full flex flex-col">
             <CardHeader className="flex-shrink-0">
-                {/* Main Tabs: All Chores and Kid Tabs - Visible only on TaskMaster page */}
-                {pathname === '/dashboard/parents/taskmaster' && (
+                {/* Main Tabs: All Chores and Kid Tabs - Visible only on TaskMaster page and when kidId is not provided */}
+                {pathname === '/dashboard/parents/taskmaster' && !kidId && (
                     <Tabs value={activeKidTab} onValueChange={setActiveKidTab} className="w-full">
                         <TabsList className="grid grid-cols-4 mb-4">
                             <TabsTrigger value="all">All Chores</TabsTrigger>
@@ -145,8 +150,12 @@ export function AppChoreManagement() {
                         </TabsContent>
                     </Tabs>
                 )}
-                <CardTitle className="text-xl font-semibold">Chore Management</CardTitle>
-                <CardDescription className="text-muted-foreground">Assign and manage kid&apos;s chores</CardDescription>
+                <CardTitle className="text-xl font-semibold">
+                    {kidId ? `${getKidName(kidId)}'s Chore Management` : 'Chore Management'}
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                    {kidId ? `Assign and manage ${getKidName(kidId)}'s chores` : "Assign and manage kid's chores"}
+                </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col overflow-hidden">
                 {/* Status Tabs: Pending and Completed will always show when component is mounted */}
@@ -188,8 +197,9 @@ export function AppChoreManagement() {
                                         </div>
                                     ))
                                 ) : currentPendingChores.length === 0 ? (
-                                    <div className="text-center text-muted-foreground py-8">No pending chores found for {activeKidTab === "all" ? "all kids" : getKidName(activeKidTab)}.</div>
-                                ) : (
+                                    <div className="text-center text-muted-foreground py-8">
+                                        No pending chores found for {kidId ? getKidName(kidId) : (activeKidTab === "all" ? "all kids" : getKidName(activeKidTab))}.
+                                    </div>                                ) : (
                                     currentPendingChores.map((chore) => (
                                         <div key={chore.id} className="border rounded-md p-4">
                                             <div className="flex items-start justify-between">
@@ -211,13 +221,15 @@ export function AppChoreManagement() {
                                                 <div className="text-sm font-medium text-green-500">
                                                     ₦{chore.reward.toLocaleString()}
                                                 </div>
-                                                <div className="flex items-center gap-1 text-muted-foreground">
-                                                    <Avatar className="w-5 h-5">
-                                                        <AvatarImage src={getKidAvatar(chore.assignedTo)} alt={getKidName(chore.assignedTo)} />
-                                                        <AvatarFallback>{getKidName(chore.assignedTo)?.charAt(0)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <span className="text-xs">{getKidName(chore.assignedTo)}</span>
-                                                </div>
+                                                {!kidId && (
+                                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                                        <Avatar className="w-5 h-5">
+                                                            <AvatarImage src={getKidAvatar(chore.assignedTo)} alt={getKidName(chore.assignedTo)} />
+                                                            <AvatarFallback>{getKidName(chore.assignedTo)?.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <span className="text-xs">{getKidName(chore.assignedTo)}</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))
@@ -298,7 +310,9 @@ export function AppChoreManagement() {
                                         </div>
                                     ))
                                 ) : currentCompletedChores.length === 0 ? (
-                                    <div className="text-center text-muted-foreground py-8">No completed chores found for {activeKidTab === "all" ? "all kids" : getKidName(activeKidTab)}.</div>
+                                    <div className="text-center text-muted-foreground py-8">
+                                        No completed chores found for {kidId ? getKidName(kidId) : (activeKidTab === "all" ? "all kids" : getKidName(activeKidTab))}.
+                                    </div>
                                 ) : (
                                     currentCompletedChores.map((chore) => (
                                         <div key={chore.id} className="border rounded-md p-4">
@@ -315,19 +329,19 @@ export function AppChoreManagement() {
                                                         <Trash className="w-5 h-5" />
                                                     </Button>
                                                 </div>
-                                            </div>
-
-                                            <div className="flex items-center justify-between mt-3">
+                                            </div>                                            <div className="flex items-center justify-between mt-3">
                                                 <div className="text-sm font-medium text-green-500">
                                                     ₦{chore.reward.toLocaleString()}
                                                 </div>
-                                                <div className="flex items-center gap-1 text-muted-foreground">
-                                                    <Avatar className="w-5 h-5">
-                                                        <AvatarImage src={getKidAvatar(chore.assignedTo)} alt={getKidName(chore.assignedTo)} />
-                                                        <AvatarFallback>{getKidName(chore.assignedTo)?.charAt(0)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <span className="text-xs">{getKidName(chore.assignedTo)}</span>
-                                                </div>
+                                                {!kidId && (
+                                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                                        <Avatar className="w-5 h-5">
+                                                            <AvatarImage src={getKidAvatar(chore.assignedTo)} alt={getKidName(chore.assignedTo)} />
+                                                            <AvatarFallback>{getKidName(chore.assignedTo)?.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <span className="text-xs">{getKidName(chore.assignedTo)}</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))

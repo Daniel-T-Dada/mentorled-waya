@@ -29,7 +29,11 @@ interface Activity {
     amount: number;
 }
 
-const AppKidsActivities = () => {
+interface AppKidsActivitiesProps {
+    kidId?: string; // Optional prop for filtering activities by kid
+}
+
+const AppKidsActivities = ({ kidId }: AppKidsActivitiesProps = {}) => {
     const [kids, setKids] = useState<Kid[]>([]);
     const [activities, setActivities] = useState<Activity[]>([]);
     const [activeKidTab, setActiveKidTab] = useState("all");
@@ -198,16 +202,20 @@ const AppKidsActivities = () => {
     useEffect(() => {
         // Use the refreshData function for initial data loading
         refreshData();
-    }, [refreshData]);
-
-    // Filter activities based on activeKidTab
+    }, [refreshData]);    // Filter activities based on activeKidTab or kidId prop
     const filteredActivities = useMemo(() => {
+        // If kidId prop is provided, filter by that specific kid
+        if (kidId) {
+            return activities.filter(activity => activity.assignedTo === kidId);
+        }
+        
+        // Otherwise, use the existing tab-based filtering
         if (activeKidTab === "all") {
             return activities;
         } else {
             return activities.filter(activity => activity.assignedTo === activeKidTab);
         }
-    }, [activities, activeKidTab]);
+    }, [activities, activeKidTab, kidId]);
 
     // Get top 3 kids with most recent activities
     const topKids = useMemo(() => {
@@ -294,13 +302,13 @@ const AppKidsActivities = () => {
             default:
                 return 'bg-gray-100 text-gray-800';
         }
-    };
-
-    return (
+    };    return (
         <Card className="w-full">
             <CardHeader>
                 <div className="flex items-center justify-between">
-                    <CardTitle>Kid&apos;s Activities</CardTitle>
+                    <CardTitle>
+                        {kidId ? `${kids.find(k => k.id === kidId)?.name || 'Kid'}'s Activities` : "Kid's Activities"}
+                    </CardTitle>
                     {usingMockData && (
                         <div className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-md">
                             Using Demo Data
@@ -308,77 +316,132 @@ const AppKidsActivities = () => {
                     )}
                 </div>
                 <CardDescription>
-                    View and manage activities for each kid.
+                    {kidId ? 'View and manage activities for this kid.' : 'View and manage activities for each kid.'}
                 </CardDescription>
-                <div className="flex items-center justify-between">
-                    <Tabs value={activeKidTab} onValueChange={setActiveKidTab} className="w-full mt-4">
-                        <TabsList className="grid grid-cols-4 mb-4">
-                            <TabsTrigger value="all">All Activities</TabsTrigger>
-                            {topKids.map(kid => (
-                                <TabsTrigger key={kid.id} value={kid.id}>{kid.name}&apos;s Activities</TabsTrigger>
-                            ))}
-                        </TabsList>
-                        <TabsContent value={activeKidTab} className="mt-0 space-y-4">
-                            {isLoading ? (
-                                // Skeleton loader for activities
-                                Array.from({ length: 5 }).map((_, index) => (
-                                    <div key={index} className="border rounded-md p-4 space-y-2">
-                                        <Skeleton className="h-4 w-3/4" />
-                                        <Skeleton className="h-4 w-1/2" />
-                                        <div className="flex items-center justify-between mt-3">
-                                            <Skeleton className="h-4 w-1/6" />
-                                            <div className="flex items-center gap-2">
-                                                <Skeleton className="h-6 w-6 rounded-full" />
-                                                <Skeleton className="h-4 w-12" />
+                
+                {/* Only show tabs if not filtering by specific kidId */}
+                {!kidId && (
+                    <div className="flex items-center justify-between">
+                        <Tabs value={activeKidTab} onValueChange={setActiveKidTab} className="w-full mt-4">
+                            <TabsList className="grid grid-cols-4 mb-4">
+                                <TabsTrigger value="all">All Activities</TabsTrigger>
+                                {topKids.map(kid => (
+                                    <TabsTrigger key={kid.id} value={kid.id}>{kid.name}&apos;s Activities</TabsTrigger>
+                                ))}
+                            </TabsList>
+                            <TabsContent value={activeKidTab} className="mt-0 space-y-4">
+                                {isLoading ? (
+                                    // Skeleton loader for activities
+                                    Array.from({ length: 5 }).map((_, index) => (
+                                        <div key={index} className="border rounded-md p-4 space-y-2">
+                                            <Skeleton className="h-4 w-3/4" />
+                                            <Skeleton className="h-4 w-1/2" />
+                                            <div className="flex items-center justify-between mt-3">
+                                                <Skeleton className="h-4 w-1/6" />
+                                                <div className="flex items-center gap-2">
+                                                    <Skeleton className="h-6 w-6 rounded-full" />
+                                                    <Skeleton className="h-4 w-12" />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))
-                            ) : filteredActivities.length === 0 ? (
-                                <p className="text-center text-muted-foreground">No activities found for {activeKidTab === "all" ? "all kids" : getKidName(activeKidTab)}.</p>
-                            ) : (
-                                <>
-                                    {/* Debug info */}
-                                    <div className="bg-blue-100 p-2 mb-4 rounded">
-                                        <p className="text-sm">Debug: Found {filteredActivities.length} activities for {activeKidTab === "all" ? "all kids" : getKidName(activeKidTab)}</p>
-                                    </div>
-                                    {/* Activities */}
-                                    {filteredActivities.map(activity => (
-                                        <Card key={activity.id} className="p-4">
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex flex-col">
-                                                    <h3 className="font-medium">{activity.title}</h3>
-                                                    <p className="text-sm text-muted-foreground mt-1">{activity.description}</p>
+                                    ))
+                                ) : filteredActivities.length === 0 ? (
+                                    <p className="text-center text-muted-foreground">No activities found for {activeKidTab === "all" ? "all kids" : getKidName(activeKidTab)}.</p>
+                                ) : (
+                                    <>
+                                        {/* Debug info */}
+                                        <div className="bg-blue-100 p-2 mb-4 rounded">
+                                            <p className="text-sm">Debug: Found {filteredActivities.length} activities for {activeKidTab === "all" ? "all kids" : getKidName(activeKidTab)}</p>
+                                        </div>
+                                        {/* Activities */}
+                                        {filteredActivities.map(activity => (
+                                            <Card key={activity.id} className="p-4">
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex flex-col">
+                                                        <h3 className="font-medium">{activity.title}</h3>
+                                                        <p className="text-sm text-muted-foreground mt-1">{activity.description}</p>
+                                                    </div>
+                                                    <div className="text-sm font-semibold">
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeStyles(activity.status)}`}>
+                                                            {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <div className="text-sm font-semibold">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeStyles(activity.status)}`}>
-                                                        {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
-                                                    </span>
+                                                <div className="flex items-center justify-between mt-3">
+                                                    <div className="text-lg font-semibold text-green-600">
+                                                        {formatCurrency(activity.amount)}
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                                        <Avatar className="w-5 h-5">
+                                                            <AvatarImage src={getKidAvatar(activity.assignedTo)} alt={getKidName(activity.assignedTo)} />
+                                                            <AvatarFallback>{getKidName(activity.assignedTo)?.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <span className="text-xs">{getKidName(activity.assignedTo)}</span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="flex items-center justify-between mt-3">
-                                                <div className="text-lg font-semibold text-green-600">
-                                                    {formatCurrency(activity.amount)}
-                                                </div>
-                                                <div className="flex items-center gap-1 text-muted-foreground">
-                                                    <Avatar className="w-5 h-5">
-                                                        <AvatarImage src={getKidAvatar(activity.assignedTo)} alt={getKidName(activity.assignedTo)} />
-                                                        <AvatarFallback>{getKidName(activity.assignedTo)?.charAt(0)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <span className="text-xs">{getKidName(activity.assignedTo)}</span>
-                                                </div>
-                                            </div>
-                                        </Card>
-                                    ))}
-                                </>
-                            )}
-                        </TabsContent>
-                    </Tabs>
+                                            </Card>
+                                        ))}
+                                    </>
+                                )}
+                            </TabsContent>
+                        </Tabs>
+                    </div>
+                )}
 
-                </div>
+                {/* Direct activity list when kidId is provided */}
+                {kidId && (
+                    <div className="mt-4 space-y-4">
+                        {isLoading ? (
+                            // Skeleton loader for activities
+                            Array.from({ length: 5 }).map((_, index) => (
+                                <div key={index} className="border rounded-md p-4 space-y-2">
+                                    <Skeleton className="h-4 w-3/4" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                    <div className="flex items-center justify-between mt-3">
+                                        <Skeleton className="h-4 w-1/6" />
+                                        <div className="flex items-center gap-2">
+                                            <Skeleton className="h-6 w-6 rounded-full" />
+                                            <Skeleton className="h-4 w-12" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : filteredActivities.length === 0 ? (
+                            <p className="text-center text-muted-foreground">No activities found for this kid.</p>
+                        ) : (
+                            filteredActivities.map(activity => (
+                                <Card key={activity.id} className="p-4">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex flex-col">
+                                            <h3 className="font-medium">{activity.title}</h3>
+                                            <p className="text-sm text-muted-foreground mt-1">{activity.description}</p>
+                                        </div>
+                                        <div className="text-sm font-semibold">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeStyles(activity.status)}`}>
+                                                {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between mt-3">
+                                        <div className="text-lg font-semibold text-green-600">
+                                            {formatCurrency(activity.amount)}
+                                        </div>
+                                        <div className="flex items-center gap-1 text-muted-foreground">
+                                            <Avatar className="w-5 h-5">
+                                                <AvatarImage src={getKidAvatar(activity.assignedTo)} alt={getKidName(activity.assignedTo)} />
+                                                <AvatarFallback>{getKidName(activity.assignedTo)?.charAt(0)}</AvatarFallback>
+                                            </Avatar>
+                                            <span className="text-xs">{getKidName(activity.assignedTo)}</span>
+                                        </div>
+                                    </div>
+                                </Card>
+                            ))
+                        )}
+                    </div>
+                )}
             </CardHeader>
             <CardContent>
-                {/* Activities list will be rendered inside TabsContent */}
+                {/* Activities list will be rendered inside CardHeader */}
             </CardContent>
         </Card>
     );
