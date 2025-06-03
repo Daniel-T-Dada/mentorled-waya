@@ -130,7 +130,7 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
-            <SidebarSeparator />
+            <SidebarSeparator className="mx-0" />
 
             {/* The Sidebar Content */}
             <SidebarContent>
@@ -169,7 +169,7 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
-            <SidebarSeparator />
+            <SidebarSeparator className="mx-0" />
 
 
             {/* The Sidebar Footer Content */}

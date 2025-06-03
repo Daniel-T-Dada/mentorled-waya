@@ -5,11 +5,11 @@ import { UserProvider } from "@/contexts/UserContext"
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     return (
         <UserProvider>
-            <div className="flex h-screen">
+            <div className="flex">
                 <AppSidebar />
-                <div className="flex-1 flex flex-col">
+                <div className="w-full">
                     <DashboardNavbar />
-                    <main className="flex-1 overflow-auto p-4 mb-4">
+                    <main className="px-8 lg:px-16 mb-4 pt-16">
                         {children}
                     </main>
                 </div>

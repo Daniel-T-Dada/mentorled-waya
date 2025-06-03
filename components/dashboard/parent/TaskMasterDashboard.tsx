@@ -28,24 +28,24 @@ const TaskMasterDashboard = ({ onCreateChoreClick }: TaskMasterDashboardProps = 
         <>
             <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Overview</h2>
-                
-                    <Button
-                        className="bg-primary hover:bg-primary/90"
-                        onClick={onCreateChoreClick}
-                    >
-                        Create Chore
-                        
-                    </Button>
-            
+
+                <Button
+                    className="bg-primary hover:bg-primary/90"
+                    onClick={onCreateChoreClick}
+                >
+                    Create Chore
+
+                </Button>
+
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <AppStatCard />
                 {/* <DebugBarChart/> */}
 
 
 
 
-                <div className="lg:col-span-2 h-64 rounded">
+                <div className="lg:col-span-2 min-h-[550px] rounded">
 
 
 
@@ -55,7 +55,7 @@ const TaskMasterDashboard = ({ onCreateChoreClick }: TaskMasterDashboardProps = 
 
                 </div>
 
-                <div className="lg:col-span-1 h-64        self-start">
+                <div className="lg:col-span-1 min-h-[550px] self-start">
 
 
                     <AppKidsManagement kids={kids} />

@@ -18,7 +18,8 @@ import { useRouter } from "next/navigation"
 import { signIn, signOut } from "next-auth/react"
 import Link from "next/link"
 import { Checkbox } from "../ui/checkbox"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { parseSignupError } from "@/lib/utils/auth-errors"
 
 type SignUpFormValues = z.infer<typeof SignUpSchema>;
 
@@ -88,7 +89,9 @@ const SignUpForm = () => {
 
             if (result?.error) {
                 console.error("Signup error:", result.error);
-                setError(result.error);
+
+                // Use the utility function to parse signup errors
+                setError(parseSignupError(result.error));
                 return;
             }
 
@@ -278,7 +281,12 @@ const SignUpForm = () => {
                         type="submit"
                         className="w-full h-9 sm:h-10 text-sm sm:text-base dark:text-secondary-foreground"
                     >
-                        {isLoading ? "Creating account..." : "Create account"}
+                        {isLoading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Creating account...
+                            </>
+                        ) : "Create account"}
                     </Button>
                 </form>
             </Form>
