@@ -8,6 +8,7 @@ export interface TasksData {
 
 export interface KidTasksManagementProps {
     kidId: string;
+    onCreateChore?: () => void;
 }
 
 export interface KidTasksHeaderProps {
@@ -15,6 +16,7 @@ export interface KidTasksHeaderProps {
     totalTasks: number;
     completionRate: number;
     onBack: () => void;
+    onCreateChore?: () => void;
 }
 
 export interface TaskTabsProps {
