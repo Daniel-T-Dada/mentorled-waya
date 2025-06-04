@@ -10,7 +10,7 @@ import { TaskStatus } from './TaskStatus';
 import { TaskTabs } from './TaskTabs';
 import { Card } from "@/components/ui/card";
 
-export const KidTasksManagement = ({ kidId }: KidTasksManagementProps) => {
+export const KidTasksManagement = ({ kidId, onCreateChore }: KidTasksManagementProps) => {
     const router = useRouter();
     const { kid, loading, error, tasks, stats } = useKidTasksData(kidId);
 
@@ -29,6 +29,7 @@ export const KidTasksManagement = ({ kidId }: KidTasksManagementProps) => {
                 totalTasks={stats.totalTasks}
                 completionRate={stats.completionRate}
                 onBack={() => router.back()}
+                onCreateChore={onCreateChore}
             />
 
             <Card className="shadow-md">

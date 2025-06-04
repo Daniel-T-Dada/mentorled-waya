@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
 import type { KidTasksHeaderProps } from './types';
 
-export const KidTasksHeader = ({ kid, totalTasks, completionRate, onBack }: KidTasksHeaderProps) => {
+export const KidTasksHeader = ({ kid, totalTasks, completionRate, onBack, onCreateChore }: KidTasksHeaderProps) => {
     return (
         <div className="flex flex-col gap-4 md:flex-row md:items-center justify-between">
             <div className="flex items-center gap-4">
@@ -30,12 +30,25 @@ export const KidTasksHeader = ({ kid, totalTasks, completionRate, onBack }: KidT
                 </div>
             </div>
 
-            <div className="flex flex-col gap-1 w-full md:w-1/3">
-                <div className="flex justify-between text-sm">
-                    <span>Task Completion</span>
-                    <span className="font-medium">{Math.round(completionRate)}%</span>
+            <div className="flex items-center gap-4">
+                {onCreateChore && (
+                    <Button
+                        onClick={onCreateChore}
+                        size="sm"
+                        className="bg-primary"
+                    >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Chore
+                    </Button>
+                )}
+
+                <div className="flex flex-col gap-1 w-full md:w-64">
+                    <div className="flex justify-between text-sm">
+                        <span>Task Completion</span>
+                        <span className="font-medium">{Math.round(completionRate)}%</span>
+                    </div>
+                    <Progress value={completionRate} className="h-2" />
                 </div>
-                <Progress value={completionRate} className="h-2" />
             </div>
         </div>
     );
