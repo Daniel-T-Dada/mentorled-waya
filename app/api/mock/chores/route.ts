@@ -42,36 +42,37 @@ export async function PATCH(request: Request) {
     try {
         const { choreId, status } = await request.json();
 
-        if (!choreId || !status) {
+        if (!choreId) {
             return NextResponse.json(
-                { error: 'Chore ID and status are required' },
+                { error: 'Chore ID is required' },
                 { status: 400 }
             );
         }
 
-        if (!['completed', 'pending', 'cancelled'].includes(status)) {
+        // Validate status
+        if (!status || !['completed', 'pending', 'cancelled'].includes(status)) {
             return NextResponse.json(
                 { error: 'Invalid status. Must be completed, pending, or cancelled' },
                 { status: 400 }
             );
         }
 
-        // Since we're using mock data, we'll simulate the update
-        // In a real app, this would update the database
-        const success = mockDataService.updateChoreStatus(choreId, status);
+        // Update chore status using mockDataService
+        const updatedChore = mockDataService.updateChoreStatus(choreId, status);
 
-        if (success) {
-            return NextResponse.json({
-                message: 'Chore status updated successfully',
-                choreId,
-                status
-            });
-        } else {
+        if (!updatedChore) {
             return NextResponse.json(
                 { error: 'Chore not found' },
                 { status: 404 }
             );
         }
+
+        return NextResponse.json({
+            success: true,
+            data: updatedChore,
+            message: `Chore status updated to ${status}`
+        });
+
     } catch (error) {
         console.error('Error updating chore status:', error);
         return NextResponse.json(

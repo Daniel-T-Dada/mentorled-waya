@@ -64,7 +64,10 @@ const KidBarChart = ({ kidId: propKidId }: KidBarChartProps) => {
                 setLoading(true);
                 setError(null);                // Try to fetch from API first
                 try {
-                    const choresData = await MockApiService.fetchChoresByKidId(kidId);
+                    const [, choresData] = await Promise.all([
+                        MockApiService.fetchKidById(kidId),
+                        MockApiService.fetchChoresByKidId(kidId)
+                    ]);
 
                     // Process the data to create chart data points
                     const processedData = processChoreDataForChart(choresData, parseInt(range));

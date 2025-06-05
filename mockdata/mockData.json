@@ -357,5 +357,91 @@
                 ]
             }
         ]
+    },
+    "learningData": {
+        "financialConcepts": [
+            {
+                "id": "fc-001",
+                "title": "Savings",
+                "description": "Learning how to save money for future goals",
+                "progress": 60,
+                "totalLessons": 10,
+                "completedLessons": 6,
+                "icon": "💰"
+            },
+            {
+                "id": "fc-002",
+                "title": "Budgeting",
+                "description": "Understanding how to plan and manage spending",
+                "progress": 50,
+                "totalLessons": 8,
+                "completedLessons": 4,
+                "icon": "📊"
+            },
+            {
+                "id": "fc-003",
+                "title": "Investing",
+                "description": "Basic concepts of making money grow over time",
+                "progress": 15,
+                "totalLessons": 12,
+                "completedLessons": 2,
+                "icon": "📈"
+            }
+        ],
+        "achievements": [
+            {
+                "id": "ach-001",
+                "title": "First Saver",
+                "description": "Completed your first savings lesson",
+                "progress": 100,
+                "icon": "🏆",
+                "unlockedAt": "2025-05-15T10:00:00.000Z"
+            },
+            {
+                "id": "ach-002",
+                "title": "Budget Master",
+                "description": "Mastered basic budgeting concepts",
+                "progress": 100,
+                "icon": "🏆",
+                "unlockedAt": "2025-05-20T10:00:00.000Z"
+            },
+            {
+                "id": "ach-003",
+                "title": "Smart Spender",
+                "description": "Learned smart spending habits",
+                "progress": 100,
+                "icon": "🏆",
+                "unlockedAt": "2025-05-25T10:00:00.000Z"
+            }
+        ],
+        "progressLessons": [
+            {
+                "id": "pl-001",
+                "title": "Money Basics",
+                "description": "Understanding what money is and how it works",
+                "progress": 85,
+                "category": "Fundamentals",
+                "estimatedTime": "15 mins",
+                "difficulty": "Beginner"
+            },
+            {
+                "id": "pl-002",
+                "title": "Earning Money",
+                "description": "Different ways kids can earn money through chores and tasks",
+                "progress": 70,
+                "category": "Earning",
+                "estimatedTime": "20 mins",
+                "difficulty": "Beginner"
+            },
+            {
+                "id": "pl-003",
+                "title": "Setting Goals",
+                "description": "How to set and achieve financial goals",
+                "progress": 45,
+                "category": "Planning",
+                "estimatedTime": "25 mins",
+                "difficulty": "Intermediate"
+            }
+        ]
     }
 }

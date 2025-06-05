@@ -149,7 +149,9 @@ export class MockApiService {
             console.error('Error updating reward redemption:', error);
             throw error;
         }
-    }    // Update daily streak completion status
+    }
+
+    // Update daily streak completion status
     static async updateDailyStreakCompletion(kidId: string, day: string, completed: boolean) {
         try {
             const response = await fetch(`${this.getBaseUrl()}/kids/${kidId}/daily-streaks`, {
@@ -170,8 +172,60 @@ export class MockApiService {
         }
     }
 
-    // Update chore status
-    static async updateChoreStatus(choreId: string, status: "completed" | "pending" | "cancelled") {
+    // Fetch learning data for KidLearn component
+    static async fetchLearningData() {
+        try {
+            const response = await fetch(`${this.getBaseUrl()}/learning-data`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch learning data: ${response.statusText}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching learning data:', error);
+            throw error;
+        }
+    }
+
+    // Financial education data methods for KidStartLevel
+    static async fetchFinancialConcepts() {
+        try {
+            const response = await fetch(`${this.getBaseUrl()}/financial-concepts`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch financial concepts: ${response.statusText}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching financial concepts:', error);
+            throw error;
+        }
+    }
+
+    static async fetchFinancialQuiz() {
+        try {
+            const response = await fetch(`${this.getBaseUrl()}/financial-quiz`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch financial quiz: ${response.statusText}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching financial quiz:', error);
+            throw error;
+        }
+    }
+
+    static async fetchEarnReward() {
+        try {
+            const response = await fetch(`${this.getBaseUrl()}/earn-reward`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch earn reward: ${response.statusText}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching earn reward:', error);
+            throw error;
+        }
+    }    // Update chore status (for KidChoreQuestOverview)
+    static async updateChoreStatus(choreId: string, status: 'completed' | 'pending' | 'cancelled') {
         try {
             const response = await fetch(`${this.getBaseUrl()}/chores`, {
                 method: 'PATCH',
