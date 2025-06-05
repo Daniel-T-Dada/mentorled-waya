@@ -197,9 +197,8 @@ const KidDailyStreaks = ({ kidId = 'kid-001' }: KidDailyStreaksProps) => {
                     <div className="flex items-center gap-2">
                         <Flame className="h-5 w-5 text-destructive" />
                         <CardTitle className="text-lg font-semibold">Daily Streaks</CardTitle>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                        Complete today's quiz to keep your streak and earn a mystery reward!
+                    </div>                    <p className="text-sm text-muted-foreground">
+                        Complete today&apos;s quiz to keep your streak and earn a mystery reward!
                     </p>
                 </CardHeader>
 

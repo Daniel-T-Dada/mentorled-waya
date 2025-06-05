@@ -1,9 +1,7 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
+
 import KidStatCards from "./KidStatCards"
-import AppBarChart from "../AppBarChart"
-import AppPieChart from "../AppPieChart"
 import KidBarChart from "./KidBarChart"
 import KidPieChart from "./KidPieChart"
 import AppChoreManagement from "../AppChoreManagement"
