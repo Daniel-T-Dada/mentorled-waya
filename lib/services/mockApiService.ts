@@ -149,9 +149,7 @@ export class MockApiService {
             console.error('Error updating reward redemption:', error);
             throw error;
         }
-    }
-
-    // Update daily streak completion status
+    }    // Update daily streak completion status
     static async updateDailyStreakCompletion(kidId: string, day: string, completed: boolean) {
         try {
             const response = await fetch(`${this.getBaseUrl()}/kids/${kidId}/daily-streaks`, {
@@ -168,6 +166,27 @@ export class MockApiService {
             return await response.json();
         } catch (error) {
             console.error('Error updating daily streak:', error);
+            throw error;
+        }
+    }
+
+    // Update chore status
+    static async updateChoreStatus(choreId: string, status: "completed" | "pending" | "cancelled") {
+        try {
+            const response = await fetch(`${this.getBaseUrl()}/chores`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ choreId, status }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to update chore status: ${response.statusText}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error updating chore status:', error);
             throw error;
         }
     }

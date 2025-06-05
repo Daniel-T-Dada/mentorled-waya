@@ -67,7 +67,7 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
             },
             {
                 name: "Chore Quest",
-                href: "/dashboard/kids/chore-quest",
+                href: "/dashboard/kids/chore",
                 icon: Clipboard,
             },
             {

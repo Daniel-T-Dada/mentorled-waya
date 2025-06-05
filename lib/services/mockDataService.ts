@@ -360,9 +360,7 @@ class MockDataService {
             const dateB = new Date(`${monthB} ${dayB}, ${currentYear}`);
             return dateA.getTime() - dateB.getTime();
         });
-    }
-
-    getPieChartData(range: string = "7"): { name: string; value: number }[] {
+    } getPieChartData(range: string = "7"): { name: string; value: number }[] {
         const chores = this.getChoresByDateRange(range);
         const completedCount = chores.filter(chore => chore.status === "completed").length;
         const pendingCount = chores.filter(chore => chore.status === "pending").length;
@@ -371,6 +369,22 @@ class MockDataService {
             { name: "Completed", value: completedCount },
             { name: "Pending", value: pendingCount }
         ];
+    }
+
+    // Update chore status (simulated for mock data)
+    updateChoreStatus(choreId: string, status: "completed" | "pending" | "cancelled"): boolean {
+        // In a real app, this would update the database
+        // For mock data, we'll simulate the update and return success
+        const allChores = this.getAllChores();
+        const chore = allChores.find(c => c.id === choreId);
+
+        if (chore) {
+            // Simulate updating the chore status
+            console.log(`Mock update: Chore ${choreId} status changed to ${status}`);
+            return true;
+        }
+
+        return false;
     }
 }
 
