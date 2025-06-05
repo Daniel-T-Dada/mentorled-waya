@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { type ChartConfig, ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { MockApiService } from "@/lib/services/mockApiService";
 import { mockDataService } from "@/lib/services/mockDataService";
@@ -53,61 +53,7 @@ const KidPieChart = ({ kidId: propKidId }: KidPieChartProps) => {
         (sessionKidId && validKidIds.includes(sessionKidId) ? sessionKidId : null) ||
         "kid-001";
 
-    console.log('[KidPieChart] Session kidId:', sessionKidId, 'Using valid kidId:', validKidId);    
-    
-    // Process kid and chore data into expense breakdown format
-    const processExpenseData = useCallback((kid: any, chores: any[], days: number): ChartDataPoint[] => {
-        if (!kid) return generateFallbackData();
-
-        const today = new Date();
-        const startDate = new Date(today);
-        startDate.setDate(today.getDate() - days);
-
-        // Filter chores for the selected date range
-        const recentChores = chores.filter(chore => {
-            const choreDate = new Date(chore.createdAt || chore.dueDate);
-            return choreDate >= startDate;
-        });
-
-        // Calculate expenses
-        const totalEarned = recentChores
-            .filter(chore => chore.status === 'completed')
-            .reduce((sum, chore) => sum + (chore.reward || 0), 0);
-
-        // Assume 70% of earned money is saved, 30% is spent
-        const rewardSaved = totalEarned * 0.7;
-        const rewardSpent = totalEarned * 0.3;
-
-        // Goals budget from pending/upcoming chores
-        const goalsBudget = recentChores
-            .filter(chore => chore.status === 'pending')
-            .reduce((sum, chore) => sum + (chore.reward || 0), 0);
-
-        // If no data, return fallback to show something meaningful
-        if (totalEarned === 0 && goalsBudget === 0) {
-            return generateFallbackData();
-        }
-
-        return [
-            {
-                name: "Reward Saved",
-                value: rewardSaved,
-                color: chartConfig.rewardSaved.color
-            },
-            {
-                name: "Reward Spent",
-                value: rewardSpent,
-                color: chartConfig.rewardSpent.color
-            },
-            {
-                name: "Goals Budget",
-                value: goalsBudget,
-                color: chartConfig.goalsBudget.color
-            }
-        ].filter(item => item.value > 0); // Only show segments with values
-    }, []);
-
-    // Generate fallback data that matches the image
+    console.log('[KidPieChart] Session kidId:', sessionKidId, 'Using valid kidId:', validKidId);    // Generate fallback data that matches the image
     const generateFallbackData = (): ChartDataPoint[] => {
         return [
             {
@@ -126,15 +72,71 @@ const KidPieChart = ({ kidId: propKidId }: KidPieChartProps) => {
                 color: chartConfig.goalsBudget.color
             }
         ];
-    }; const formatCurrency = (value: number) => {
+    };
+
+    const formatCurrency = (value: number) => {
         return `NGN ${value.toLocaleString()}`;
     };
 
     useEffect(() => {
+        // Process kid and chore data into expense breakdown format
+        const processExpenseData = (kid: any, chores: any[], days: number): ChartDataPoint[] => {
+            if (!kid) return generateFallbackData();
+
+            const today = new Date();
+            const startDate = new Date(today);
+            startDate.setDate(today.getDate() - days);
+
+            // Filter chores for the selected date range
+            const recentChores = chores.filter(chore => {
+                const choreDate = new Date(chore.createdAt || chore.dueDate);
+                return choreDate >= startDate;
+            });
+
+            // Calculate expenses
+            const totalEarned = recentChores
+                .filter(chore => chore.status === 'completed')
+                .reduce((sum, chore) => sum + (chore.reward || 0), 0);
+
+            // Assume 70% of earned money is saved, 30% is spent
+            const rewardSaved = totalEarned * 0.7;
+            const rewardSpent = totalEarned * 0.3;
+
+            // Goals budget from pending/upcoming chores
+            const goalsBudget = recentChores
+                .filter(chore => chore.status === 'pending')
+                .reduce((sum, chore) => sum + (chore.reward || 0), 0);
+
+            // If no data, return fallback to show something meaningful
+            if (totalEarned === 0 && goalsBudget === 0) {
+                return generateFallbackData();
+            }
+
+            return [
+                {
+                    name: "Reward Saved",
+                    value: rewardSaved,
+                    color: chartConfig.rewardSaved.color
+                },
+                {
+                    name: "Reward Spent",
+                    value: rewardSpent,
+                    color: chartConfig.rewardSpent.color
+                },
+                {
+                    name: "Goals Budget",
+                    value: goalsBudget,
+                    color: chartConfig.goalsBudget.color
+                }
+            ].filter(item => item.value > 0); // Only show segments with values
+        };
+
         const fetchKidExpenseData = async () => {
             try {
                 setLoading(true);
-                setError(null);                // Try to fetch from API first
+                setError(null);
+
+                // Try to fetch from API first
                 try {
                     const [kidData, choresData] = await Promise.all([
                         MockApiService.fetchKidById(validKidId),
@@ -165,7 +167,7 @@ const KidPieChart = ({ kidId: propKidId }: KidPieChartProps) => {
                 setLoading(false);
             }
         }; fetchKidExpenseData();
-    }, [validKidId, range, processExpenseData]); if (loading) {
+    }, [validKidId, range]); if (loading) {
         return (
             <Card className="flex flex-col">
                 <CardHeader className="flex-shrink-0 pb-4">

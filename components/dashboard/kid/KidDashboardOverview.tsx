@@ -1,6 +1,5 @@
 "use client"
 
-
 import KidStatCards from "./KidStatCards"
 import KidBarChart from "./KidBarChart"
 import KidPieChart from "./KidPieChart"
@@ -55,7 +54,7 @@ const KidDashboardOverview = ({ kidId: propKidId }: KidDashboardOverviewProps) =
 
                 <div className="lg:col-span-1 self-start">
                     <KidPieChart kidId={kidId} />
-                </div>                
+                </div>
                 <div className="lg:col-span-2 min-h-[400px] rounded">
 
                     <AppChoreManagement kidId={kidId} />

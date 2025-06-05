@@ -360,7 +360,9 @@ class MockDataService {
             const dateB = new Date(`${monthB} ${dayB}, ${currentYear}`);
             return dateA.getTime() - dateB.getTime();
         });
-    } getPieChartData(range: string = "7"): { name: string; value: number }[] {
+    }
+
+    getPieChartData(range: string = "7"): { name: string; value: number }[] {
         const chores = this.getChoresByDateRange(range);
         const completedCount = chores.filter(chore => chore.status === "completed").length;
         const pendingCount = chores.filter(chore => chore.status === "pending").length;
@@ -371,22 +373,140 @@ class MockDataService {
         ];
     }
 
-    // Update chore status (simulated for mock data)
-    updateChoreStatus(choreId: string, status: "completed" | "pending" | "cancelled"): boolean {
-        // In a real app, this would update the database
-        // For mock data, we'll simulate the update and return success
-        const allChores = this.getAllChores();
-        const chore = allChores.find(c => c.id === choreId);
+    // Learning data methods
+    getLearningData() {
+        return (this.data as any).learningData || {
+            financialConcepts: [],
+            achievements: [],
+            progressLessons: []
+        };
+    } getFinancialConcepts() {
+        return [
+            {
+                id: 'concept-1',
+                title: 'Financial Concepts',
+                description: 'Learn the basics of saving, spending, and earning money',
+                icon: 'play',
+                color: 'purple',
+                level: 1,
+                isCompleted: false,
+                topics: ['Saving', 'Spending', 'Earning', 'Budgeting']
+            }
+        ];
+    }
 
-        if (chore) {
-            // Simulate updating the chore status
-            console.log(`Mock update: Chore ${choreId} status changed to ${status}`);
-            return true;
+    getAchievements() {
+        const learningData = this.getLearningData();
+        return learningData.achievements || [];
+    }
+
+    getProgressLessons() {
+        const learningData = this.getLearningData();
+        return learningData.progressLessons || [];
+    }    // Methods for KidStartLevel component
+    getFinancialQuiz() {
+        return [
+            {
+                id: 'quiz-1',
+                title: 'Financial Quiz',
+                description: 'Test your knowledge with fun financial questions',
+                icon: 'quiz',
+                color: 'purple',
+                level: 1,
+                isCompleted: false,
+                questions: [
+                    {
+                        id: 'q1',
+                        question: 'What is the best way to save money?',
+                        options: ['Spend it all', 'Put it in a piggy bank', 'Give it away', 'Lose it'],
+                        correctAnswer: 1
+                    },
+                    {
+                        id: 'q2',
+                        question: 'Why is it important to budget?',
+                        options: ['To waste money', 'To plan spending', 'To forget about money', 'To spend more'],
+                        correctAnswer: 1
+                    }
+                ]
+            }
+        ];
+    }
+
+    getEarnReward() {
+        return [
+            {
+                id: 'reward-1',
+                title: 'Earn Reward',
+                description: 'Complete tasks to earn amazing rewards',
+                icon: 'trophy',
+                color: 'yellow',
+                level: 1,
+                isCompleted: false,
+                rewards: [
+                    {
+                        type: 'money',
+                        amount: 500,
+                        name: 'Extra Allowance',
+                        description: 'Earn extra money for completing bonus tasks'
+                    },
+                    {
+                        type: 'privilege',
+                        name: 'Extra Screen Time',
+                        description: '30 minutes extra screen time on weekends'
+                    }
+                ]
+            }
+        ];
+    }
+
+    // Get chore by ID across all kids
+    getChoreById(choreId: string): Chore | undefined {
+        for (const kid of this.data.parent.children) {
+            const chore = kid.chores.find(c => c.id === choreId);
+            if (chore) {
+                return {
+                    ...chore,
+                    assignedTo: kid.id,
+                    status: chore.status as "completed" | "pending" | "cancelled",
+                    category: (chore as any).category || 'General'
+                };
+            }
         }
+        return undefined;
+    }    // Update chore status by ID
+    updateChoreStatus(choreId: string, status: "completed" | "pending" | "cancelled"): Chore | undefined {
+        for (const kid of this.data.parent.children) {
+            const choreIndex = kid.chores.findIndex(c => c.id === choreId);
+            if (choreIndex !== -1) {
+                // Update the chore status in the data
+                const chore = kid.chores[choreIndex] as any;
+                chore.status = status;
 
-        return false;
+                // If marking as completed, set completedAt timestamp
+                if (status === 'completed') {
+                    chore.completedAt = new Date().toISOString();
+                } else if (status === 'pending') {
+                    // Remove completedAt if reverting to pending
+                    chore.completedAt = null;
+                }
+
+                // Return the updated chore with proper formatting
+                const updatedChore: Chore = {
+                    ...chore,
+                    assignedTo: kid.id,
+                    status: status,
+                    category: chore.category || 'General',
+                    completedAt: chore.completedAt || null
+                };
+
+                console.log(`Chore ${choreId} status updated to ${status}`);
+                return updatedChore;
+            }
+        }
+        console.log(`Chore ${choreId} not found`);
+        return undefined;
     }
 }
 
 // Export a singleton instance
-export const mockDataService = new MockDataService(); 
+export const mockDataService = new MockDataService();
