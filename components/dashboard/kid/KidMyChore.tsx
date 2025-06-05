@@ -1,12 +1,11 @@
 'use client'
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { useSession } from "next-auth/react";
 import { MockApiService } from "@/lib/services/mockApiService";
 import { mockDataService } from "@/lib/services/mockDataService";
@@ -113,19 +112,6 @@ const KidMyChore = ({ kidId: propKidId }: KidMyChoreProps) => {
             } catch (fetchError) {
                 console.error('Error reverting chore data:', fetchError);
             }
-        }
-    };
-
-    const getStatusBadgeColor = (status: string) => {
-        switch (status) {
-            case "completed":
-                return "bg-green-100 text-green-800";
-            case "pending":
-                return "bg-yellow-100 text-yellow-800";
-            case "cancelled":
-                return "bg-red-100 text-red-800";
-            default:
-                return "bg-gray-100 text-gray-800";
         }
     }; if (loading) {
         return (

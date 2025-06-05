@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
+import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
@@ -62,14 +62,9 @@ const KidBarChart = ({ kidId: propKidId }: KidBarChartProps) => {
         const fetchKidChartData = async () => {
             try {
                 setLoading(true);
-                setError(null);
-
-                // Try to fetch from API first
+                setError(null);                // Try to fetch from API first
                 try {
-                    const [kidData, choresData] = await Promise.all([
-                        MockApiService.fetchKidById(kidId),
-                        MockApiService.fetchChoresByKidId(kidId)
-                    ]);
+                    const choresData = await MockApiService.fetchChoresByKidId(kidId);
 
                     // Process the data to create chart data points
                     const processedData = processChoreDataForChart(choresData, parseInt(range));

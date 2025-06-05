@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { type ChartConfig, ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { MockApiService } from "@/lib/services/mockApiService";
 import { mockDataService } from "@/lib/services/mockDataService";
@@ -53,10 +53,10 @@ const KidPieChart = ({ kidId: propKidId }: KidPieChartProps) => {
         (sessionKidId && validKidIds.includes(sessionKidId) ? sessionKidId : null) ||
         "kid-001";
 
-    console.log('[KidPieChart] Session kidId:', sessionKidId, 'Using valid kidId:', validKidId);
-
+    console.log('[KidPieChart] Session kidId:', sessionKidId, 'Using valid kidId:', validKidId);    
+    
     // Process kid and chore data into expense breakdown format
-    const processExpenseData = (kid: any, chores: any[], days: number): ChartDataPoint[] => {
+    const processExpenseData = useCallback((kid: any, chores: any[], days: number): ChartDataPoint[] => {
         if (!kid) return generateFallbackData();
 
         const today = new Date();
@@ -105,7 +105,7 @@ const KidPieChart = ({ kidId: propKidId }: KidPieChartProps) => {
                 color: chartConfig.goalsBudget.color
             }
         ].filter(item => item.value > 0); // Only show segments with values
-    };
+    }, []);
 
     // Generate fallback data that matches the image
     const generateFallbackData = (): ChartDataPoint[] => {
@@ -126,14 +126,8 @@ const KidPieChart = ({ kidId: propKidId }: KidPieChartProps) => {
                 color: chartConfig.goalsBudget.color
             }
         ];
-    };
-
-    const formatCurrency = (value: number) => {
+    }; const formatCurrency = (value: number) => {
         return `NGN ${value.toLocaleString()}`;
-    };
-
-    const getTotalValue = () => {
-        return chartData.reduce((sum, item) => sum + item.value, 0);
     };
 
     useEffect(() => {
@@ -171,7 +165,7 @@ const KidPieChart = ({ kidId: propKidId }: KidPieChartProps) => {
                 setLoading(false);
             }
         }; fetchKidExpenseData();
-    }, [validKidId, range]); if (loading) {
+    }, [validKidId, range, processExpenseData]); if (loading) {
         return (
             <Card className="flex flex-col">
                 <CardHeader className="flex-shrink-0 pb-4">
