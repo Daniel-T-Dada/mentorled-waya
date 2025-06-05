@@ -1,6 +1,22 @@
 import mockData from '@/mockdata/mockData.json';
 
 // Types
+export interface DayStatus {
+    day: string;
+    completed: boolean;
+}
+
+export interface DailyStreaks {
+    weeklyProgress: DayStatus[];
+}
+
+export interface RewardItem {
+    id: string;
+    title: string;
+    description: string;
+    isRedeemed: boolean;
+}
+
 export interface Kid {
     id: string;
     name: string;
@@ -9,6 +25,8 @@ export interface Kid {
     balance: number;
     chores: Chore[];
     allowanceHistory: AllowanceHistory[];
+    dailyStreaks?: DailyStreaks;
+    rewards?: RewardItem[];
     // Additional properties for profile management
     age?: number;
     grade?: string;
@@ -102,7 +120,7 @@ class MockDataService {
                 status: chore.status as "completed" | "pending" | "cancelled",
                 category: (chore as any).category || 'General'
             }));
-            
+
             const completedCount = kidChores.filter(chore => chore.status === "completed").length;
             const pendingCount = kidChores.filter(chore => chore.status === "pending").length;
             const totalCount = kidChores.length;
@@ -123,7 +141,7 @@ class MockDataService {
                 goals: (kid as any).goals || 'Earn enough to buy a new bike'
             };
         }) as Kid[];
-    }    getKidById(id: string): Kid | undefined {
+    } getKidById(id: string): Kid | undefined {
         const kid = this.data.parent.children.find(k => k.id === id);
         if (!kid) return undefined;
 
@@ -133,7 +151,7 @@ class MockDataService {
             status: chore.status as "completed" | "pending" | "cancelled",
             category: (chore as any).category || 'General'
         }));
-        
+
         const completedCount = kidChores.filter(chore => chore.status === "completed").length;
         const pendingCount = kidChores.filter(chore => chore.status === "pending").length;
         const totalCount = kidChores.length;
@@ -243,7 +261,7 @@ class MockDataService {
                 return processedChore;
             })
         );
-    }getChoresByKidId(kidId: string): Chore[] {
+    } getChoresByKidId(kidId: string): Chore[] {
         const kid = this.getKidById(kidId);
         return kid?.chores || [];
     }

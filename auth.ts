@@ -248,6 +248,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 }
             }
         }),
+
+
+
+
+
+
+
         CredentialsProvider({
             id: "kid-credentials",
             name: "Kid Credentials",
@@ -306,6 +313,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
         }),
     ],
+
+
+
+
+
+    
     session: {
         strategy: "jwt",
     },
