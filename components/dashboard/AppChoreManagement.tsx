@@ -65,7 +65,7 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
     const kidsForTabs = allKids.slice(0, 3);    // Filter chores by the selected kid tab or kidId prop
     const filteredChores = useMemo(() => {
         let filtered = allChores;
-        
+
         // If kidId prop is provided, filter by that specific kid
         if (kidId) {
             filtered = allChores.filter(chore => chore.assignedTo === kidId);
@@ -73,7 +73,7 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
             // Otherwise, use the existing tab-based filtering
             filtered = allChores.filter(chore => chore.assignedTo === activeKidTab);
         }
-        
+
         return filtered;
     }, [allChores, activeKidTab, kidId]);
 
@@ -199,7 +199,7 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
                                 ) : currentPendingChores.length === 0 ? (
                                     <div className="text-center text-muted-foreground py-8">
                                         No pending chores found for {kidId ? getKidName(kidId) : (activeKidTab === "all" ? "all kids" : getKidName(activeKidTab))}.
-                                    </div>                                ) : (
+                                    </div>) : (
                                     currentPendingChores.map((chore) => (
                                         <div key={chore.id} className="border rounded-md p-4">
                                             <div className="flex items-start justify-between">
@@ -207,19 +207,33 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
                                                     <h3 className="font-medium">{chore.title}</h3>
                                                     <p className="text-sm text-muted-foreground mt-1">{chore.description}</p>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Button variant="ghost" size="icon" className="text-primary hover:text-primary/90">
-                                                        <Pencil className="w-5 h-5" />
-                                                    </Button>
-                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/90">
-                                                        <Trash className="w-5 h-5" />
-                                                    </Button>
-                                                </div>
+                                                {kidId ? (
+                                                    // Kid view: Show avatar and amount
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="text-sm font-medium text-green-500">
+                                                            ₦{chore.reward.toLocaleString()}
+                                                        </div>
+                                                        <Avatar className="w-6 h-6">
+                                                            <AvatarImage src={getKidAvatar(chore.assignedTo)} alt={getKidName(chore.assignedTo)} />
+                                                            <AvatarFallback>{getKidName(chore.assignedTo)?.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                    </div>
+                                                ) : (
+                                                    // Parent view: Show edit/delete buttons
+                                                    <div className="flex items-center gap-2">
+                                                        <Button variant="ghost" size="icon" className="text-primary hover:text-primary/90">
+                                                            <Pencil className="w-5 h-5" />
+                                                        </Button>
+                                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/90">
+                                                            <Trash className="w-5 h-5" />
+                                                        </Button>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div className="flex items-center justify-between mt-3">
                                                 <div className="text-sm font-medium text-green-500">
-                                                    ₦{chore.reward.toLocaleString()}
+                                                    {kidId ? "" : `₦${chore.reward.toLocaleString()}`}
                                                 </div>
                                                 {!kidId && (
                                                     <div className="flex items-center gap-1 text-muted-foreground">
@@ -312,8 +326,7 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
                                 ) : currentCompletedChores.length === 0 ? (
                                     <div className="text-center text-muted-foreground py-8">
                                         No completed chores found for {kidId ? getKidName(kidId) : (activeKidTab === "all" ? "all kids" : getKidName(activeKidTab))}.
-                                    </div>
-                                ) : (
+                                    </div>) : (
                                     currentCompletedChores.map((chore) => (
                                         <div key={chore.id} className="border rounded-md p-4">
                                             <div className="flex items-start justify-between">
@@ -321,17 +334,31 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
                                                     <h3 className="font-medium">{chore.title}</h3>
                                                     <p className="text-sm text-muted-foreground mt-1">{chore.description}</p>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Button variant="ghost" size="icon" className="text-primary hover:text-primary/90">
-                                                        <Pencil className="w-5 h-5" />
-                                                    </Button>
-                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/90">
-                                                        <Trash className="w-5 h-5" />
-                                                    </Button>
-                                                </div>
+                                                {kidId ? (
+                                                    // Kid view: Show avatar and amount
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="text-sm font-medium text-green-500">
+                                                            ₦{chore.reward.toLocaleString()}
+                                                        </div>
+                                                        <Avatar className="w-6 h-6">
+                                                            <AvatarImage src={getKidAvatar(chore.assignedTo)} alt={getKidName(chore.assignedTo)} />
+                                                            <AvatarFallback>{getKidName(chore.assignedTo)?.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                    </div>
+                                                ) : (
+                                                    // Parent view: Show edit/delete buttons
+                                                    <div className="flex items-center gap-2">
+                                                        <Button variant="ghost" size="icon" className="text-primary hover:text-primary/90">
+                                                            <Pencil className="w-5 h-5" />
+                                                        </Button>
+                                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/90">
+                                                            <Trash className="w-5 h-5" />
+                                                        </Button>
+                                                    </div>
+                                                )}
                                             </div>                                            <div className="flex items-center justify-between mt-3">
                                                 <div className="text-sm font-medium text-green-500">
-                                                    ₦{chore.reward.toLocaleString()}
+                                                    {kidId ? "" : `₦${chore.reward.toLocaleString()}`}
                                                 </div>
                                                 {!kidId && (
                                                     <div className="flex items-center gap-1 text-muted-foreground">
