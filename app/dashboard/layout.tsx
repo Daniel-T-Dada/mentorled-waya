@@ -1,19 +1,22 @@
 import AppSidebar from "@/components/dashboard/AppSidebar"
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar"
 import { UserProvider } from "@/contexts/UserContext"
+import { RoleBasedLayout } from "@/components/dashboard/RoleBasedLayout"
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     return (
         <UserProvider>
-            <div className="flex">
-                <AppSidebar />
-                <div className="w-full">
-                    <DashboardNavbar />
-                    <main className="px-8 lg:px-16 mb-4 pt-16">
-                        {children}
-                    </main>
+            <RoleBasedLayout>
+                <div className="flex">
+                    <AppSidebar />
+                    <div className="w-full">
+                        <DashboardNavbar />
+                        <main className="px-8 lg:px-16 mb-4 pt-16">
+                            {children}
+                        </main>
+                    </div>
                 </div>
-            </div>
+            </RoleBasedLayout>
         </UserProvider>
     )
 }

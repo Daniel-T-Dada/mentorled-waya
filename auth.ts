@@ -326,13 +326,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         error: '/auth/error',
         signOut: '/',
         verifyRequest: '/auth/verify-email', // Add verify-request page
-    },
+    },    callbacks: {
+        async signIn({ user, account, profile }) {
+            // For OAuth providers (Google, Facebook), assign parent role by default
+            if (account?.provider === "google" || account?.provider === "facebook") {
+                console.log("OAuth sign-in detected, assigning parent role");
+                user.role = "parent";
+                user.emailVerified = new Date(); // OAuth users are considered verified
+            }
+            return true;
+        },
 
-    callbacks: {
         async session({ session, token }) {
             if (token.sub) {
                 session.user.id = token.sub;
-                session.user.role = (token.role as string) || "user";
+                session.user.role = (token.role as string) || "parent"; // Default to parent for OAuth users
                 session.user.email = (token.email as string) || "";
                 session.user.name = token.name as string | undefined;
                 session.user.emailVerified = token.emailVerified ? new Date(token.emailVerified as string) : null;
