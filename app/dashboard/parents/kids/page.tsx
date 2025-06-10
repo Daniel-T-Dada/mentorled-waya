@@ -27,8 +27,7 @@ const KidsManagementPage = () => {
                 onClose={() => setIsCreateKidModalOpen(false)}
                 onSuccess={handleCreateKidSuccess}
             />
-        </>
-    );
+        </>);
 };
 
 export default KidsManagementPage;

@@ -30,9 +30,7 @@ const KidTasksPage = () => {
         onClose={() => setIsCreateChoreModalOpen(false)}
         onSuccess={handleCreateChoreSuccess}
         preSelectedKid={kidId}
-      />
-    </>
-  );
+      />    </>);
 };
 
 export default KidTasksPage;

@@ -9,4 +9,5 @@ const MoneyMazeOverview = () => {
         </div>
     )
 }
-export default MoneyMazeOverview
+
+export default MoneyMazeOverview;

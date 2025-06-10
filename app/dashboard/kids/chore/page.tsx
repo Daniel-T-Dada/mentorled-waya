@@ -2,14 +2,12 @@
 
 import KidChoreQuest from "@/components/dashboard/kid/KidChoreQuest"
 
-
-
-
 const ChoreQuestPage = () => {
     return (
         <div>
-            <KidChoreQuest/>
+            <KidChoreQuest />
         </div>
     )
 }
-export default ChoreQuestPage
+
+export default ChoreQuestPage;

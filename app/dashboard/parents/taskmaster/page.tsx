@@ -51,12 +51,11 @@ const TaskMasterPage = () => {
                             toast.error('Failed to load chores');
                         }
                     };
-                    fetchChores();
-                    setSelectedKid("");
+                    fetchChores(); setSelectedKid("");
                 }}
                 preSelectedKid={selectedKid}
             />
-        </div>
-    )
+        </div>)
 }
-export default TaskMasterPage
+
+export default TaskMasterPage;

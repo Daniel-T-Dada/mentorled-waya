@@ -1,6 +1,5 @@
 import InsightTrackerDashboard from "@/components/dashboard/parent/InsightTrackerDashboard"
 
-
 const InsightsPage = () => {
     return (
         <div className="">
@@ -8,4 +7,5 @@ const InsightsPage = () => {
         </div>
     )
 }
-export default InsightsPage
+
+export default InsightsPage;
