@@ -1,6 +1,22 @@
 import mockData from '@/mockdata/mockData.json';
 
 // Types
+export interface DayStatus {
+    day: string;
+    completed: boolean;
+}
+
+export interface DailyStreaks {
+    weeklyProgress: DayStatus[];
+}
+
+export interface RewardItem {
+    id: string;
+    title: string;
+    description: string;
+    isRedeemed: boolean;
+}
+
 export interface Kid {
     id: string;
     name: string;
@@ -9,6 +25,19 @@ export interface Kid {
     balance: number;
     chores: Chore[];
     allowanceHistory: AllowanceHistory[];
+    dailyStreaks?: DailyStreaks;
+    rewards?: RewardItem[];
+    // Additional properties for profile management
+    age?: number;
+    grade?: string;
+    school?: string;
+    interests?: string[];
+    allowanceAmount?: number;
+    goals?: string;
+    progress: number;
+    // Properties for dashboard stats
+    completedChoreCount: number;
+    pendingChoreCount: number;
 }
 
 export interface Chore {
@@ -22,6 +51,7 @@ export interface Chore {
     completedAt?: string | null;
     dueDate?: string;
     parentId?: string;
+    category?: string;
 }
 
 export interface AllowanceHistory {
@@ -81,31 +111,65 @@ class MockDataService {
     // Parent related methods
     getParent(): Parent {
         return this.data.parent as Parent;
-    }
-
-    // Kids related methods
+    }    // Kids related methods
     getAllKids(): Kid[] {
-        return this.data.parent.children.map(kid => ({
-            ...kid,
-            chores: kid.chores.map(chore => ({
+        return this.data.parent.children.map(kid => {
+            const kidChores = kid.chores.map(chore => ({
                 ...chore,
                 assignedTo: kid.id,
-                status: chore.status as "completed" | "pending" | "cancelled"
-            }))
-        })) as Kid[];
-    }
+                status: chore.status as "completed" | "pending" | "cancelled",
+                category: (chore as any).category || 'General'
+            }));
 
-    getKidById(id: string): Kid | undefined {
+            const completedCount = kidChores.filter(chore => chore.status === "completed").length;
+            const pendingCount = kidChores.filter(chore => chore.status === "pending").length;
+            const totalCount = kidChores.length;
+            const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+
+            return {
+                ...kid,
+                chores: kidChores,
+                progress,
+                completedChoreCount: completedCount,
+                pendingChoreCount: pendingCount,
+                // Add default values for new optional properties
+                age: (kid as any).age || 12,
+                grade: (kid as any).grade || '6th Grade',
+                school: (kid as any).school || 'Local Elementary School',
+                interests: (kid as any).interests || ['Reading', 'Sports'],
+                allowanceAmount: (kid as any).allowanceAmount || 1000,
+                goals: (kid as any).goals || 'Earn enough to buy a new bike'
+            };
+        }) as Kid[];
+    } getKidById(id: string): Kid | undefined {
         const kid = this.data.parent.children.find(k => k.id === id);
         if (!kid) return undefined;
 
+        const kidChores = kid.chores.map(chore => ({
+            ...chore,
+            assignedTo: kid.id,
+            status: chore.status as "completed" | "pending" | "cancelled",
+            category: (chore as any).category || 'General'
+        }));
+
+        const completedCount = kidChores.filter(chore => chore.status === "completed").length;
+        const pendingCount = kidChores.filter(chore => chore.status === "pending").length;
+        const totalCount = kidChores.length;
+        const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+
         return {
             ...kid,
-            chores: kid.chores.map(chore => ({
-                ...chore,
-                assignedTo: kid.id,
-                status: chore.status as "completed" | "pending" | "cancelled"
-            }))
+            chores: kidChores,
+            progress,
+            completedChoreCount: completedCount,
+            pendingChoreCount: pendingCount,
+            // Add default values for new optional properties
+            age: (kid as any).age || 12,
+            grade: (kid as any).grade || '6th Grade',
+            school: (kid as any).school || 'Local Elementary School',
+            interests: (kid as any).interests || ['Reading', 'Sports'],
+            allowanceAmount: (kid as any).allowanceAmount || 1000,
+            goals: (kid as any).goals || 'Earn enough to buy a new bike'
         } as Kid;
     }
 
@@ -174,9 +238,7 @@ class MockDataService {
 
         console.log("Created mock allowance:", mockAllowance);
         return mockAllowance;
-    }
-
-    // Chores related methods
+    }    // Chores related methods
     getAllChores(): Chore[] {
         // Directly flatMap the children's chore arrays from the original data
         return this.data.parent.children.flatMap(kid =>
@@ -192,17 +254,21 @@ class MockDataService {
                     description: chore.description || 'No description provided.',
                     reward: typeof chore.reward === 'number' ? chore.reward : 0,
                     createdAt: chore.createdAt || new Date().toISOString(),
+                    category: (chore as any).category || 'General',
                 });
                 // Add logging here to inspect each processed chore object
                 console.log('Processed chore in getAllChores:', processedChore);
                 return processedChore;
             })
         );
-    }
-
-    getChoresByKidId(kidId: string): Chore[] {
+    } getChoresByKidId(kidId: string): Chore[] {
         const kid = this.getKidById(kidId);
         return kid?.chores || [];
+    }
+
+    // Alias method for compatibility
+    getChoresByKid(kidId: string): Chore[] {
+        return this.getChoresByKidId(kidId);
     }
 
     getChoresByStatus(status: "completed" | "pending"): Chore[] {
@@ -306,7 +372,141 @@ class MockDataService {
             { name: "Pending", value: pendingCount }
         ];
     }
+
+    // Learning data methods
+    getLearningData() {
+        return (this.data as any).learningData || {
+            financialConcepts: [],
+            achievements: [],
+            progressLessons: []
+        };
+    } getFinancialConcepts() {
+        return [
+            {
+                id: 'concept-1',
+                title: 'Financial Concepts',
+                description: 'Learn the basics of saving, spending, and earning money',
+                icon: 'play',
+                color: 'purple',
+                level: 1,
+                isCompleted: false,
+                topics: ['Saving', 'Spending', 'Earning', 'Budgeting']
+            }
+        ];
+    }
+
+    getAchievements() {
+        const learningData = this.getLearningData();
+        return learningData.achievements || [];
+    }
+
+    getProgressLessons() {
+        const learningData = this.getLearningData();
+        return learningData.progressLessons || [];
+    }    // Methods for KidStartLevel component
+    getFinancialQuiz() {
+        return [
+            {
+                id: 'quiz-1',
+                title: 'Financial Quiz',
+                description: 'Test your knowledge with fun financial questions',
+                icon: 'quiz',
+                color: 'purple',
+                level: 1,
+                isCompleted: false,
+                questions: [
+                    {
+                        id: 'q1',
+                        question: 'What is the best way to save money?',
+                        options: ['Spend it all', 'Put it in a piggy bank', 'Give it away', 'Lose it'],
+                        correctAnswer: 1
+                    },
+                    {
+                        id: 'q2',
+                        question: 'Why is it important to budget?',
+                        options: ['To waste money', 'To plan spending', 'To forget about money', 'To spend more'],
+                        correctAnswer: 1
+                    }
+                ]
+            }
+        ];
+    }
+
+    getEarnReward() {
+        return [
+            {
+                id: 'reward-1',
+                title: 'Earn Reward',
+                description: 'Complete tasks to earn amazing rewards',
+                icon: 'trophy',
+                color: 'yellow',
+                level: 1,
+                isCompleted: false,
+                rewards: [
+                    {
+                        type: 'money',
+                        amount: 500,
+                        name: 'Extra Allowance',
+                        description: 'Earn extra money for completing bonus tasks'
+                    },
+                    {
+                        type: 'privilege',
+                        name: 'Extra Screen Time',
+                        description: '30 minutes extra screen time on weekends'
+                    }
+                ]
+            }
+        ];
+    }
+
+    // Get chore by ID across all kids
+    getChoreById(choreId: string): Chore | undefined {
+        for (const kid of this.data.parent.children) {
+            const chore = kid.chores.find(c => c.id === choreId);
+            if (chore) {
+                return {
+                    ...chore,
+                    assignedTo: kid.id,
+                    status: chore.status as "completed" | "pending" | "cancelled",
+                    category: (chore as any).category || 'General'
+                };
+            }
+        }
+        return undefined;
+    }    // Update chore status by ID
+    updateChoreStatus(choreId: string, status: "completed" | "pending" | "cancelled"): Chore | undefined {
+        for (const kid of this.data.parent.children) {
+            const choreIndex = kid.chores.findIndex(c => c.id === choreId);
+            if (choreIndex !== -1) {
+                // Update the chore status in the data
+                const chore = kid.chores[choreIndex] as any;
+                chore.status = status;
+
+                // If marking as completed, set completedAt timestamp
+                if (status === 'completed') {
+                    chore.completedAt = new Date().toISOString();
+                } else if (status === 'pending') {
+                    // Remove completedAt if reverting to pending
+                    chore.completedAt = null;
+                }
+
+                // Return the updated chore with proper formatting
+                const updatedChore: Chore = {
+                    ...chore,
+                    assignedTo: kid.id,
+                    status: status,
+                    category: chore.category || 'General',
+                    completedAt: chore.completedAt || null
+                };
+
+                console.log(`Chore ${choreId} status updated to ${status}`);
+                return updatedChore;
+            }
+        }
+        console.log(`Chore ${choreId} not found`);
+        return undefined;
+    }
 }
 
 // Export a singleton instance
-export const mockDataService = new MockDataService(); 
+export const mockDataService = new MockDataService();

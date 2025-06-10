@@ -62,6 +62,58 @@
                         "allowanceGiven": 700,
                         "allowanceSpent": 300
                     }
+                ],
+                "dailyStreaks": {
+                    "weeklyProgress": [
+                        {
+                            "day": "Mon",
+                            "completed": true
+                        },
+                        {
+                            "day": "Tue",
+                            "completed": true
+                        },
+                        {
+                            "day": "Wed",
+                            "completed": true
+                        },
+                        {
+                            "day": "Thu",
+                            "completed": false
+                        },
+                        {
+                            "day": "Fri",
+                            "completed": false
+                        },
+                        {
+                            "day": "Sat",
+                            "completed": false
+                        },
+                        {
+                            "day": "Sun",
+                            "completed": false
+                        }
+                    ]
+                },
+                "rewards": [
+                    {
+                        "id": "reward-001",
+                        "title": "Clean your room",
+                        "description": "Make your bed, organize your wardrobe, clothes and toys",
+                        "isRedeemed": false
+                    },
+                    {
+                        "id": "reward-002",
+                        "title": "Take out the trash",
+                        "description": "Empty all the trash can in the house.",
+                        "isRedeemed": false
+                    },
+                    {
+                        "id": "reward-003",
+                        "title": "Wash the dishes",
+                        "description": "Wash all the dishes in the kitchen and put them away.",
+                        "isRedeemed": false
+                    }
                 ]
             },
             {
@@ -96,7 +148,59 @@
                         "createdAt": "2025-06-02T12:00:00.000Z"
                     }
                 ],
-                "allowanceHistory": []
+                "allowanceHistory": [],
+                "dailyStreaks": {
+                    "weeklyProgress": [
+                        {
+                            "day": "Mon",
+                            "completed": true
+                        },
+                        {
+                            "day": "Tue",
+                            "completed": true
+                        },
+                        {
+                            "day": "Wed",
+                            "completed": false
+                        },
+                        {
+                            "day": "Thu",
+                            "completed": false
+                        },
+                        {
+                            "day": "Fri",
+                            "completed": false
+                        },
+                        {
+                            "day": "Sat",
+                            "completed": false
+                        },
+                        {
+                            "day": "Sun",
+                            "completed": false
+                        }
+                    ]
+                },
+                "rewards": [
+                    {
+                        "id": "reward-004",
+                        "title": "Organize toy box",
+                        "description": "Sort and organize all toys in the toy box",
+                        "isRedeemed": false
+                    },
+                    {
+                        "id": "reward-005",
+                        "title": "Feed the pets",
+                        "description": "Give food and water to all pets",
+                        "isRedeemed": true
+                    },
+                    {
+                        "id": "reward-006",
+                        "title": "Sweep the floor",
+                        "description": "Sweep the living room and kitchen floor",
+                        "isRedeemed": false
+                    }
+                ]
             },
             {
                 "id": "kid-003",
@@ -122,7 +226,59 @@
                         "createdAt": "2025-06-03T09:00:00.000Z"
                     }
                 ],
-                "allowanceHistory": []
+                "allowanceHistory": [],
+                "dailyStreaks": {
+                    "weeklyProgress": [
+                        {
+                            "day": "Mon",
+                            "completed": true
+                        },
+                        {
+                            "day": "Tue",
+                            "completed": true
+                        },
+                        {
+                            "day": "Wed",
+                            "completed": true
+                        },
+                        {
+                            "day": "Thu",
+                            "completed": true
+                        },
+                        {
+                            "day": "Fri",
+                            "completed": false
+                        },
+                        {
+                            "day": "Sat",
+                            "completed": false
+                        },
+                        {
+                            "day": "Sun",
+                            "completed": false
+                        }
+                    ]
+                },
+                "rewards": [
+                    {
+                        "id": "reward-007",
+                        "title": "Help with groceries",
+                        "description": "Help carry and organize groceries from the store",
+                        "isRedeemed": false
+                    },
+                    {
+                        "id": "reward-008",
+                        "title": "Wipe down surfaces",
+                        "description": "Clean and wipe all kitchen and dining room surfaces",
+                        "isRedeemed": false
+                    },
+                    {
+                        "id": "reward-009",
+                        "title": "Sort recycling",
+                        "description": "Sort items into proper recycling bins",
+                        "isRedeemed": true
+                    }
+                ]
             },
             {
                 "id": "kid-004",
@@ -130,8 +286,161 @@
                 "avatar": "https://ca.slack-edge.com/T07TDF7H2KB-U08K4M2B4NP-4e0011122c77-72",
                 "level": 2,
                 "balance": 3000,
-                "chores": [],
-                "allowanceHistory": []
+                "chores": [
+                    {
+                        "id": "chore-004",
+                        "title": "Take Out Trash",
+                        "description": "Empty all trash bins and take to the main bin outside",
+                        "reward": 300,
+                        "status": "completed",
+                        "createdAt": "2025-05-29T10:00:00.000Z"
+                    }
+                ],
+                "allowanceHistory": [
+                    {
+                        "date": "May 01",
+                        "allowanceGiven": 700,
+                        "allowanceSpent": 300
+                    }
+                ],
+                "dailyStreaks": {
+                    "weeklyProgress": [
+                        {
+                            "day": "Mon",
+                            "completed": true
+                        },
+                        {
+                            "day": "Tue",
+                            "completed": true
+                        },
+                        {
+                            "day": "Wed",
+                            "completed": true
+                        },
+                        {
+                            "day": "Thu",
+                            "completed": false
+                        },
+                        {
+                            "day": "Fri",
+                            "completed": false
+                        },
+                        {
+                            "day": "Sat",
+                            "completed": false
+                        },
+                        {
+                            "day": "Sun",
+                            "completed": false
+                        }
+                    ]
+                },
+                "rewards": [
+                    {
+                        "id": "reward-001",
+                        "title": "Clean your room",
+                        "description": "Make your bed, organize your wardrobe, clothes and toys",
+                        "isRedeemed": false
+                    },
+                    {
+                        "id": "reward-002",
+                        "title": "Take out the trash",
+                        "description": "Empty all the trash can in the house.",
+                        "isRedeemed": false
+                    },
+                    {
+                        "id": "reward-003",
+                        "title": "Wash the dishes",
+                        "description": "Wash all the dishes in the kitchen and put them away.",
+                        "isRedeemed": false
+                    }
+                ]
+            }
+        ]
+    },
+    "learningData": {
+        "financialConcepts": [
+            {
+                "id": "fc-001",
+                "title": "Savings",
+                "description": "Learning how to save money for future goals",
+                "progress": 60,
+                "totalLessons": 10,
+                "completedLessons": 6,
+                "icon": "💰"
+            },
+            {
+                "id": "fc-002",
+                "title": "Budgeting",
+                "description": "Understanding how to plan and manage spending",
+                "progress": 50,
+                "totalLessons": 8,
+                "completedLessons": 4,
+                "icon": "📊"
+            },
+            {
+                "id": "fc-003",
+                "title": "Investing",
+                "description": "Basic concepts of making money grow over time",
+                "progress": 15,
+                "totalLessons": 12,
+                "completedLessons": 2,
+                "icon": "📈"
+            }
+        ],
+        "achievements": [
+            {
+                "id": "ach-001",
+                "title": "First Saver",
+                "description": "Completed your first savings lesson",
+                "progress": 100,
+                "icon": "🏆",
+                "unlockedAt": "2025-05-15T10:00:00.000Z"
+            },
+            {
+                "id": "ach-002",
+                "title": "Budget Master",
+                "description": "Mastered basic budgeting concepts",
+                "progress": 100,
+                "icon": "🏆",
+                "unlockedAt": "2025-05-20T10:00:00.000Z"
+            },
+            {
+                "id": "ach-003",
+                "title": "Smart Spender",
+                "description": "Learned smart spending habits",
+                "progress": 100,
+                "icon": "🏆",
+                "unlockedAt": "2025-05-25T10:00:00.000Z"
+            }
+        ],
+        "progressLessons": [
+            {
+                "id": "pl-001",
+                "title": "Money Basics",
+                "description": "Understanding what money is and how it works",
+                "progress": 85,
+                "category": "Fundamentals",
+                "estimatedTime": "15 mins",
+                "difficulty": "Beginner"
+            },
+            {
+                "id": "pl-002",
+                "title": "Earning Money",
+                "description": "Different ways kids can earn money through chores and tasks",
+                "progress": 70,
+                "category": "Earning",
+                "estimatedTime": "20 mins",
+                "difficulty": "Beginner"
+            },
+            {
+                "id": "pl-003",
+                "title": "Setting Goals",
+                "description": "How to set and achieve financial goals",
+                "progress": 45,
+                "category": "Planning",
+                "estimatedTime": "25 mins",
+                "difficulty": "Intermediate"
             }
         ]
     }

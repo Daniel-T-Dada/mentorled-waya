@@ -1,7 +1,7 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { ZodError } from "zod";
-import { ParentSignInSchema, SignUpSchema } from "./schemas";
+import { ParentSignInSchema, KidSignInSchema, SignUpSchema } from "./schemas";
 import Google from "next-auth/providers/google";
 import Facebook from "next-auth/providers/facebook";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
@@ -58,8 +58,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         Facebook({
             clientId: process.env.FACEBOOK_CLIENT_ID,
             clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-        }),
-        CredentialsProvider({
+        }), CredentialsProvider({
             id: "parent-credentials",
             name: "Parent Credentials",
             credentials: {
@@ -249,7 +248,77 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 }
             }
         }),
+
+
+
+
+
+
+
+        CredentialsProvider({
+            id: "kid-credentials",
+            name: "Kid Credentials",
+            credentials: {
+                username: { label: "Username", type: "text" },
+                pin: { label: "PIN", type: "password" },
+            },
+            async authorize(credentials) {
+                console.log("Kid credentials received:", credentials);
+
+                if (!credentials || !credentials.username || !credentials.pin) {
+                    console.log("Missing kid credentials");
+                    return null;
+                }
+
+                try {
+                    // Validate with schema
+                    const validatedData = KidSignInSchema.parse({
+                        username: credentials.username,
+                        pin: credentials.pin,
+                    });
+
+                    // For now, we'll use a mock kid account for testing
+                    // In a real app, this would check against the API or database
+                    const mockKidAccount = {
+                        username: "testkid",
+                        pin: "1234",
+                        id: "kid-test-001",
+                        name: "Test Kid",
+                        parentId: "parent-001"
+                    };
+
+                    // Check if credentials match our mock account
+                    if (validatedData.username === mockKidAccount.username &&
+                        validatedData.pin === mockKidAccount.pin) {
+
+                        return {
+                            id: mockKidAccount.id,
+                            name: mockKidAccount.name,
+                            username: mockKidAccount.username,
+                            role: 'kid',
+                            parentId: mockKidAccount.parentId,
+                            emailVerified: new Date(),
+                            avatar: null
+                        };
+                    }
+
+                    // If credentials don't match, return null
+                    console.log("Invalid kid credentials");
+                    return null;
+
+                } catch (error) {
+                    console.error("Kid authorization error:", error);
+                    return null;
+                }
+            }
+        }),
     ],
+
+
+
+
+
+    
     session: {
         strategy: "jwt",
     },
