@@ -39,11 +39,11 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
                 href: "/dashboard/parents/taskmaster",
                 icon: List,
             },
-            {
-                name: "Kids Management",
-                href: "/dashboard/parents/kids",
-                icon: UsersRound,
-            },
+            // {
+            //     name: "Kids Management",
+            //     href: "/dashboard/parents/kids",
+            //     icon: UsersRound,
+            // },
             {
                 name: "Family Wallet",
                 href: "/dashboard/parents/wallet",
@@ -104,7 +104,7 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
     // Function to navigate between parent and kid views
     const navigateToView = (isParent: boolean) => {
         if (isParent) {
-            router.push('/dashboard/kids');
+            // router.push('/dashboard/parents/kids');
         } else {
             router.push('/dashboard/parents');
         }
