@@ -107,11 +107,10 @@ const FamilyWalletPage = () => {
                 isOpen={isAddAllowanceOpen}
                 onClose={() => setIsAddAllowanceOpen(false)}
                 onSuccess={() => {
-                    fetchWalletData();
-                    fetchTransactions();
-                }}
-            />
+                    fetchWalletData(); fetchTransactions();
+                }} />
         </div>
     )
 }
-export default FamilyWalletPage
+
+export default FamilyWalletPage;

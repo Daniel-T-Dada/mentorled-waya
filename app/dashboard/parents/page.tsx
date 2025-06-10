@@ -4,11 +4,10 @@ import dynamic from "next/dynamic";
 import ParentDashboardOverview from "@/components/dashboard/parent/ParentDashboardOverview"
 import { useState } from "react";
 
-
-    const CreateKidAccount = dynamic(() => import("@/components/modals/CreateKidAccount").then(mod => mod.CreateKidAccount), {
-        loading: () => <div className="animate-pulse p-6 text-center">Loading modal...</div>,
-        ssr: false,
-    });
+const CreateKidAccount = dynamic(() => import("@/components/modals/CreateKidAccount").then(mod => mod.CreateKidAccount), {
+    loading: () => <div className="animate-pulse p-6 text-center">Loading modal...</div>,
+    ssr: false,
+});
 
 const ParentsPage = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -28,4 +27,5 @@ const ParentsPage = () => {
         </div>
     )
 }
-export default ParentsPage
+
+export default ParentsPage;

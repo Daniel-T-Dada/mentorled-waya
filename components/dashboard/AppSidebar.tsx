@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart, ChartSpline, Clipboard, Goal, HandCoins, Home, List, LogOut, Settings, UsersRound, Wallet } from "lucide-react";
+import { BarChart, ChartSpline, Clipboard, Goal, HandCoins, Home, List, LogOut, Settings, User, UsersRound, Wallet } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator, useSidebar } from "../ui/sidebar"
 
 import { usePathname, useRouter } from "next/navigation";
@@ -13,79 +13,84 @@ import ThemeToggle from "@/components/theme-toggle";
 import { useUser } from "@/contexts/UserContext";
 import { signOut } from "next-auth/react";
 import { Skeleton } from "../ui/skeleton";
+import { useRoleAccess } from "@/hooks/use-role-access";
 
-
-
-/* interface AppSidebarProps {
-    isParent: boolean;
-} */
-
-const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
+const AppSidebar = () => {
     const pathname = usePathname();
     const router = useRouter();
     const { theme } = useTheme();
     const { state } = useSidebar();
     const { user, isLoading } = useUser();
+    const { isParent, isKid } = useRoleAccess();
 
-    const isParentRoute = pathname?.startsWith('/dashboard/parents');    const navItems = isParentRoute
-        ? [
-            {
-                name: "Dashboard",
-                href: "/dashboard/parents",
-                icon: Home,
-            },
-            {
-                name: "TaskMaster",
-                href: "/dashboard/parents/taskmaster",
-                icon: List,
-            },
-            // {
-            //     name: "Kids Management",
-            //     href: "/dashboard/parents/kids",
-            //     icon: UsersRound,
-            // },
-            {
-                name: "Family Wallet",
-                href: "/dashboard/parents/wallet",
-                icon: Wallet,
-            },
-            {
-                name: "Insight Tracker",
-                href: "/dashboard/parents/insights",
-                icon: BarChart,
-            },
-            {
-                name: "Settings",
-                href: "/dashboard/parents/settings",
-                icon: Settings,
-            }
-        ] : [
-            {
-                name: "Dashboard",
-                href: "/dashboard/kids",
-                icon: Home,
-            },
-            {
-                name: "Chore Quest",
-                href: "/dashboard/kids/chore",
-                icon: Clipboard,
-            },
-            {
-                name: "Money Maze",
-                href: "/dashboard/kids/money-maze",
-                icon: HandCoins,
-            },
-            {
-                name: "Goal Getter",
-                href: "/dashboard/kids/goal-getter",
-                icon: Goal
-            },
-            {
-                name: "Earning Meter",
-                href: "/dashboard/kids/earning-meter",
-                icon: ChartSpline
-            },
-        ];
+    // Determine navigation items based on user role
+    const getNavItems = () => {
+        if (isParent) {
+            return [
+                {
+                    name: "Dashboard",
+                    href: "/dashboard/parents",
+                    icon: Home,
+                },
+                {
+                    name: "TaskMaster",
+                    href: "/dashboard/parents/taskmaster",
+                    icon: List,
+                },
+                {
+                    name: "Kids Management",
+                    href: "/dashboard/parents/kids",
+                    icon: UsersRound,
+                },
+                {
+                    name: "Family Wallet",
+                    href: "/dashboard/parents/wallet",
+                    icon: Wallet,
+                },
+                {
+                    name: "Insight Tracker",
+                    href: "/dashboard/parents/insights",
+                    icon: BarChart,
+                },
+                {
+                    name: "Settings",
+                    href: "/dashboard/parents/settings",
+                    icon: Settings,
+                }
+            ];
+        } else if (isKid) {
+            return [
+                {
+                    name: "Dashboard",
+                    href: "/dashboard/kids",
+                    icon: Home,
+                },
+                {
+                    name: "Chore Quest",
+                    href: "/dashboard/kids/chore",
+                    icon: Clipboard,
+                },
+                {
+                    name: "Money Maze",
+                    href: "/dashboard/kids/money-maze",
+                    icon: HandCoins,
+                },
+                {
+                    name: "Goal Getter",
+                    href: "/dashboard/kids/goal-getter",
+                    icon: Goal
+                },
+                {
+                    name: "Earning Meter",
+                    href: "/dashboard/kids/earning-meter",
+                    icon: ChartSpline
+                },
+            ];
+        }
+        return [];
+    };
+
+    const navItems = getNavItems();
 
     const handleLogout = () => {
         signOut({ callbackUrl: "/" });
@@ -99,16 +104,25 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
             .join("")
             .toUpperCase()
             .slice(0, 2);
-    };
 
-    // Function to navigate between parent and kid views
-    const navigateToView = (isParent: boolean) => {
-        if (isParent) {
-            // router.push('/dashboard/parents/kids');
-        } else {
-            router.push('/dashboard/parents');
+    };    // Determine button config using ternary conditions
+    const isOnKidRoute = pathname.startsWith('/dashboard/kids');
+
+    const buttonConfig = (isOnKidRoute && isKid) ? {
+        text: "Choose Avatar/Profile Picture",
+        icon: User,
+        action: () => {
+            // TODO: Navigate to avatar/profile selection page
+            console.log("Navigate to avatar/profile selection");
+            // router.push('/dashboard/kids/profile'); // Uncomment when profile page exists
         }
-    };
+    } : isParent ? {
+        text: "Kids Management",
+        icon: UsersRound,
+        action: () => router.push('/dashboard/parents/kids')
+    } : null;
+
+    const showSpecialButton = buttonConfig !== null;
 
     return (
         <Sidebar collapsible="icon" >
@@ -177,16 +191,18 @@ const AppSidebar = (/* { isParent }: AppSidebarProps */) => {
 
             {/* The Sidebar Footer Content */}
             <SidebarFooter className="mt-6 space-y-4">
-                <SidebarMenu>
-                    <Button
-                        variant="outline"
-                        className={`w-full ${state === 'collapsed' ? 'justify-center' : 'justify-start'}`}
-                        onClick={() => navigateToView(isParentRoute)}
-                    >
-                        <UsersRound className={`${state === 'collapsed' ? '' : 'mr-2'} h-4 w-4`} />
-                        {state !== 'collapsed' && <span>Switch to {isParentRoute ? "Kid" : "Parent"} View</span>}
-                    </Button>
-                </SidebarMenu>
+                {showSpecialButton && (
+                    <SidebarMenu>
+                        <Button
+                            variant="outline"
+                            className={`w-full ${state === 'collapsed' ? 'justify-center' : 'justify-start'}`}
+                            onClick={buttonConfig.action}
+                        >
+                            <buttonConfig.icon className={`${state === 'collapsed' ? '' : 'mr-2'} h-4 w-4`} />
+                            {state !== 'collapsed' && <span>{buttonConfig.text}</span>}
+                        </Button>
+                    </SidebarMenu>
+                )}
                 <SidebarMenu>
                     <div className="flex items-center justify-between">
                         {state !== 'collapsed' && <span className="text-sm">Theme</span>}

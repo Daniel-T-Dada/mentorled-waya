@@ -1,5 +1,6 @@
-import KidDashboardOverview from "@/components/dashboard/kid/KidDashboardOverview"
+'use client'
 
+import KidDashboardOverview from "@/components/dashboard/kid/KidDashboardOverview"
 
 const KidsPage = () => {
     return (
@@ -8,4 +9,5 @@ const KidsPage = () => {
         </div>
     )
 }
+
 export default KidsPage

@@ -1,5 +1,6 @@
 
 import SettingsDashboard from "@/components/dashboard/parent/SettingsDashboard"
+
 const SettingsPage = () => {
     return (
         <>
@@ -9,4 +10,5 @@ const SettingsPage = () => {
         </>
     )
 }
-export default SettingsPage
+
+export default SettingsPage;

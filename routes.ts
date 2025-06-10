@@ -49,3 +49,15 @@ export const apiAuthPrefix = '/api/auth'
  * @type {string}
  */
 export const DEFAULT_LOGIN_REDIRECT = '/dashboard/parents'
+
+/*
+ * The default redirect path for kid users after a successful login.
+ * @type {string}
+ */
+export const KID_LOGIN_REDIRECT = '/dashboard/kids'
+
+/*
+ * The default redirect path for parent users after a successful login.
+ * @type {string}
+ */
+export const PARENT_LOGIN_REDIRECT = '/dashboard/parents'
