@@ -236,7 +236,12 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
           </svg>
         </div>
         <h2 className="text-2xl font-bold">Verification Failed</h2>
-        <p className="text-center text-gray-600">{error}</p>
+        {error && (
+          <div
+            className="p-2 sm:p-3 text-xs sm:text-sm bg-destructive/15 text-destructive rounded-md mb-3 sm:mb-4"
+            dangerouslySetInnerHTML={{ __html: error }}
+          />
+        )}
         <Button
           onClick={handleResendEmail}
           variant="outline"

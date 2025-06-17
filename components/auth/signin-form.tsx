@@ -210,9 +210,10 @@ const SignInForm = () => {
             </Tabs>
 
             {error && (
-                <div className="p-2 sm:p-3 text-xs sm:text-sm bg-destructive/15 text-destructive rounded-md mb-2 sm:mb-3">
-                    {error}
-                </div>
+                <div
+                    className="p-2 sm:p-3 text-xs sm:text-sm bg-destructive/15 text-destructive rounded-md mb-2 sm:mb-3"
+                    dangerouslySetInnerHTML={{ __html: error }}
+                />
             )}
             {/* Parent Form */}
             {userType === "parent" && (

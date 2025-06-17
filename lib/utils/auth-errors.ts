@@ -8,22 +8,22 @@
 export function parseLoginError(error: string): string {
     // Email verification errors
     if (error.includes("verify your email")) {
-        return "Please verify your email before logging in. Check your inbox for the verification link.";
+        return "Please verify your email before logging in. Check your inbox for the verification link or <a href='/auth/verify-email' class='text-blue-500 hover:underline'>request a new one</a>.";
     }
 
     // Account existence errors
     if (error.includes("not found") || error.includes("no user")) {
-        return "No account found with this email address. Please check your email or sign up.";
+        return "No account found with this email address. Please check your email or <a href='/auth/signup' class='text-blue-500 hover:underline'>sign up</a>.";
     }
 
     // Password errors
     if (error.includes("password") || error.includes("credentials")) {
-        return "Incorrect password. Please try again or use the 'Forgot password' option.";
+        return "Incorrect password. Please try again or <a href='/auth/forgot-password' class='text-blue-500 hover:underline'>reset your password</a>.";
     }
 
     // Rate limiting or account locking
     if (error.includes("many attempts") || error.includes("locked")) {
-        return "Too many failed login attempts. Please try again later or reset your password.";
+        return "Too many failed login attempts. Please try again later or <a href='/auth/forgot-password' class='text-blue-500 hover:underline'>reset your password</a>.";
     }
 
     // Network errors
@@ -46,7 +46,7 @@ export function parseLoginError(error: string): string {
 export function parseSignupError(error: string): string {
     // Email already exists
     if (error.includes("already exists") || error.includes("already in use")) {
-        return "An account with this email already exists. Please sign in or use a different email address.";
+        return "An account with this email already exists. Please <a href='/auth/signin' class='text-blue-500 hover:underline'>sign in</a> or use a different email address.";
     }
 
     // Password requirements
@@ -79,7 +79,7 @@ export function parseSignupError(error: string): string {
 export function parseKidLoginError(error: string): string {
     // Account existence errors
     if (error.includes("not found") || error.includes("no user")) {
-        return "No account found with this username. Please check with your parent.";
+        return "No account found with this username. Please check with your parent or <a href='/auth/signin' class='text-blue-500 hover:underline'>switch to parent login</a>.";
     }
 
     // PIN errors
@@ -107,7 +107,7 @@ export function parsePasswordResetError(error: string): string {
 
     // For security, we avoid revealing if an email exists
     if (error.includes("invalid") || error.includes("not found")) {
-        return "If an account exists with that email, we've sent password reset instructions.";
+        return "If an account exists with that email, we've sent password reset instructions. <a href='/auth/signin' class='text-blue-500 hover:underline'>Return to sign in</a>.";
     }
 
     // Fallback error message

@@ -122,7 +122,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         } catch (parseError) {
                             console.error("Error parsing signup response:", parseError);
                             throw new Error("Received invalid response from server");
-                        }                        // According to API documentation, signup returns:
+                        }                        
+                        
+                        // According to API documentation, signup returns:
                         // Response (201): { "message": "Registration successful! Check your email to verify your account." }
                         // For our frontend, we need to return user-like data for the session
 
@@ -206,7 +208,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                                 }
 
                                 throw new Error(data.detail || data.error || "Failed to log in");
-                            }                            // Handle the API response format from documentation
+                            }
+                            // Handle the API response format from documentation
                             // Response: { "id": "uuid", "name": "string", "email": "string", "avatar": null, "token": "jwt", "refresh": "jwt" }
 
                             return {
