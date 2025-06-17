@@ -18,14 +18,16 @@ declare module "next-auth" {
             emailVerified?: Date | null;
             parentId?: string;
             avatar?: string | null;
+            accessToken?: string;
+            refreshToken?: string;
             verification?: {
-                token: string;
-                uidb64: string;
+                token?: string;
+                uidb64?: string;
+                message?: string;
+                needsVerification?: boolean;
             } | null;
         }
-    }
-
-    interface User {
+    }interface User {
         id: string;
         name?: string;
         email?: string;
@@ -34,9 +36,13 @@ declare module "next-auth" {
         emailVerified?: Date | null;
         parentId?: string;
         avatar?: string | null;
+        accessToken?: string;
+        refreshToken?: string;
         verification?: {
-            token: string;
-            uidb64: string;
+            token?: string;
+            uidb64?: string;
+            message?: string;
+            needsVerification?: boolean;
         } | null;
     }
 }
@@ -99,24 +105,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                                 password2: validatedData.confirmPassword,
                                 terms_accepted: true,
                             }),
-                        });
-
-                        if (!response.ok) {
-                            try {
-                                const data = await response.json();
-                                if (data.email && Array.isArray(data.email)) {
-                                    if (data.email[0].includes('already exists')) {
-                                        throw new Error('This email is already registered. Please use a different email or sign in.');
-                                    }
+                        }); if (!response.ok) {
+                            const data = await response.json();
+                            if (data.email && Array.isArray(data.email)) {
+                                if (data.email[0].includes('already exists')) {
+                                    throw new Error('This email is already registered. Please use a different email or sign in.');
                                 }
-                                throw new Error(data.detail || "Failed to sign up");
-                            } catch (parseError) {
-                                // Handle non-JSON responses
-                                console.error("Non-JSON response from signup API:", parseError);
-                                const text = await response.text();
-                                console.log("Response text:", text.substring(0, 500)); // Log first 500 chars
-                                throw new Error(`Failed to sign up. Server response status: ${response.status}`);
                             }
+                            throw new Error(data.detail || "Failed to sign up");
                         }
 
                         let data;
@@ -126,21 +122,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         } catch (parseError) {
                             console.error("Error parsing signup response:", parseError);
                             throw new Error("Received invalid response from server");
-                        }
+                        }                        // According to API documentation, signup returns:
+                        // Response (201): { "message": "Registration successful! Check your email to verify your account." }
+                        // For our frontend, we need to return user-like data for the session
 
-                        // Return the user data with verification data included
                         return {
-                            id: data.id || '',
-                            name: data.full_name || '',
-                            email: data.email || '',
-                            role: data.role || 'parent',
-                            emailVerified: data.is_verified ? new Date() : null,
-                            avatar: data.avatar || null,
-                            // Include verification data
+                            id: data.user?.id || 'temp-id', // Temporary ID until email verification
+                            name: validatedData.fullName,
+                            email: validatedData.email,
+                            role: 'parent',
+                            emailVerified: null, // Not verified until email confirmation
+                            avatar: null,
+                            // Include verification data from the response if available
                             verification: {
-                                token: data.token,
-                                uidb64: data.uidb64,
-                                email_sent: data.verification_email_sent
+                                message: data.message,
+                                needsVerification: true
                             }
                         };
                     }
@@ -210,27 +206,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                                 }
 
                                 throw new Error(data.detail || data.error || "Failed to log in");
-                            }
-
-                            // Handle the specific response format from the backend
-                            const userData = data.user || data;
+                            }                            // Handle the API response format from documentation
+                            // Response: { "id": "uuid", "name": "string", "email": "string", "avatar": null, "token": "jwt", "refresh": "jwt" }
 
                             return {
-                                id: userData.id || '',
-                                name: userData.full_name || userData.name,
-                                email: userData.email,
-                                role: userData.role || 'parent',
-
-
-
-                                // Use is_verified from the response if available
-                                emailVerified: userData.is_verified ? new Date() : null,
-                                avatar: userData.avatar || null,
-                                parentId: userData.parent_id || null,
-                                username: userData.username || null
-
-
-
+                                id: data.id || '',
+                                name: data.name || '',
+                                email: data.email || '',
+                                role: 'parent', // Parent login always returns parent role
+                                emailVerified: new Date(), // If login succeeds, email is verified
+                                avatar: data.avatar || null,
+                                // Store JWT tokens for future API calls
+                                accessToken: data.token,
+                                refreshToken: data.refresh
                             };
                         } catch (error) {
                             console.error('Login error:', error);
@@ -261,8 +249,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             credentials: {
                 username: { label: "Username", type: "text" },
                 pin: { label: "PIN", type: "password" },
-            },
-            async authorize(credentials) {
+            }, async authorize(credentials) {
                 console.log("Kid credentials received:", credentials);
 
                 if (!credentials || !credentials.username || !credentials.pin) {
@@ -277,37 +264,50 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         pin: credentials.pin,
                     });
 
-                    // For now, we'll use a mock kid account for testing
-                    // In a real app, this would check against the API or database
-                    const mockKidAccount = {
-                        username: "testkid",
-                        pin: "1234",
-                        id: "kid-test-001",
-                        name: "Test Kid",
-                        parentId: "parent-001"
-                    };
+                    // Call the backend API for child login
+                    const response = await fetch(getApiUrl(API_ENDPOINTS.CHILD_LOGIN), {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: validatedData.username,
+                            pin: validatedData.pin,
+                        }),
+                    });
 
-                    // Check if credentials match our mock account
-                    if (validatedData.username === mockKidAccount.username &&
-                        validatedData.pin === mockKidAccount.pin) {
+                    const data = await response.json();
 
-                        return {
-                            id: mockKidAccount.id,
-                            name: mockKidAccount.name,
-                            username: mockKidAccount.username,
-                            role: 'kid',
-                            parentId: mockKidAccount.parentId,
-                            emailVerified: new Date(),
-                            avatar: null
-                        };
+                    if (!response.ok) {
+                        // Handle specific error cases from API documentation
+                        if (response.status === 401) {
+                            console.log("Invalid kid credentials from API");
+                            throw new Error("Invalid username or PIN. Please try again.");
+                        }
+
+                        throw new Error(data.detail || data.error || "Failed to log in");
                     }
 
-                    // If credentials don't match, return null
-                    console.log("Invalid kid credentials");
-                    return null;
+                    // According to the API documentation, child login returns:
+                    // { "childId": "uuid", "token": "jwt", "refresh": "jwt" }
+                    return {
+                        id: data.childId,
+                        name: data.username || validatedData.username, // API doesn't return name, use username
+                        username: validatedData.username,
+                        role: 'kid',
+                        emailVerified: new Date(), // Kids don't need email verification
+                        avatar: null,
+                        // Store the JWT token for later use if needed
+                        accessToken: data.token,
+                        refreshToken: data.refresh
+                    };
 
                 } catch (error) {
                     console.error("Kid authorization error:", error);
+                    if (error instanceof Error) {
+                        throw error;
+                    }
                     return null;
                 }
             }
@@ -318,7 +318,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
 
 
-    
+
     session: {
         strategy: "jwt",
     },
@@ -326,8 +326,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         error: '/auth/error',
         signOut: '/',
         verifyRequest: '/auth/verify-email', // Add verify-request page
-    },    callbacks: {
-        async signIn({ user, account, profile }) {
+    }, callbacks: {
+        async signIn({ user, account }) {
             // For OAuth providers (Google, Facebook), assign parent role by default
             if (account?.provider === "google" || account?.provider === "facebook") {
                 console.log("OAuth sign-in detected, assigning parent role");

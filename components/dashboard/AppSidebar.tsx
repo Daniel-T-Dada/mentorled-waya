@@ -38,11 +38,6 @@ const AppSidebar = () => {
                     icon: List,
                 },
                 {
-                    name: "Kids Management",
-                    href: "/dashboard/parents/kids",
-                    icon: UsersRound,
-                },
-                {
                     name: "Family Wallet",
                     href: "/dashboard/parents/wallet",
                     icon: Wallet,

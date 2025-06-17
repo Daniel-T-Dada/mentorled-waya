@@ -7,10 +7,10 @@ export const getBaseApiUrl = () => {
         return process.env.NEXT_PUBLIC_API_URL;
     }
 
-    // Use Django backend by default, but allow Node backend as fallback
-    return process.env.NODE_ENV === 'development'
-        ? 'http://127.0.0.1:8000'  // Django backend
-        : 'http://localhost:3001'; // Node backend
+    // // Use Django backend by default, but allow Node backend as fallback
+    // return process.env.NODE_ENV === 'development'
+    //     ? 'http://127.0.0.1:8000'  // Django backend
+    //     : 'http://localhost:3001'; // Node backend
 };
 
 /**
@@ -22,9 +22,36 @@ export const getApiUrl = (endpoint: string) => {
 };
 
 /**
- * Common API endpoints
+ * Common API endpoints - Updated to match backend API documentation
  */
 export const API_ENDPOINTS = {
+    // Authentication endpoints
+    SIGNUP: '/api/users/register/',
+    LOGIN: '/api/users/login/',
+    VERIFY_EMAIL: '/api/users/email-verify/',
+    PASSWORD_RESET: '/api/users/password-reset/',
+    FORGOT_PASSWORD: '/api/users/forgot-password/',
+    PASSWORD_CHANGE: '/api/users/password-change/',
+    PASSWORD_RESET_CONFIRM: '/api/users/reset-password-confirm/',
+    HEALTH_CHECK: '/api/users/',
+
+    // Children endpoints
+    CREATE_CHILD: '/api/children/create/',
+    LIST_CHILDREN: '/api/children/list/',
+    CHILD_DETAIL: '/api/children/:childId/',
+    UPDATE_CHILD: '/api/children/:childId/update/',
+    DELETE_CHILD: '/api/children/:childId/delete/',
+    CHILD_LOGIN: '/api/children/login/',
+
+    // Task endpoints
+    CREATE_TASK: '/api/taskmaster/tasks/create/',
+    LIST_TASKS: '/api/taskmaster/tasks/list/',
+    TASK_DETAIL: '/api/taskmaster/tasks/:taskId/',
+    UPDATE_TASK: '/api/taskmaster/tasks/:taskId/update/',
+    UPDATE_TASK_STATUS: '/api/taskmaster/tasks/:taskId/status/',
+    DELETE_TASK: '/api/taskmaster/tasks/:taskId/delete/',
+
+    // Legacy endpoints (for backward compatibility)
     ACTIVITIES: '/api/activities',
     WALLET: '/api/parents/wallet',
     TRANSACTIONS: '/api/parents/wallet/transactions',
@@ -34,7 +61,4 @@ export const API_ENDPOINTS = {
     PARENT_KIDS: '/api/parent/:parentId/kids',
     CREATE_KID: '/api/create-kid',
     RESEND_VERIFICATION: '/api/resend-verification',
-    SIGNUP: '/api/register',
-    VERIFY_EMAIL: '/api/verify-email',
-    LOGIN: '/api/login',
-} as const; 
+} as const;
