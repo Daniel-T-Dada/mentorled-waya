@@ -39,8 +39,6 @@ export interface LoginResponse {
     avatar: string | null;
     token: string;
     refresh: string;
-    role?: string;
-    is_verified?: boolean;
 }
 
 export interface ChildLoginRequest {
@@ -131,7 +129,7 @@ export class AuthService {
             try {
                 data = await response.json();
                 console.log('Response data:', data);
-            } catch (e) {
+            } catch {
                 // If response is not JSON, create a generic response
                 data = { message: response.statusText };
                 console.log('Non-JSON response, using status text:', response.statusText);
@@ -488,7 +486,7 @@ export class AuthService {
             let parsedData;
             try {
                 parsedData = JSON.parse(responseText);
-            } catch (e) {
+            } catch {
                 parsedData = responseText;
             }
 
