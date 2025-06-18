@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { mockDataService } from "@/lib/services/mockDataService";
 import { Skeleton } from "../ui/skeleton";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -45,37 +44,21 @@ const AppStatCard = ({ kidId }: AppStatCardProps = {}) => {
     const pathname = usePathname();
     const { data: session } = useSession();
 
-
     useEffect(() => {
         const fetchData = async () => {
+            if (!session?.user?.id) {
+                setIsLoading(false);
+                return;
+            }
+
             setIsLoading(true);
-
             try {
-                // If no session, use mock data
-                if (!session?.user?.id) {
-                    console.log('No session user ID, using mock data');
-                    const mockChores = mockDataService.getAllChores();
-                    const mockWallets = mockDataService.getParent().children.map(child => ({
-                        id: child.id,
-                        kidId: child.id,
-                        balance: child.balance,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString()
-                    }));
-                    setChores(mockChores);
-                    setWallets(mockWallets);
-                    setIsLoading(false);
-                    return;
-                }
-
-                // Try to fetch from API
                 const [choresResponse, walletsResponse] = await Promise.all([
                     fetch(getApiUrl(API_ENDPOINTS.CHORES)),
                     fetch(getApiUrl(API_ENDPOINTS.WALLET))
                 ]);
 
                 if (!choresResponse.ok || !walletsResponse.ok) {
-                    console.log('API request failed, using mock data');
                     throw new Error('Failed to fetch data');
                 }
 
@@ -83,27 +66,13 @@ const AppStatCard = ({ kidId }: AppStatCardProps = {}) => {
                 const walletsData = await walletsResponse.json();
 
                 if (!Array.isArray(choresData) || !Array.isArray(walletsData)) {
-                    console.log('Invalid data format, using mock data');
-                    throw new Error('Fetched data is not in expected array format');
+                    throw new Error('Invalid data format');
                 }
 
                 setChores(choresData);
                 setWallets(walletsData);
-
             } catch (err) {
                 console.error("Error fetching data:", err);
-                // Fallback to mock data
-                console.log('Error occurred, using mock data');
-                const mockChores = mockDataService.getAllChores();
-                const mockWallets = mockDataService.getParent().children.map(child => ({
-                    id: child.id,
-                    kidId: child.id,
-                    balance: child.balance,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                }));
-                setChores(mockChores);
-                setWallets(mockWallets);
             } finally {
                 setIsLoading(false);
             }
@@ -138,24 +107,21 @@ const AppStatCard = ({ kidId }: AppStatCardProps = {}) => {
 
         // Kid-specific stats for individual kid dashboard
         if (kidId) {
-            const kid = mockDataService.getKidById(kidId);
-            const kidName = kid?.name || 'Kid';
-            
             return [
                 {
-                    title: `${kidName}'s Current Balance`,
+                    title: "Current Balance",
                     value: formatCurrency(totalBalance),
                     percentageChange: 12,
                     trend: 'up'
                 },
                 {
-                    title: `${kidName}'s Completed Chores`,
+                    title: "Completed Chores",
                     value: `${completedChores} Chores`,
                     percentageChange: 8,
                     trend: 'up'
                 },
                 {
-                    title: `${kidName}'s Pending Chores`,
+                    title: "Pending Chores",
                     value: `${pendingChores} Chores`,
                     percentageChange: -5,
                     trend: 'down'

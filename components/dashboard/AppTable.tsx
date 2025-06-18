@@ -17,11 +17,9 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination";
-import { mockDataService } from "@/lib/services/mockDataService";
-import { toast } from "sonner";
-import { RefreshCcw } from 'lucide-react';
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
-
+import { ClipboardList } from 'lucide-react';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ActivityRow {
     id: string;
@@ -36,87 +34,88 @@ interface AppTableProps {
     parentId?: string;
 }
 
+const LoadingState = () => (
+    <div className="space-y-4">
+        <div className="overflow-auto border rounded-lg p-8">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead className="font-semibold p-6"><Skeleton className="h-4 w-20" /></TableHead>
+                        <TableHead><Skeleton className="h-4 w-24" /></TableHead>
+                        <TableHead><Skeleton className="h-4 w-16" /></TableHead>
+                        <TableHead><Skeleton className="h-4 w-16" /></TableHead>
+                        <TableHead><Skeleton className="h-4 w-20" /></TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {Array.from({ length: 5 }).map((_, index) => (
+                        <TableRow key={index}>
+                            <TableCell className="font-semibold p-6"><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
+    </div>
+);
+
+const InfoState = () => (
+    <div className="flex flex-col items-center justify-center h-[400px] text-center p-6">
+        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+            <ClipboardList className="w-8 h-8 text-muted-foreground" />
+        </div>
+        <h3 className="text-lg font-semibold mb-2">Activities Info</h3>
+        <p className="text-sm text-muted-foreground mb-4 max-w-sm">
+            Your recent activities will be displayed here when available
+        </p>
+    </div>
+);
+
 const AppTable = ({ parentId }: AppTableProps) => {
     const [activities, setActivities] = useState<ActivityRow[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    // Pagination state
+    const [isLoading, setIsLoading] = useState(true);
+    const [needsRetry, setNeedsRetry] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
-    // Function to fetch data
     const fetchActivities = useCallback(async () => {
-        setLoading(true);
-        setError(null);
+        if (!parentId) {
+            setIsLoading(false);
+            return;
+        }
+
+        setIsLoading(true);
+        setNeedsRetry(false);
+
         try {
-            const url = parentId
-                ? `${getApiUrl(API_ENDPOINTS.ACTIVITIES)}?parentId=${parentId}`
-                : getApiUrl(API_ENDPOINTS.ACTIVITIES);
+            const url = getApiUrl(API_ENDPOINTS.ACTIVITIES);
             const response = await fetch(url);
+
             if (!response.ok) {
-                throw new Error('Failed to fetch activities from API');
+                throw new Error('Failed to fetch activities');
             }
-            const data: ActivityRow[] = await response.json();
+
+            const data = await response.json();
             if (!Array.isArray(data)) {
-                throw new Error('API returned data is not an array');
+                throw new Error('Invalid data format');
             }
+
             setActivities(data);
-            toast.success('Activities loaded successfully');
-
-        } catch (apiError) {
-            console.error('API fetch error:', apiError);
-            toast.warning('Using mock data fallback for activities.');
-
-            // Fallback to mock data
-            try {
-                const allChores = mockDataService.getAllChores();
-                const allKids = mockDataService.getAllKids();
-
-                const mockActivities: ActivityRow[] = allChores.map(chore => {
-                    const kid = allKids.find(k => k.id === chore.assignedTo);
-
-                    // Map mock data status to display status from the image
-                    let displayStatus: ActivityRow['status'] = 'processing'; 
-                    if (chore.status === 'completed') {
-                        displayStatus = 'paid'; 
-                    } else if (chore.status === 'pending') {
-                        displayStatus = 'pending'; 
-                    } else if (chore.status === 'cancelled') {
-                        displayStatus = 'cancelled'; 
-                    }
-
-                    return {
-                        id: chore.id,
-                        name: kid ? kid.name : 'Unknown Kid',
-                        activity: chore.title,
-                        amount: chore.reward,
-                        status: displayStatus, 
-                        date: new Date(chore.createdAt).toLocaleDateString('en-US'),
-                    };
-                });
-
-                setActivities(mockActivities);
-
-            } catch (mockError) {
-                console.error('Mock data fallback error:', mockError);
-                setError('Failed to load activities data from both API and mock data.');
-                toast.error('Failed to load activities data.');
-                setActivities([]);
-            }
+        } catch (error) {
+            console.error('Error fetching activities:', error);
+            setNeedsRetry(true);
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     }, [parentId]);
 
-    // Initial data fetch and refresh handler
     useEffect(() => {
         fetchActivities();
     }, [fetchActivities]);
-
-    const handleRefresh = () => {
-        fetchActivities();
-    };
 
     const indexOfLastActivity = currentPage * itemsPerPage;
     const indexOfFirstActivity = indexOfLastActivity - itemsPerPage;
@@ -127,10 +126,10 @@ const AppTable = ({ parentId }: AppTableProps) => {
         setCurrentPage(pageNumber);
     };
 
-    // Helper function to get status badge styling
     const getStatusBadgeStyles = (status: ActivityRow['status']) => {
         switch (status) {
             case 'paid':
+            case 'completed':
                 return 'bg-green-100 text-green-800';
             case 'pending':
                 return 'bg-yellow-100 text-yellow-800';
@@ -143,57 +142,74 @@ const AppTable = ({ parentId }: AppTableProps) => {
         }
     };
 
+    if (isLoading) {
+        return (
+            <div className="w-full border rounded-lg bg-card text-card-foreground shadow-sm p-8">
+                <div className="flex items-center justify-between mb-10">
+                    <h3 className="text-lg font-semibold">Recent Activities</h3>
+                </div>
+                <LoadingState />
+            </div>
+        );
+    }
+
+    if (needsRetry || activities.length === 0) {
+        return (
+            <div className="w-full border rounded-lg bg-card text-card-foreground shadow-sm p-8">
+                <div className="flex items-center justify-between mb-10">
+                    <h3 className="text-lg font-semibold">Recent Activities</h3>
+                </div>
+                <InfoState />
+            </div>
+        );
+    }
+
     return (
         <div className="w-full border rounded-lg bg-card text-card-foreground shadow-sm p-8">
             <div className="flex items-center justify-between mb-10">
                 <h3 className="text-lg font-semibold">Recent Activities</h3>
-                <RefreshCcw className="h-5 w-5 text-muted-foreground cursor-pointer" onClick={handleRefresh} />
             </div>
 
-            {/* Display loading, error, or data */}
-            {loading ? (
-                <p>Loading activities...</p>
-            ) : error ? (
-                <p className="text-destructive">{error}</p>
-            ) : activities.length > 0 ? (
-                <div className="overflow-auto border rounded-lg p-8">
-                    <Table>
-                        <TableHeader className="">
-                            <TableRow >
-                                <TableHead className="font-semibold p-6">Name</TableHead>
-                                <TableHead>Activity</TableHead>
-                                <TableHead>Amount</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Date</TableHead>
+            <div className="overflow-auto border rounded-lg p-8">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="font-semibold p-6">Name</TableHead>
+                            <TableHead>Activity</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Date</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {currentActivities.map((activity) => (
+                            <TableRow key={activity.id}>
+                                <TableCell className="font-semibold p-6">{activity.name}</TableCell>
+                                <TableCell>{activity.activity}</TableCell>
+                                <TableCell>
+                                    {activity.amount.toLocaleString('en-NG', {
+                                        style: 'currency',
+                                        currency: 'NGN',
+                                        maximumFractionDigits: 0
+                                    })}
+                                </TableCell>
+                                <TableCell>
+                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeStyles(activity.status)}`}>
+                                        {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
+                                    </span>
+                                </TableCell>
+                                <TableCell>{activity.date}</TableCell>
                             </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {currentActivities.map((activity) => (
-                                <TableRow key={activity.id}>
-                                    <TableCell className="font-semibold p-6">{activity.name}</TableCell> {/* Added font-medium */}
-                                    <TableCell>{activity.activity}</TableCell>
-                                    <TableCell>{activity.amount.toLocaleString('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 })}</TableCell>
-                                    <TableCell>
-                                        <span
-                                            className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeStyles(activity.status)}`}
-                                        >
-                                            {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>{activity.date}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
-            ) : (
-                <p className="text-center text-muted-foreground">No activities found.</p>
-            )}
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
 
-            {/* Pagination */}
-            {!loading && activities.length > itemsPerPage && totalPages > 1 && (
+            {activities.length > itemsPerPage && totalPages > 1 && (
                 <div className="flex justify-end items-center mt-4 space-x-2">
-                    <span className="text-sm text-muted-foreground min-w-[120px] flex items-center">Page {currentPage} of {totalPages}</span>
+                    <span className="text-sm text-muted-foreground min-w-[120px] flex items-center">
+                        Page {currentPage} of {totalPages}
+                    </span>
                     <Pagination>
                         <PaginationContent>
                             <PaginationItem>
@@ -209,7 +225,6 @@ const AppTable = ({ parentId }: AppTableProps) => {
                                 />
                             </PaginationItem>
 
-
                             {[...Array(totalPages)].map((_, index) => (
                                 <PaginationItem key={index}>
                                     <PaginationLink
@@ -224,6 +239,7 @@ const AppTable = ({ parentId }: AppTableProps) => {
                                     </PaginationLink>
                                 </PaginationItem>
                             ))}
+
                             <PaginationItem>
                                 <PaginationNext
                                     href="#"
