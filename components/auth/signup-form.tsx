@@ -93,14 +93,14 @@ const SignUpForm = () => {
                 // Use the utility function to parse signup errors
                 setError(parseSignupError(result.error));
                 return;
-            }
-
+            }              
+            
             // Get verification data from the response
-            const userData = result?.data || {};
-            const email = userData.email || values.email;
+            const userData = result?.data || result || {};
+            const email = ('email' in userData ? userData.email : undefined) || values.email;
 
             // Check if we have a success message from the backend
-            const successMessage = userData.message || "Account created successfully! Please verify your email.";
+            const successMessage = ('message' in userData ? userData.message : undefined) || "Account created successfully! Please verify your email.";
             setSuccess(successMessage);
 
             console.log('Account created successfully, redirecting to verification page');
@@ -115,16 +115,12 @@ const SignUpForm = () => {
             setTimeout(() => {
                 console.log('Now redirecting to verification page...');
 
-                // If we have verification data, include it in the URL
-                if (userData.token && userData.uidb64) {
-                    router.push(`/auth/verify-email?email=${encodeURIComponent(email)}&token=${encodeURIComponent(userData.token)}&uidb64=${encodeURIComponent(userData.uidb64)}`);
-                } else if (userData.verification?.token && userData.verification?.uidb64) {
-                    // Alternative format
-                    router.push(`/auth/verify-email?email=${encodeURIComponent(email)}&token=${encodeURIComponent(userData.verification.token)}&uidb64=${encodeURIComponent(userData.verification.uidb64)}`);
-                } else {
-                    // Otherwise just redirect with the email
-                    router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
-                }
+                
+
+                // Since the backend only returns a message and sends verification via email,
+                // we just redirect to the verification page with the email parameter
+                // The user will need to click the link in their email to get token and uidb64
+                router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
             }, 1500);
         } catch (error) {
             console.error("Registration failed:", error);

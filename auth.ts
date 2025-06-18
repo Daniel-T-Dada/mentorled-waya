@@ -60,6 +60,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         Google({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            authorization: {
+                params: {
+                    scope: "openid email profile"
+                }
+            }
         }),
         Facebook({
             clientId: process.env.FACEBOOK_CLIENT_ID,
@@ -122,8 +127,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         } catch (parseError) {
                             console.error("Error parsing signup response:", parseError);
                             throw new Error("Received invalid response from server");
-                        }                        
-                        
+                        }
+
                         // According to API documentation, signup returns:
                         // Response (201): { "message": "Registration successful! Check your email to verify your account." }
                         // For our frontend, we need to return user-like data for the session
@@ -135,6 +140,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             role: 'parent',
                             emailVerified: null, // Not verified until email confirmation
                             avatar: null,
+                            
                             // Include verification data from the response if available
                             verification: {
                                 message: data.message,
@@ -330,12 +336,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         signOut: '/',
         verifyRequest: '/auth/verify-email', // Add verify-request page
     }, callbacks: {
-        async signIn({ user, account }) {
+        async signIn({ user, account, profile }) {
+
             // For OAuth providers (Google, Facebook), assign parent role by default
             if (account?.provider === "google" || account?.provider === "facebook") {
                 console.log("OAuth sign-in detected, assigning parent role");
+                console.log("OAuth account data:", account);
+                console.log("OAuth profile data:", profile);
+
                 user.role = "parent";
                 user.emailVerified = new Date(); // OAuth users are considered verified
+
+                // Capture profile image from OAuth providers
+                if (profile?.picture) {
+                    user.avatar = profile.picture;
+                    console.log("Profile image set from profile.picture:", profile.picture);
+                } else if (user.image) {
+                    user.avatar = user.image;
+                    console.log("Profile image set from user.image:", user.image);
+                } else {
+                    console.log("No profile image found in OAuth data");
+                }
+
+                console.log("Final OAuth user data:", user);
             }
             return true;
         },
@@ -343,11 +366,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         async session({ session, token }) {
             if (token.sub) {
                 session.user.id = token.sub;
-                session.user.role = (token.role as string) || "parent"; // Default to parent for OAuth users
+
+                // Default to parent for OAuth users
+                session.user.role = (token.role as string) || "parent"; 
                 session.user.email = (token.email as string) || "";
                 session.user.name = token.name as string | undefined;
                 session.user.emailVerified = token.emailVerified ? new Date(token.emailVerified as string) : null;
                 session.user.avatar = token.avatar as string | null;
+
                 // Add any additional user data from the token
                 if (token.user) {
                     session.user = {
@@ -355,12 +381,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         ...token.user
                     };
                 }
+
+                console.log("Session callback - final session user:", {
+                    id: session.user.id,
+                    name: session.user.name,
+                    email: session.user.email,
+                    avatar: session.user.avatar,
+                    role: session.user.role
+                });
             }
             return session;
         },
 
-        async jwt({ token, user }) {
+        async jwt({ token, user, account, profile }) {
             if (user) {
+                console.log("JWT callback - processing user:", {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    avatar: user.avatar,
+                    role: user.role
+                });
+
                 // Store the complete user object in the token
                 token.user = {
                     id: user.id,
@@ -377,6 +419,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.emailVerified = user.emailVerified;
                 token.avatar = user.avatar;
             }
+
+            // Handle OAuth providers - capture profile image on first login
+            if (account?.provider === "google" || account?.provider === "facebook") {
+                console.log("JWT callback - OAuth provider detected:", account.provider);
+                if (profile?.picture && !token.avatar) {
+                    console.log("JWT callback - setting avatar from profile:", profile.picture);
+                    token.avatar = profile.picture;
+                }
+            }
+
+            console.log("JWT callback - final token avatar:", token.avatar);
             return token;
         },
     },

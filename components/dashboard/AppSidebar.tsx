@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { BarChart, ChartSpline, Clipboard, Goal, HandCoins, Home, List, LogOut, Settings, User, UsersRound, Wallet } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator, useSidebar } from "../ui/sidebar"
 
@@ -99,8 +100,21 @@ const AppSidebar = () => {
             .join("")
             .toUpperCase()
             .slice(0, 2);
-
-    };    // Determine button config using ternary conditions
+    };
+    
+    // Debug: Log user avatar for troubleshooting
+    React.useEffect(() => {
+        if (user && !isLoading) {
+            console.log("AppSidebar - User data:", {
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar,
+                role: user.role
+            });
+        }
+    }, [user, isLoading]);    
+    
+    // Determine button config using ternary conditions
     const isOnKidRoute = pathname.startsWith('/dashboard/kids');
 
     const buttonConfig = (isOnKidRoute && isKid) ? {
@@ -224,7 +238,9 @@ const AppSidebar = () => {
                                                     onError={(e) => {
                                                         const target = e.target as HTMLImageElement;
                                                         target.style.display = 'none';
+                                                        console.log("Failed to load avatar image:", user.avatar);
                                                     }}
+                                                    referrerPolicy="no-referrer"
                                                 />
                                             ) : null}
                                             <AvatarFallback>{getAvatarFallback()}</AvatarFallback>

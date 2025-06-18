@@ -13,10 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { CheckIcon, EyeIcon, EyeOffIcon } from "lucide-react";
-import { toast } from "sonner";
 import { useSession } from "next-auth/react";
-import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
-import { mockDataService } from "@/lib/services/mockDataService";
+import { ChildrenService } from "@/lib/services/childrenService";
 
 interface CreateKidAccountProps {
   isOpen: boolean;
@@ -38,7 +36,6 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
   const [createdKid, setCreatedKid] = useState<KidData | null>(null);
   const { data: session } = useSession();
   const user = session?.user;
-  const [usedMockData, setUsedMockData] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -77,62 +74,33 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
     e.preventDefault();
 
     if (!user || user.role !== "parent") {
-      toast.error("Error", {
-        description: "Parent authentication required. Please log in again."
-      });
-      return;
+      throw new Error("Parent authentication required. Please log in again.");
     }
 
     setIsLoading(true);
 
     try {
-      const body = JSON.stringify({
-        name: formData.name,
+      const response = await ChildrenService.createChild({
         username: formData.username,
         pin: formData.pin,
-        parentId: user.id,
-        avatar: formData.avatar,
-      });
-      const headers = {
-        "Content-Type": "application/json"
-      };
+      }, session?.user?.accessToken || '');
 
-      // Make API call to create kid account
-      const response = await fetch(getApiUrl(API_ENDPOINTS.CREATE_KID), {
-        method: "POST",
-        headers,
-        body
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create kid account");
+      if (!response) {
+        throw new Error("Failed to create kid account");
       }
 
-      const kidData = await response.json();
+      // Convert the response to match KidData interface
+      const kidData: KidData = {
+        id: response.id,
+        name: formData.name, // Use the name from form data since it's not in the response
+        username: response.username,
+        parentId: user.id,
+      };
       setCreatedKid(kidData);
       setStep("success");
-
-    } catch (error: unknown) {
+    } catch (error) {
       console.error("Error creating kid account:", error);
-
-      // Use mock data as fallback
-      toast.warning("Using mock data", {
-        description: "API call failed. Creating a mock kid account for development."
-      });
-
-      // Create a mock kid account using the mockDataService
-      const mockKidData = mockDataService.createMockKidAccount(
-        formData.name,
-        formData.username,
-        user?.id || 'mock-parent-id',
-        formData.pin,
-        formData.avatar
-      );
-
-      setCreatedKid(mockKidData);
-      setUsedMockData(true);
-      setStep("success");
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -145,7 +113,6 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
       setFormData({ name: "", username: "", pin: "", avatar: null });
       setStep("form");
       setCreatedKid(null);
-      setUsedMockData(false);
     }, 300);
   };
 
@@ -289,11 +256,6 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
                   <p className="font-medium">Login Details</p>
                   <p>Username: <span className="font-medium">{createdKid.username}</span></p>
                   <p>Name: {createdKid.name}</p>
-                  {usedMockData && (
-                    <p className="text-xs mt-2 text-yellow-500">
-                      (Mock data - API connection failed)
-                    </p>
-                  )}
                 </div>
               )}
             </div>
