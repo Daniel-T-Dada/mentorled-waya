@@ -11,6 +11,7 @@ export const publicRoutes = [
     '/features',
     '/contact',
     '/auth/verify-email',
+    '/api-test',
     '/manifest.json',
     '/site.webmanifest',
     '/sw.js',

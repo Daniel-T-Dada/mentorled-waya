@@ -151,9 +151,10 @@ const SignUpForm = () => {
             showSocial
         >
             {error && (
-                <div className="p-2 sm:p-3 text-xs sm:text-sm bg-destructive/15 text-destructive rounded-md mb-3 sm:mb-4">
-                    {error}
-                </div>
+                <div
+                    className="p-2 sm:p-3 text-xs sm:text-sm bg-destructive/15 text-destructive rounded-md mb-3 sm:mb-4"
+                    dangerouslySetInnerHTML={{ __html: error }}
+                />
             )}
             <Form {...signUpForm}>
                 <form onSubmit={signUpForm.handleSubmit(onSignUpSubmit)}
