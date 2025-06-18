@@ -16,8 +16,10 @@ export default function VerifyEmailPage() {
         token: string;
         uidb64: string;
     } | null>(null)
+    const [showHeader, setShowHeader] = useState(true)
 
-    console.log('VerifyEmailPage received URL parameters:', { email, token, uidb64 })    
+    console.log('VerifyEmailPage received URL parameters:', { email, token, uidb64 })
+    
     // Handle verification data from query params first (highest priority)
     useEffect(() => {
         // If we have token and uidb64, prioritize them (user clicked email link)
@@ -51,10 +53,18 @@ export default function VerifyEmailPage() {
                 })
                 return
             }
-        }
-
+        }        
         // Keep existing verification data or set to null if no data is available
     }, [email, token, uidb64, session])
+
+    // Hide header when user clicked email link (has token and uidb64)
+    useEffect(() => {
+        if ((token && uidb64) || (verificationData?.token && verificationData?.uidb64)) {
+            setShowHeader(false)
+        } else {
+            setShowHeader(true)
+        }
+    }, [token, uidb64, verificationData])
 
     const hasVerificationParams = !!(email || token || uidb64 || verificationData)
 
@@ -76,12 +86,14 @@ export default function VerifyEmailPage() {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4">
             <div className="w-full max-w-md space-y-8">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold">Verify Your Email</h1>
-                    <p className="mt-2 text-gray-600">
-                        Please verify your email address to continue.
-                    </p>
-                </div>
+                {showHeader && (
+                    <div className="text-center">
+                        <h1 className="text-2xl font-bold">Verify Your Email</h1>
+                        <p className="mt-2 text-gray-600">
+                            Please verify your email address to continue.
+                        </p>
+                    </div>
+                )}
                 <VerifyEmailForm
                     email={verificationData?.email || email}
                     token={verificationData?.token || token}
