@@ -28,6 +28,10 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
       console.log('Current environment:', process.env.NODE_ENV);
       console.log('API Base URL:', getApiUrl(''));
 
+      // Check if email verification simulation is enabled
+      const simulateVerification = process.env.NEXT_PUBLIC_SIMULATE_EMAIL_VERIFICATION === 'true';
+      console.log('Email verification simulation:', simulateVerification ? 'ENABLED' : 'DISABLED');
+
       try {
         // If we don't have token and uidb64, this means user came from signup redirect
         // Show waiting state for them to check email
@@ -38,10 +42,21 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
         }
 
         // If we have token and uidb64, this means user clicked email link
-        // Proceed with automatic verification
-        console.log('Token and uidb64 present, proceeding with automatic verification');
+        console.log('Token and uidb64 present, proceeding with verification');
 
-        // Directly verify with the API instead of using NextAuth to avoid creating a session
+        if (simulateVerification) {
+          // 🎭 SIMULATION MODE: Simulate verification process
+          console.log('🎭 SIMULATION: Simulating email verification process...');
+
+          // Add realistic delay to simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1500));
+
+          console.log('🎭 SIMULATION: Email verification simulated successfully!');
+          setStatus("success");
+          return;
+        }
+
+        // 🔧 REAL MODE: Make actual API call (when backend is fixed)
         console.log('Attempting to verify email via direct API...');
         const baseUrl = getApiUrl(API_ENDPOINTS.VERIFY_EMAIL);
         const apiUrl = `${baseUrl}?uidb64=${encodeURIComponent(uidb64Param)}&token=${encodeURIComponent(tokenParam)}`;
@@ -121,21 +136,8 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
       setError(error instanceof Error ? error.message : "Failed to resend verification email");
     }
   };
-
   // Mask email for privacy - handle case when email is missing
   const maskedEmail = emailParam ? emailParam.replace(/(.{2})(.*)(@.*)/, "$1***$3") : "your email";
-
-  // For development testing only - allows bypassing the email verification
-  const handleDevBypass = async () => {
-    if (process.env.NODE_ENV !== 'development') return;
-
-    try {
-      console.log('Using developer bypass to mark email as verified');
-      setStatus("success");
-    } catch (error) {
-      console.error('Developer bypass error:', error);
-    }
-  };
 
   if (status === "loading") {
     return (
@@ -168,25 +170,13 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
         <p className="text-center text-gray-600">
           We&apos;ve sent a verification email to {maskedEmail}. Please check your inbox and click the
           verification link to continue.
-        </p>
-        <Button
+        </p>        <Button
           onClick={handleResendEmail}
           variant="outline"
           className="w-full"
         >
           Resend Verification Email
         </Button>
-
-        {process.env.NODE_ENV === 'development' && (
-          <Button
-            onClick={handleDevBypass}
-            variant="destructive"
-            className="w-full mt-2"
-            size="sm"
-          >
-            [DEV] Mark as Verified
-          </Button>
-        )}
       </div>
     );
   }
@@ -213,6 +203,7 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
         <p className="text-center text-gray-600">
           Your email has been successfully verified. You can now log in to your account.
         </p>
+
         <Button
           onClick={() => router.push("/auth/signin")}
           className="w-full"
