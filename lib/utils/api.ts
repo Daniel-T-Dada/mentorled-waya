@@ -7,10 +7,8 @@ export const getBaseApiUrl = () => {
         return process.env.NEXT_PUBLIC_API_URL;
     }
 
-    // // Use Django backend by default, but allow Node backend as fallback
-    // return process.env.NODE_ENV === 'development'
-    //     ? 'http://127.0.0.1:8000'  // Django backend
-    //     : 'http://localhost:3001'; // Node backend
+    // Use the same backend URL for both development and production
+    return 'https://waya-mentorled.onrender.com';
 };
 
 /**

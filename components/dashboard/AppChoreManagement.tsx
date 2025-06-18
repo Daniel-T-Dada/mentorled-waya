@@ -6,76 +6,97 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Pencil, Trash, ChevronLeft, ChevronRight } from "lucide-react";
-import { mockDataService } from '@/lib/services/mockDataService';
 import { usePathname } from 'next/navigation';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useSession } from "next-auth/react";
+import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 
-// interface Kid {
-//     id: string;
-//     name: string;
-//     avatar?: string | null;
-// }
+interface Kid {
+    id: string;
+    name: string;
+    avatar?: string | null;
+}
 
-// interface Chore {
-//     id: string;
-//     title: string;
-//     description: string;
-//     reward: number;
-//     assignedTo: string;
-//     status: "completed" | "pending" | "cancelled";
-//     createdAt?: string;
-//     completedAt?: string | null;
-// }
-
-// interface AppChoreManagementProps {
-//     kids: Kid[];
-// }
+interface Chore {
+    id: string;
+    title: string;
+    description: string;
+    reward: number;
+    assignedTo: string;
+    status: "completed" | "pending" | "cancelled";
+    createdAt?: string;
+    completedAt?: string | null;
+}
 
 interface AppChoreManagementProps {
     kidId?: string; // Optional prop for kid-specific chore management
 }
 
-// export function AppChoreManagement({ kids }: AppChoreManagementProps) {
-
 export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
     const pathname = usePathname();
+    const { data: session } = useSession();
 
     const [activeKidTab, setActiveKidTab] = useState("all");
     const [activeStatusTab, setActiveStatusTab] = useState("pending");
     const [isLoading, setIsLoading] = useState(true);
     const [currentPendingPage, setCurrentPendingPage] = useState(0);
     const [currentCompletedPage, setCurrentCompletedPage] = useState(0);
+    const [chores, setChores] = useState<Chore[]>([]);
+    const [kids, setKids] = useState<Kid[]>([]);
 
-    // Simulate loading
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 500); // Simulate a 500ms loading delay
+        const fetchData = async () => {
+            if (!session?.user?.id) {
+                setIsLoading(false);
+                return;
+            }
 
-        return () => clearTimeout(timer);
-    }, []);
+            setIsLoading(true);
+            try {
+                const [choresResponse, kidsResponse] = await Promise.all([
+                    fetch(getApiUrl(API_ENDPOINTS.CHORES)),
+                    fetch(getApiUrl(API_ENDPOINTS.LIST_CHILDREN))
+                ]);
 
-    // Get all chores and kids from mockDataService
-    const allChores = mockDataService.getAllChores();
-    const allKids = mockDataService.getAllKids();
+                if (!choresResponse.ok || !kidsResponse.ok) {
+                    throw new Error('Failed to fetch data');
+                }
 
-    // Select the first 3 kids for dynamic tabs (limitation with current mock data for 'recent activity')
-    // TODO: Implement dynamic selection based on actual 'recent activity' which I am yet to do. 
-    const kidsForTabs = allKids.slice(0, 3);    // Filter chores by the selected kid tab or kidId prop
+                const choresData = await choresResponse.json();
+                const kidsData = await kidsResponse.json();
+
+                if (!Array.isArray(choresData) || !Array.isArray(kidsData)) {
+                    throw new Error('Invalid data format');
+                }
+
+                setChores(choresData);
+                setKids(kidsData);
+            } catch (err) {
+                console.error("Error fetching data:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [session?.user?.id]);
+
+    // Select the first 3 kids for dynamic tabs
+    const kidsForTabs = kids.slice(0, 3);
+
+    // Filter chores by the selected kid tab or kidId prop
     const filteredChores = useMemo(() => {
-        let filtered = allChores;
+        let filtered = chores;
 
-        // If kidId prop is provided, filter by that specific kid
         if (kidId) {
-            filtered = allChores.filter(chore => chore.assignedTo === kidId);
+            filtered = chores.filter(chore => chore.assignedTo === kidId);
         } else if (activeKidTab !== "all") {
-            // Otherwise, use the existing tab-based filtering
-            filtered = allChores.filter(chore => chore.assignedTo === activeKidTab);
+            filtered = chores.filter(chore => chore.assignedTo === activeKidTab);
         }
 
         return filtered;
-    }, [allChores, activeKidTab, kidId]);
+    }, [chores, activeKidTab, kidId]);
 
     // Separate filtered chores by status for displaying counts
     const pendingFilteredChores = filteredChores.filter(chore => chore.status === "pending");
@@ -121,15 +142,16 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
 
     // Function to get kid's name by ID
     const getKidName = (kidId: string) => {
-        const kid = mockDataService.getKidById(kidId);
+        const kid = kids.find(k => k.id === kidId);
         return kid?.name || 'Unknown Kid';
     };
 
     // Function to get kid's avatar by ID
     const getKidAvatar = (kidId: string): string | undefined => {
-        const kid = mockDataService.getKidById(kidId);
+        const kid = kids.find(k => k.id === kidId);
         return kid?.avatar ?? undefined;
     };
+
     return (
         <Card className="h-full flex flex-col">
             <CardHeader className="flex-shrink-0">
@@ -143,10 +165,8 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
                             ))}
                         </TabsList>
 
-
                         <TabsContent value={activeKidTab} className="mt-0 space-y-4">
-                            {/* This TabsContent is just a container for the structure, 
-                              its children (the status tabs and chore list) are rendered below */}
+                            {/* This TabsContent is just a container for the structure */}
                         </TabsContent>
                     </Tabs>
                 )}
@@ -158,7 +178,7 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col overflow-hidden">
-                {/* Status Tabs: Pending and Completed will always show when component is mounted */}
+                {/* Status Tabs: Pending and Completed */}
                 <Tabs value={activeStatusTab} onValueChange={setActiveStatusTab} className="w-full flex flex-col h-full">
                     <TabsList className="grid grid-cols-2 w-full h-12 flex-shrink-0">
                         <TabsTrigger value="pending" className="border p-2">
@@ -199,7 +219,8 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
                                 ) : currentPendingChores.length === 0 ? (
                                     <div className="text-center text-muted-foreground py-8">
                                         No pending chores found for {kidId ? getKidName(kidId) : (activeKidTab === "all" ? "all kids" : getKidName(activeKidTab))}.
-                                    </div>) : (
+                                    </div>
+                                ) : (
                                     currentPendingChores.map((chore) => (
                                         <div key={chore.id} className="border rounded-md p-4">
                                             <div className="flex items-start justify-between">
@@ -274,8 +295,7 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
                                             <button
                                                 key={index}
                                                 onClick={() => setCurrentPendingPage(index)}
-                                                className={`w-2 h-2 rounded-full transition-colors ${index === currentPendingPage ? 'bg-primary' : 'bg-muted-foreground/30'
-                                                    }`}
+                                                className={`w-2 h-2 rounded-full transition-colors ${index === currentPendingPage ? 'bg-primary' : 'bg-muted-foreground/30'}`}
                                                 aria-label={`Go to page ${index + 1}`}
                                                 title={`Page ${index + 1}`}
                                             />
@@ -326,7 +346,8 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
                                 ) : currentCompletedChores.length === 0 ? (
                                     <div className="text-center text-muted-foreground py-8">
                                         No completed chores found for {kidId ? getKidName(kidId) : (activeKidTab === "all" ? "all kids" : getKidName(activeKidTab))}.
-                                    </div>) : (
+                                    </div>
+                                ) : (
                                     currentCompletedChores.map((chore) => (
                                         <div key={chore.id} className="border rounded-md p-4">
                                             <div className="flex items-start justify-between">
@@ -356,7 +377,8 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
                                                         </Button>
                                                     </div>
                                                 )}
-                                            </div>                                            <div className="flex items-center justify-between mt-3">
+                                            </div>
+                                            <div className="flex items-center justify-between mt-3">
                                                 <div className="text-sm font-medium text-green-500">
                                                     {kidId ? "" : `₦${chore.reward.toLocaleString()}`}
                                                 </div>
@@ -399,8 +421,7 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
                                             <button
                                                 key={index}
                                                 onClick={() => setCurrentCompletedPage(index)}
-                                                className={`w-2 h-2 rounded-full transition-colors ${index === currentCompletedPage ? 'bg-primary' : 'bg-muted-foreground/30'
-                                                    }`}
+                                                className={`w-2 h-2 rounded-full transition-colors ${index === currentCompletedPage ? 'bg-primary' : 'bg-muted-foreground/30'}`}
                                                 aria-label={`Go to page ${index + 1}`}
                                                 title={`Page ${index + 1}`}
                                             />

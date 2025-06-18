@@ -17,15 +17,25 @@ export default function VerifyEmailPage() {
         uidb64: string;
     } | null>(null)
 
-    console.log('VerifyEmailPage received URL parameters:', { email, token, uidb64 })
-
+    console.log('VerifyEmailPage received URL parameters:', { email, token, uidb64 })    
     // Handle verification data from query params first (highest priority)
     useEffect(() => {
-        if (email && token && uidb64) {
+        // If we have token and uidb64, prioritize them (user clicked email link)
+        if (token && uidb64) {
             setVerificationData({
-                email,
+                email: email || '', // Email might be empty from email link
                 token,
                 uidb64
+            })
+            return
+        }
+
+        // If we only have email (from signup redirect), just wait for user to click email link
+        if (email && !token && !uidb64) {
+            setVerificationData({
+                email,
+                token: '',
+                uidb64: ''
             })
             return
         }

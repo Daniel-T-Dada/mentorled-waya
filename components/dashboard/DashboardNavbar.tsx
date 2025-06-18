@@ -1,4 +1,5 @@
 'use client'
+import React from 'react'
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -39,6 +40,18 @@ const DashboardNavbar = () => {
         return user.name.charAt(0).toUpperCase();
     };
 
+    // Debug: Log user avatar for troubleshooting
+    React.useEffect(() => {
+        if (user && !isLoading) {
+            console.log("DashboardNavbar - User data:", {
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar,
+                role: user.role
+            });
+        }
+    }, [user, isLoading]);
+
     return (
         <nav className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-12 sticky top-0 z-10 shrink-0 items-center gap-2 border-b bg-background transition-[width,height] ease-linear py-8">
             <div className="flex items-center justify-between w-full px-4">
@@ -66,7 +79,7 @@ const DashboardNavbar = () => {
 
                 {/* Right Side */}
                 <div className="flex items-center gap-4 mr-10">
-                    
+
                     {/* Search - Hidden on mobile */}
                     <div className="relative hidden md:block">
                         <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -154,8 +167,12 @@ const DashboardNavbar = () => {
                                             <AvatarImage
                                                 src={user.avatar}
                                                 alt={user.name || "User avatar"}
-                                                onError={() => setAvatarError(true)}
+                                                onError={() => {
+                                                    console.log("Failed to load avatar image:", user.avatar);
+                                                    setAvatarError(true);
+                                                }}
                                                 loading="lazy"
+                                                referrerPolicy="no-referrer"
                                             />
                                         ) : null}
                                         <AvatarFallback>{getAvatarFallback()}</AvatarFallback>

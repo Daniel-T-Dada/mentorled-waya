@@ -25,64 +25,70 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
   useEffect(() => {
     const verifyToken = async () => {
       console.log('VerifyEmailForm mounted with:', { email: emailParam, token: tokenParam, uidb64: uidb64Param });
+      console.log('Current environment:', process.env.NODE_ENV);
+      console.log('API Base URL:', getApiUrl(''));
 
       try {
+        // If we don't have token and uidb64, this means user came from signup redirect
+        // Show waiting state for them to check email
         if (!tokenParam || !uidb64Param) {
-          console.log('Missing token or uidb64:', { token: tokenParam, uidb64: uidb64Param });
+          console.log('Missing token or uidb64, showing waiting state for user to check email');
           setStatus("waiting");
           return;
         }
 
-        // Email might be missing from params but we can still proceed with verification
-        // The backend should be able to verify with just token and uidb64
-        if (!emailParam) {
-          console.log('Email parameter is missing, but continuing with verification attempt');
-        }
+        // If we have token and uidb64, this means user clicked email link
+        // Proceed with automatic verification
+        console.log('Token and uidb64 present, proceeding with automatic verification');
 
         // Directly verify with the API instead of using NextAuth to avoid creating a session
         console.log('Attempting to verify email via direct API...');
         const baseUrl = getApiUrl(API_ENDPOINTS.VERIFY_EMAIL);
-        const apiUrl = `${baseUrl}/${uidb64Param}/${tokenParam}`;
-
+        const apiUrl = `${baseUrl}?uidb64=${encodeURIComponent(uidb64Param)}&token=${encodeURIComponent(tokenParam)}`;
         console.log('Verification API URL:', apiUrl);
+        console.log('Making fetch request...');
 
         const response = await fetch(apiUrl, {
           method: "GET",
           headers: {
-            "Accept": "application/json"
+            "Accept": "application/json",
+            "Content-Type": "application/json"
           }
-        });
-
+        }).catch(fetchError => {
+          console.error('Fetch request failed:', fetchError);
+          throw new Error(`Network error: ${fetchError.message}`);
+        }); console.log('Fetch completed, response received');
         console.log('Verification response status:', response.status);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+        // Read response body once and handle both success and error cases
+        let responseData;
+        try {
+          responseData = await response.json();
+          console.log('Verification response data:', responseData);
+        } catch (parseError) {
+          console.error('Failed to parse JSON response:', parseError);
+          throw new Error(`Server returned invalid JSON response (status: ${response.status})`);
+        }
 
         if (response.ok) {
-          try {
-            const responseData = await response.json();
-            console.log('Verification response data:', responseData);
-          } catch {
-            console.log('Verification successful but response is not JSON');
-          }
-
           console.log('Email verification successful via API');
           setStatus("success");
           return;
         }
 
-        // Handle error response
-        try {
-          const responseData = await response.json();
-          console.log('Verification error response data:', responseData);
-          const errorMessage = responseData.detail || responseData.message || "Failed to verify email";
-          console.error('Verification failed:', errorMessage);
-          throw new Error(errorMessage);
-        } catch {
-          // If error response is not JSON
-          const text = await response.text();
-          console.error('Non-JSON error response:', text.substring(0, 200));
-          throw new Error(`Verification failed with status: ${response.status}`);
-        }
+        // Handle error response (we already have the parsed data)
+        const errorMessage = responseData.detail || responseData.message || "Failed to verify email";
+        console.error('Verification failed:', errorMessage);
+        throw new Error(errorMessage);
       } catch (error) {
         console.error('Email verification error:', error);
+        console.error('Error type:', typeof error);
+        console.error('Error details:', {
+          name: error instanceof Error ? error.name : 'Unknown',
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : 'No stack trace'
+        });
         setStatus("error");
         setError(error instanceof Error ? error.message : "Failed to verify email");
       }
