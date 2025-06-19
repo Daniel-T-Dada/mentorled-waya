@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useSession } from 'next-auth/react';
-import { ChildrenService } from '@/lib/services/childrenService';
+import { useSession, signOut } from 'next-auth/react';
+import { ChildrenService, ApiError } from '@/lib/services/childrenService';
 
 // Local storage utilities for kid names
 const KID_NAMES_STORAGE_KEY = 'kid_names';
@@ -110,24 +110,48 @@ export function KidProvider({ children }: KidProviderProps) {
             return;
         }
 
-        setIsLoadingKids(true); try {
-            const kidsListResponse = await ChildrenService.listChildren(session.user.accessToken);
-            console.log('KidContext - Loaded kids response:', kidsListResponse);
+        setIsLoadingKids(true);        try {
+            let allKids: any[] = [];
+            let nextUrl: string | null = null;
+            let currentPage = 1;
+            
+            // Fetch all pages of kids
+            do {
+                console.log(`KidContext - Fetching page ${currentPage}...`);
+                
+                let kidsListResponse;
+                if (currentPage === 1) {
+                    // First page - use the regular method
+                    kidsListResponse = await ChildrenService.listChildren(session.user.accessToken);
+                } else {
+                    // Subsequent pages - use the custom URL method
+                    kidsListResponse = await ChildrenService.listChildrenFromUrl(nextUrl!, session.user.accessToken);
+                }
+                
+                console.log(`KidContext - Page ${currentPage} response:`, kidsListResponse);
 
-            // Extract kids array from paginated response
-            if (!kidsListResponse || !kidsListResponse.results || !Array.isArray(kidsListResponse.results)) {
-                console.error('KidContext - Invalid API response format:', kidsListResponse);
-                throw new Error('Invalid API response format - expected paginated response with results array');
-            }
+                // Extract kids array from paginated response
+                if (!kidsListResponse || !kidsListResponse.results || !Array.isArray(kidsListResponse.results)) {
+                    console.error('KidContext - Invalid API response format:', kidsListResponse);
+                    throw new Error('Invalid API response format - expected paginated response with results array');
+                }
 
-            const kidsArray = kidsListResponse.results;
-            console.log('KidContext - Kids array:', kidsArray);
+                // Add this page's kids to our collection
+                allKids = [...allKids, ...kidsListResponse.results];
+                nextUrl = kidsListResponse.next;
+                currentPage++;
+                
+                console.log(`KidContext - Total kids so far: ${allKids.length}, Next URL: ${nextUrl}`);
+                
+            } while (nextUrl);
+
+            console.log('KidContext - All kids collected:', allKids);
 
             // Get stored names
             const storedNames = getStoredKidNames();
 
             // Map response to Kid interface and merge with stored names
-            const mappedKids: Kid[] = kidsArray.map((kid: any) => ({
+            const mappedKids: Kid[] = allKids.map((kid: any) => ({
                 id: kid.id,
                 username: kid.username,
                 name: kid.name || storedNames[kid.id] || undefined, // Use API name, fallback to stored, then undefined
@@ -137,8 +161,7 @@ export function KidProvider({ children }: KidProviderProps) {
             }));
 
             setKids(mappedKids);
-            console.log('KidContext - Successfully mapped kids:', mappedKids);
-        } catch (error) {
+            console.log('KidContext - Successfully mapped kids:', mappedKids);        } catch (error) {
             console.error('KidContext - Failed to load kids:', error);
             console.error('KidContext - Error details:', {
                 message: error instanceof Error ? error.message : 'Unknown error',
@@ -146,6 +169,15 @@ export function KidProvider({ children }: KidProviderProps) {
                 sessionValid: !!session?.user?.accessToken,
                 userRole: session?.user?.role
             });
+            
+            // Handle token expiration (401 errors)
+            if (error instanceof ApiError && error.status === 401) {
+                console.warn('KidContext - Token expired, signing out user...');
+                // Sign out the user to force re-authentication
+                signOut({ redirect: true, callbackUrl: '/auth/signin' });
+                return; // Don't set empty kids array, let the sign out handle it
+            }
+            
             setKids([]);
         } finally {
             setIsLoadingKids(false);
