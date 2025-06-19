@@ -11,18 +11,10 @@ interface ParentDashboardProps {
     onCreateKidClick?: () => void;
 }
 
-import { useState, useEffect } from "react";
-import { mockDataService, type Kid } from '@/lib/services/mockDataService';
 import { Button } from "@/components/ui/button"
 
 
 const ParentDashboardOverview = ({ onCreateKidClick }: ParentDashboardProps = {}) => {
-    const [kids, setKids] = useState<Kid[]>([]);
-
-    useEffect(() => {
-        const mockKids = mockDataService.getAllKids();
-        setKids(mockKids);
-    }, []);
 
     return (
         <main className="">
@@ -67,7 +59,7 @@ const ParentDashboardOverview = ({ onCreateKidClick }: ParentDashboardProps = {}
                 <div className="lg:col-span-1 min-h-[400px] self-start">
 
 
-                    <AppKidsManagement kids={kids} />
+                    <AppKidsManagement onCreateKidClick={onCreateKidClick} />
                 </div>
 
 

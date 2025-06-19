@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { CheckIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { ChildrenService } from "@/lib/services/childrenService";
+import { useKid } from "@/contexts/KidContext";
 
 interface CreateKidAccountProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
   const [isLoading, setIsLoading] = useState(false);
   const [createdKid, setCreatedKid] = useState<KidData | null>(null);
   const { data: session } = useSession();
+  const { addKid, setKidName } = useKid();
   const user = session?.user;
 
   const [formData, setFormData] = useState({
@@ -77,6 +79,13 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
       throw new Error("Parent authentication required. Please log in again.");
     }
 
+    console.log("CreateKidAccount - User session:", {
+      id: user.id,
+      role: user.role,
+      accessToken: user.accessToken,
+      hasAccessToken: !!user.accessToken
+    });
+
     setIsLoading(true);
 
     try {
@@ -96,6 +105,21 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
         username: response.username,
         parentId: user.id,
       };
+
+      // Add kid to context for immediate UI update
+      const newKid = {
+        id: response.id,
+        username: response.username,
+        name: formData.name, // Include the name from the form
+        avatar: response.avatar,
+        parent: user.id,
+      };
+
+      addKid(newKid);
+
+      // Also store the name locally for persistence
+      setKidName(response.id, formData.name);
+
       setCreatedKid(kidData);
       setStep("success");
     } catch (error) {

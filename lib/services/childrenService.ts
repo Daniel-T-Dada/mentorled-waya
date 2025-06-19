@@ -12,13 +12,39 @@ export interface CreateChildResponse {
     avatar: string | null;
 }
 
-export interface ListChildrenResponse {
+export interface KidLoginRequest {
+    username: string;
+    pin: string;
+}
+
+export interface KidLoginResponse {
+    childId: string;
+    childUsername: string;
+    parentId: string;
+    token: string;
+    refresh: string;
+}
+
+export interface Child {
     id: string;
+    parent: string;
+    username: string;
+    avatar: string | null;
     created_at: string;
+}
+
+export interface ListChildrenResponse {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: Child[];
 }
 
 export interface ChildDetailResponse {
     id: string;
+    parent: string;
+    username: string;
+    avatar: string | null;
     created_at: string;
 }
 
@@ -134,18 +160,30 @@ export class ChildrenService {
             },
             parentToken
         );
-    }
-
-    /**
+    }    /**
      * List all children for the authenticated parent
      */
-    static async listChildren(parentToken: string): Promise<ListChildrenResponse[]> {
-        return this.makeRequest<ListChildrenResponse[]>(
+    static async listChildren(parentToken: string): Promise<ListChildrenResponse> {
+        return this.makeRequest<ListChildrenResponse>(
             API_ENDPOINTS.LIST_CHILDREN,
             {
                 method: 'GET',
             },
             parentToken
+        );
+    }
+
+    /**
+     * Kid login with username and PIN
+     */
+    static async kidLogin(data: KidLoginRequest): Promise<KidLoginResponse> {
+        return this.makeRequest<KidLoginResponse>(
+            API_ENDPOINTS.CHILD_LOGIN,
+            {
+                method: 'POST',
+                body: JSON.stringify(data),
+            }
+            // No token needed for kid login
         );
     }
 

@@ -168,7 +168,11 @@ const DashboardNavbar = () => {
                                                 src={user.avatar}
                                                 alt={user.name || "User avatar"}
                                                 onError={() => {
-                                                    console.log("Failed to load avatar image:", user.avatar);
+                                                    console.error("DashboardNavbar - Failed to load avatar image:", {
+                                                        avatarUrl: user.avatar,
+                                                        userName: user.name,
+                                                        userEmail: user.email
+                                                    });
                                                     setAvatarError(true);
                                                 }}
                                                 loading="lazy"

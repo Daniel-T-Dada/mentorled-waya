@@ -26,6 +26,11 @@ declare module "next-auth" {
                 message?: string;
                 needsVerification?: boolean;
             } | null;
+
+            // Kid-specific fields
+            childId?: string;
+            childUsername?: string;
+            isChild?: boolean;
         }
     }interface User {
         id: string;
@@ -44,6 +49,11 @@ declare module "next-auth" {
             message?: string;
             needsVerification?: boolean;
         } | null;
+
+        // Kid-specific fields
+        childId?: string;
+        childUsername?: string;
+        isChild?: boolean;
     }
 }
 
@@ -52,6 +62,13 @@ declare module "@auth/core/jwt" {
         role?: string;
         email?: string;
         avatar?: string | null;
+        accessToken?: string;
+        refreshToken?: string;
+
+        // Kid-specific fields
+        childId?: string;
+        childUsername?: string;
+        isChild?: boolean;
     }
 }
 
@@ -69,7 +86,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         Facebook({
             clientId: process.env.FACEBOOK_CLIENT_ID,
             clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-        }), CredentialsProvider({
+        }),
+        CredentialsProvider({
             id: "parent-credentials",
             name: "Parent Credentials",
             credentials: {
@@ -140,7 +158,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             role: 'parent',
                             emailVerified: null, // Not verified until email confirmation
                             avatar: null,
-                            
+
                             // Include verification data from the response if available
                             verification: {
                                 message: data.message,
@@ -259,67 +277,47 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 username: { label: "Username", type: "text" },
                 pin: { label: "PIN", type: "password" },
             }, async authorize(credentials) {
-                console.log("Kid credentials received:", credentials);
+                console.log("Kid login attempt:", { username: credentials?.username });
 
-                if (!credentials || !credentials.username || !credentials.pin) {
+                if (!credentials?.username || !credentials?.pin) {
                     console.log("Missing kid credentials");
                     return null;
                 }
 
                 try {
-                    // Validate with schema
-                    const validatedData = KidSignInSchema.parse({
-                        username: credentials.username,
-                        pin: credentials.pin,
+                    // Import ChildrenService for kid authentication
+                    const { ChildrenService } = await import('@/lib/services/childrenService');
+
+                    // Call the kid login API
+                    const kidLoginResponse = await ChildrenService.kidLogin({
+                        username: credentials.username as string,
+                        pin: credentials.pin as string
                     });
 
-                    // Call the backend API for child login
-                    const response = await fetch(getApiUrl(API_ENDPOINTS.CHILD_LOGIN), {
-                        method: "POST",
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            username: validatedData.username,
-                            pin: validatedData.pin,
-                        }),
-                    });
+                    console.log("Kid login response:", kidLoginResponse);
 
-                    const data = await response.json();
-
-                    if (!response.ok) {
-                        // Handle specific error cases from API documentation
-                        if (response.status === 401) {
-                            console.log("Invalid kid credentials from API");
-                            throw new Error("Invalid username or PIN. Please try again.");
-                        }
-
-                        throw new Error(data.detail || data.error || "Failed to log in");
-                    }
-
-                    // According to the API documentation, child login returns:
-                    // { "childId": "uuid", "token": "jwt", "refresh": "jwt" }
+                    // Return user object with kid context
                     return {
-                        id: data.childId,
-                        name: data.username || validatedData.username, // API doesn't return name, use username
-                        username: validatedData.username,
-                        role: 'kid',
-                        emailVerified: new Date(), // Kids don't need email verification
+                        id: kidLoginResponse.parentId, // Use parent ID for session
+                        name: kidLoginResponse.childUsername,
+                        email: `${kidLoginResponse.childUsername}@kid.local`, // Dummy email for session
+                        role: "kid",
+                        emailVerified: new Date(),
                         avatar: null,
-                        // Store the JWT token for later use if needed
-                        accessToken: data.token,
-                        refreshToken: data.refresh
-                    };
+                        accessToken: kidLoginResponse.token,
+                        refreshToken: kidLoginResponse.refresh,
 
+                        // Kid-specific fields
+                        childId: kidLoginResponse.childId,
+                        childUsername: kidLoginResponse.childUsername,
+                        parentId: kidLoginResponse.parentId,
+                        isChild: true,
+                    };
                 } catch (error) {
-                    console.error("Kid authorization error:", error);
-                    if (error instanceof Error) {
-                        throw error;
-                    }
-                    return null;
+                    console.error("Kid login error:", error);
+                    throw new Error(error instanceof Error ? error.message : "Invalid kid credentials");
                 }
-            }
+            },
         }),
     ],
 
@@ -368,11 +366,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 session.user.id = token.sub;
 
                 // Default to parent for OAuth users
-                session.user.role = (token.role as string) || "parent"; 
+                session.user.role = (token.role as string) || "parent";
                 session.user.email = (token.email as string) || "";
                 session.user.name = token.name as string | undefined;
                 session.user.emailVerified = token.emailVerified ? new Date(token.emailVerified as string) : null;
                 session.user.avatar = token.avatar as string | null;
+                session.user.accessToken = token.accessToken as string | undefined;
+                session.user.refreshToken = token.refreshToken as string | undefined;
+
+                // Add kid-specific fields
+                session.user.childId = token.childId as string | undefined;
+                session.user.childUsername = token.childUsername as string | undefined;
+                session.user.isChild = token.isChild as boolean | undefined;
 
                 // Add any additional user data from the token
                 if (token.user) {
@@ -387,7 +392,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     name: session.user.name,
                     email: session.user.email,
                     avatar: session.user.avatar,
-                    role: session.user.role
+                    role: session.user.role,
+                    isChild: session.user.isChild,
+                    childId: session.user.childId
                 });
             }
             return session;
@@ -400,7 +407,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     name: user.name,
                     email: user.email,
                     avatar: user.avatar,
-                    role: user.role
+                    role: user.role,
+                    isChild: user.isChild
                 });
 
                 // Store the complete user object in the token
@@ -410,14 +418,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     email: user.email,
                     role: user.role,
                     emailVerified: user.emailVerified,
-                    avatar: user.avatar
+                    avatar: user.avatar,
+                    accessToken: user.accessToken,
+                    refreshToken: user.refreshToken,
+
+                    // Kid-specific fields
+                    childId: user.childId,
+                    childUsername: user.childUsername,
+                    isChild: user.isChild
                 };
+
                 // Also store individual fields for backward compatibility
                 token.role = user.role;
                 token.email = user.email;
                 token.name = user.name;
                 token.emailVerified = user.emailVerified;
                 token.avatar = user.avatar;
+                token.accessToken = user.accessToken;
+                token.refreshToken = user.refreshToken;
+
+                // Store kid-specific fields
+                token.childId = user.childId;
+                token.childUsername = user.childUsername;
+                token.isChild = user.isChild;
             }
 
             // Handle OAuth providers - capture profile image on first login
