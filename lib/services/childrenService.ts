@@ -1,5 +1,18 @@
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 
+// Custom error class for API errors
+export class ApiError extends Error {
+    public status: number;
+    public code?: string;
+
+    constructor(message: string, status: number, code?: string) {
+        super(message);
+        this.name = 'ApiError';
+        this.status = status;
+        this.code = code;
+    }
+}
+
 // Types for Child API requests and responses
 export interface CreateChildRequest {
     username: string;
@@ -111,12 +124,14 @@ export class ChildrenService {
                     statusText: response.statusText,
                     data: data,
                     url: url
-                });
-
-                // Handle different error response formats
+                });                // Handle different error response formats
                 let errorMessage;
+                let errorCode;
 
                 if (data && typeof data === 'object') {
+                    // Extract error code if available
+                    errorCode = data.code;
+                    
                     // Try to extract error message from various possible formats
                     errorMessage =
                         data.detail ||
@@ -133,7 +148,7 @@ export class ChildrenService {
                     errorMessage = 'An error occurred';
                 }
 
-                throw new Error(errorMessage);
+                throw new ApiError(errorMessage, response.status, errorCode);
             }
 
             return data;
@@ -171,6 +186,38 @@ export class ChildrenService {
             },
             parentToken
         );
+    }
+
+    /**
+     * Fetch children from a custom URL (for pagination)
+     */
+    static async listChildrenFromUrl(url: string, parentToken: string): Promise<ListChildrenResponse> {
+        console.log('Making request to:', url);
+        console.log('Request config:', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${parentToken}`
+            }
+        });
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${parentToken}`
+            }
+        });
+
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Response data:', data);
+        return data;
     }
 
     /**
