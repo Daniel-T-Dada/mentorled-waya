@@ -7,8 +7,6 @@ import AppKidsManagement from "../AppKidsManagement"
 import AppStatCard from "../AppStatCard"
 
 
-import { useState, useEffect } from "react";
-import { mockDataService, type Kid } from '@/lib/services/mockDataService';
 import { Button } from "@/components/ui/button";
 
 
@@ -17,12 +15,6 @@ interface TaskMasterDashboardProps {
 }
 
 const TaskMasterDashboard = ({ onCreateChoreClick }: TaskMasterDashboardProps = {}) => {
-    const [kids, setKids] = useState<Kid[]>([]);
-
-    useEffect(() => {
-        const mockKids = mockDataService.getAllKids();
-        setKids(mockKids);
-    }, []);
 
     return (
         <>
@@ -58,7 +50,7 @@ const TaskMasterDashboard = ({ onCreateChoreClick }: TaskMasterDashboardProps = 
                 <div className="lg:col-span-1 min-h-[550px] self-start">
 
 
-                    <AppKidsManagement kids={kids} />
+                    <AppKidsManagement />
                 </div>
 
 

@@ -297,12 +297,10 @@ export default function ApiTestPage() {
         if (!parentToken) {
             setListChildrenStatus('❌ Error: Parent token required. Login first.');
             return;
-        }
-
-        setIsLoading(true);
+        }        setIsLoading(true);
         try {
             const result = await ChildrenService.listChildren(parentToken);
-            setListChildrenStatus(`✅ Success: Found ${result.length} children`);
+            setListChildrenStatus(`✅ Success: Found ${result.results?.length || 0} children`);
         } catch (error) {
             setListChildrenStatus(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
         } finally {

@@ -24,6 +24,18 @@ const AppSidebar = () => {
     const { user, isLoading } = useUser();
     const { isParent, isKid } = useRoleAccess();
 
+    // Debug: Log user avatar for troubleshooting
+    React.useEffect(() => {
+        if (user && !isLoading) {
+            console.log("AppSidebar - User data:", {
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar,
+                role: user.role
+            });
+        }
+    }, [user, isLoading]);
+
     // Determine navigation items based on user role
     const getNavItems = () => {
         if (isParent) {
@@ -101,19 +113,7 @@ const AppSidebar = () => {
             .toUpperCase()
             .slice(0, 2);
     };
-    
-    // Debug: Log user avatar for troubleshooting
-    React.useEffect(() => {
-        if (user && !isLoading) {
-            console.log("AppSidebar - User data:", {
-                name: user.name,
-                email: user.email,
-                avatar: user.avatar,
-                role: user.role
-            });
-        }
-    }, [user, isLoading]);    
-    
+
     // Determine button config using ternary conditions
     const isOnKidRoute = pathname.startsWith('/dashboard/kids');
 
@@ -238,7 +238,12 @@ const AppSidebar = () => {
                                                     onError={(e) => {
                                                         const target = e.target as HTMLImageElement;
                                                         target.style.display = 'none';
-                                                        console.log("Failed to load avatar image:", user.avatar);
+                                                        console.error("AppSidebar - Failed to load avatar image:", {
+                                                            avatarUrl: user.avatar,
+                                                            userName: user.name,
+                                                            userEmail: user.email,
+                                                            error: e
+                                                        });
                                                     }}
                                                     referrerPolicy="no-referrer"
                                                 />
