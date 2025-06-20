@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -112,12 +112,18 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
                 console.error("Error fetching data:", err);
             } finally {
                 setIsLoading(false);
-            }
-        }; fetchData();
-    }, [session?.user?.id, refreshTrigger]);
+            }        }; fetchData();    }, [session?.user?.id, session?.user?.accessToken, refreshTrigger]);
 
     // Select the first 3 kids for dynamic tabs
-    const kidsForTabs = kids.slice(0, 3);    // Filter chores by the selected kid tab or kidId prop
+    const kidsForTabs = kids.slice(0, 3);
+
+    // Function to get kid's username by ID
+    const getKidUsername = useCallback((kidId: string): string => {
+        const kid = kids.find(k => k.id === kidId);
+        return kid?.username || kidId; // fallback to ID if username not found
+    }, [kids]);
+
+    // Filter chores by the selected kid tab or kidId prop
     const filteredChores = useMemo(() => {
         let filtered = chores;
 
@@ -129,10 +135,8 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
             // Convert activeKidTab (ID) to username for filtering
             const kidUsername = getKidUsername(activeKidTab);
             filtered = chores.filter(chore => chore.assignedTo === kidUsername);
-        }
-
-        return filtered;
-    }, [chores, activeKidTab, kidId, kids]);
+        }        return filtered;
+    }, [chores, activeKidTab, kidId, getKidUsername]);
 
     // Separate filtered chores by status for displaying counts
     const pendingFilteredChores = filteredChores.filter(chore => chore.status === "pending");
@@ -173,8 +177,9 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
     // Reset pagination when filters change
     useEffect(() => {
         setCurrentPendingPage(0);
-        setCurrentCompletedPage(0);
-    }, [activeKidTab, activeStatusTab]);    // Function to get kid's name by username (from chore.assignedTo)
+        setCurrentCompletedPage(0);    }, [activeKidTab, activeStatusTab]);
+
+    // Function to get kid's name by username (from chore.assignedTo)
     const getKidNameByUsername = (username: string) => {
         const kid = kids.find(k => k.username === username);
         return kid?.name || kid?.username || 'Unknown Kid';
@@ -190,24 +195,6 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
     const getKidName = (kidId: string) => {
         const kid = kids.find(k => k.id === kidId);
         return kid?.name || kid?.username || 'Unknown Kid';
-    };
-
-    // Function to get kid's avatar by ID (for UI components that still use IDs)
-    const getKidAvatar = (kidId: string): string | undefined => {
-        const kid = kids.find(k => k.id === kidId);
-        return kid?.avatar ?? undefined;
-    };
-
-    // Function to get kid's username by ID
-    const getKidUsername = (kidId: string): string => {
-        const kid = kids.find(k => k.id === kidId);
-        return kid?.username || kidId; // fallback to ID if username not found
-    };
-
-    // Function to get kid ID by username
-    const getKidIdByUsername = (username: string): string => {
-        const kid = kids.find(k => k.username === username);
-        return kid?.id || username; // fallback to username if ID not found
     };
 
     return (
