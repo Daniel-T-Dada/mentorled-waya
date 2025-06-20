@@ -54,7 +54,7 @@ const AppStatCard = ({ kidId }: AppStatCardProps = {}) => {
             setIsLoading(true);
             try {
                 const [choresResponse, walletsResponse] = await Promise.all([
-                    fetch(getApiUrl(API_ENDPOINTS.CHORES)),
+                    fetch(getApiUrl(API_ENDPOINTS.LIST_TASKS)),
                     fetch(getApiUrl(API_ENDPOINTS.WALLET))
                 ]);
 

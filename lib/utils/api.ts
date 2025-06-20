@@ -43,7 +43,7 @@ export const API_ENDPOINTS = {
 
     // Task endpoints
     CREATE_TASK: '/api/taskmaster/tasks/create/',
-    LIST_TASKS: '/api/taskmaster/tasks/list/',
+    LIST_TASKS: '/api/taskmaster/tasks/',
     TASK_DETAIL: '/api/taskmaster/tasks/:taskId/',
     UPDATE_TASK: '/api/taskmaster/tasks/:taskId/update/',
     UPDATE_TASK_STATUS: '/api/taskmaster/tasks/:taskId/status/',

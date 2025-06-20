@@ -110,15 +110,15 @@ export function KidProvider({ children }: KidProviderProps) {
             return;
         }
 
-        setIsLoadingKids(true);        try {
+        setIsLoadingKids(true); try {
             let allKids: any[] = [];
             let nextUrl: string | null = null;
             let currentPage = 1;
-            
+
             // Fetch all pages of kids
             do {
                 console.log(`KidContext - Fetching page ${currentPage}...`);
-                
+
                 let kidsListResponse;
                 if (currentPage === 1) {
                     // First page - use the regular method
@@ -127,7 +127,7 @@ export function KidProvider({ children }: KidProviderProps) {
                     // Subsequent pages - use the custom URL method
                     kidsListResponse = await ChildrenService.listChildrenFromUrl(nextUrl!, session.user.accessToken);
                 }
-                
+
                 console.log(`KidContext - Page ${currentPage} response:`, kidsListResponse);
 
                 // Extract kids array from paginated response
@@ -140,9 +140,9 @@ export function KidProvider({ children }: KidProviderProps) {
                 allKids = [...allKids, ...kidsListResponse.results];
                 nextUrl = kidsListResponse.next;
                 currentPage++;
-                
+
                 console.log(`KidContext - Total kids so far: ${allKids.length}, Next URL: ${nextUrl}`);
-                
+
             } while (nextUrl);
 
             console.log('KidContext - All kids collected:', allKids);
@@ -161,7 +161,8 @@ export function KidProvider({ children }: KidProviderProps) {
             }));
 
             setKids(mappedKids);
-            console.log('KidContext - Successfully mapped kids:', mappedKids);        } catch (error) {
+            console.log('KidContext - Successfully mapped kids:', mappedKids);
+        } catch (error) {
             console.error('KidContext - Failed to load kids:', error);
             console.error('KidContext - Error details:', {
                 message: error instanceof Error ? error.message : 'Unknown error',
@@ -169,7 +170,7 @@ export function KidProvider({ children }: KidProviderProps) {
                 sessionValid: !!session?.user?.accessToken,
                 userRole: session?.user?.role
             });
-            
+
             // Handle token expiration (401 errors)
             if (error instanceof ApiError && error.status === 401) {
                 console.warn('KidContext - Token expired, signing out user...');
@@ -177,7 +178,7 @@ export function KidProvider({ children }: KidProviderProps) {
                 signOut({ redirect: true, callbackUrl: '/auth/signin' });
                 return; // Don't set empty kids array, let the sign out handle it
             }
-            
+
             setKids([]);
         } finally {
             setIsLoadingKids(false);

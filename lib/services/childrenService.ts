@@ -131,7 +131,7 @@ export class ChildrenService {
                 if (data && typeof data === 'object') {
                     // Extract error code if available
                     errorCode = data.code;
-                    
+
                     // Try to extract error message from various possible formats
                     errorMessage =
                         data.detail ||

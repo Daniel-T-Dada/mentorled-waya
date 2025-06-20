@@ -159,9 +159,8 @@ const AppPieChart = () => {
                             color: chartConfigs.savings.Spent.color
                         },
                     ]);
-                } else {
-                    // Fetch chores data from API
-                    const response = await fetch(getApiUrl(API_ENDPOINTS.CHORES));
+                } else {                    // Fetch chores data from API
+                    const response = await fetch(getApiUrl(API_ENDPOINTS.LIST_TASKS));
                     if (!response.ok) {
                         throw new Error('Failed to fetch chores data');
                     }
