@@ -1,4 +1,4 @@
-import type { Kid } from '@/lib/services/mockDataService';
+import type { Kid } from '@/contexts/KidContext';
 
 export interface KidStats {
     completedChores: number;

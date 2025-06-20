@@ -7,8 +7,7 @@ export { KidsEmptyState } from './KidsEmptyState';
 export { KidStats } from './KidStats';
 export { KidProgressBar } from './KidProgressBar';
 
-// Hook exports
-export { useKidsData } from './useKidsData';
+
 
 // Types exports
 export type * from './types';

@@ -1,5 +1,18 @@
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 
+// Custom error class for API errors
+export class ApiError extends Error {
+    public status: number;
+    public code?: string;
+
+    constructor(message: string, status: number, code?: string) {
+        super(message);
+        this.name = 'ApiError';
+        this.status = status;
+        this.code = code;
+    }
+}
+
 // Types for Child API requests and responses
 export interface CreateChildRequest {
     username: string;
@@ -12,13 +25,39 @@ export interface CreateChildResponse {
     avatar: string | null;
 }
 
-export interface ListChildrenResponse {
+export interface KidLoginRequest {
+    username: string;
+    pin: string;
+}
+
+export interface KidLoginResponse {
+    childId: string;
+    childUsername: string;
+    parentId: string;
+    token: string;
+    refresh: string;
+}
+
+export interface Child {
     id: string;
+    parent: string;
+    username: string;
+    avatar: string | null;
     created_at: string;
+}
+
+export interface ListChildrenResponse {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: Child[];
 }
 
 export interface ChildDetailResponse {
     id: string;
+    parent: string;
+    username: string;
+    avatar: string | null;
     created_at: string;
 }
 
@@ -85,12 +124,14 @@ export class ChildrenService {
                     statusText: response.statusText,
                     data: data,
                     url: url
-                });
-
-                // Handle different error response formats
+                });                // Handle different error response formats
                 let errorMessage;
+                let errorCode;
 
                 if (data && typeof data === 'object') {
+                    // Extract error code if available
+                    errorCode = data.code;
+
                     // Try to extract error message from various possible formats
                     errorMessage =
                         data.detail ||
@@ -107,7 +148,7 @@ export class ChildrenService {
                     errorMessage = 'An error occurred';
                 }
 
-                throw new Error(errorMessage);
+                throw new ApiError(errorMessage, response.status, errorCode);
             }
 
             return data;
@@ -134,18 +175,62 @@ export class ChildrenService {
             },
             parentToken
         );
-    }
-
-    /**
+    }    /**
      * List all children for the authenticated parent
      */
-    static async listChildren(parentToken: string): Promise<ListChildrenResponse[]> {
-        return this.makeRequest<ListChildrenResponse[]>(
+    static async listChildren(parentToken: string): Promise<ListChildrenResponse> {
+        return this.makeRequest<ListChildrenResponse>(
             API_ENDPOINTS.LIST_CHILDREN,
             {
                 method: 'GET',
             },
             parentToken
+        );
+    }
+
+    /**
+     * Fetch children from a custom URL (for pagination)
+     */
+    static async listChildrenFromUrl(url: string, parentToken: string): Promise<ListChildrenResponse> {
+        console.log('Making request to:', url);
+        console.log('Request config:', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${parentToken}`
+            }
+        });
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${parentToken}`
+            }
+        });
+
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Response data:', data);
+        return data;
+    }
+
+    /**
+     * Kid login with username and PIN
+     */
+    static async kidLogin(data: KidLoginRequest): Promise<KidLoginResponse> {
+        return this.makeRequest<KidLoginResponse>(
+            API_ENDPOINTS.CHILD_LOGIN,
+            {
+                method: 'POST',
+                body: JSON.stringify(data),
+            }
+            // No token needed for kid login
         );
     }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useKidsData } from './useKidsData';
+import { useKid } from '@/contexts/KidContext';
 import { KidsPageHeader } from './KidsPageHeader';
 import { KidsGrid } from './KidsGrid';
 import { KidCard } from './KidCard';
@@ -9,7 +9,7 @@ import { KidsEmptyState } from './KidsEmptyState';
 import type { KidsManagementProps } from './types';
 
 export const KidsManagement = ({ onAddKid }: KidsManagementProps) => {
-    const { kids, loading } = useKidsData();
+    const { kids, isLoadingKids } = useKid();
 
     const handleAddKid = () => {
         if (onAddKid) {
@@ -27,18 +27,18 @@ export const KidsManagement = ({ onAddKid }: KidsManagementProps) => {
 
             {/* Kids Grid */}
             <KidsGrid>
-                {loading ? (
+                {isLoadingKids ? (
                     <KidsLoadingSkeleton />
                 ) : kids.length === 0 ? (
                     <KidsEmptyState onAddKid={handleAddKid} />
                 ) : (
-                    kids.map((kid) => (
+                    kids.map((kid: any) => (
                         <KidCard
                             key={kid.id}
                             kid={kid}
-                            completedChores={kid.stats.completedChores}
-                            pendingChores={kid.stats.pendingChores}
-                            progress={kid.stats.progress}
+                            completedChores={0} // Placeholder for now
+                            pendingChores={0}   // Placeholder for now  
+                            progress={0}        // Placeholder for now
                         />
                     ))
                 )}

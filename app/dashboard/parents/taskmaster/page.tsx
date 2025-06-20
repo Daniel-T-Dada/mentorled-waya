@@ -42,7 +42,7 @@ const TaskMasterPage = () => {
                     const fetchChores = async () => {
                         if (!session?.user?.id) return;
                         try {
-                            const response = await fetch(`${getApiUrl(API_ENDPOINTS.CHORES)}?parentId=${session.user.id}`);
+                            const response = await fetch(`${getApiUrl(API_ENDPOINTS.LIST_TASKS)}?parentId=${session.user.id}`);
                             if (!response.ok) throw new Error('Failed to fetch chores');
                             const data = await response.json();
                             setChores(data);

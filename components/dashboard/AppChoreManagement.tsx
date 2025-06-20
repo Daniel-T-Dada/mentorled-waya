@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,8 @@ import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 
 interface Kid {
     id: string;
-    name: string;
+    username: string;
+    name?: string;
     avatar?: string | null;
 }
 
@@ -22,18 +23,21 @@ interface Chore {
     id: string;
     title: string;
     description: string;
-    reward: number;
-    assignedTo: string;
+    reward: string; // API returns as string
+    due_date: string;
+    assignedTo: string; // This is the username, not ID
+    parentId: string;
     status: "completed" | "pending" | "cancelled";
-    createdAt?: string;
-    completedAt?: string | null;
+    created_at: string;
+    completed_at?: string | null;
 }
 
 interface AppChoreManagementProps {
     kidId?: string; // Optional prop for kid-specific chore management
+    refreshTrigger?: number; // Trigger to refresh data
 }
 
-export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
+export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagementProps = {}) {
     const pathname = usePathname();
     const { data: session } = useSession();
 
@@ -50,53 +54,89 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
             if (!session?.user?.id) {
                 setIsLoading(false);
                 return;
-            }
-
-            setIsLoading(true);
+            } setIsLoading(true);
             try {
+                console.log('AppChoreManagement - Fetching data...');
+
                 const [choresResponse, kidsResponse] = await Promise.all([
-                    fetch(getApiUrl(API_ENDPOINTS.CHORES)),
-                    fetch(getApiUrl(API_ENDPOINTS.LIST_CHILDREN))
+                    fetch(getApiUrl(API_ENDPOINTS.LIST_TASKS), {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.user.accessToken}`,
+                        },
+                    }),
+                    fetch(getApiUrl(API_ENDPOINTS.LIST_CHILDREN), {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.user.accessToken}`,
+                        },
+                    })
                 ]);
 
+                console.log('AppChoreManagement - Response status:', {
+                    chores: choresResponse.status,
+                    kids: kidsResponse.status
+                });
+
                 if (!choresResponse.ok || !kidsResponse.ok) {
+                    console.error('AppChoreManagement - API Error:', {
+                        choresStatus: choresResponse.status,
+                        kidsStatus: kidsResponse.status
+                    });
                     throw new Error('Failed to fetch data');
                 }
 
                 const choresData = await choresResponse.json();
                 const kidsData = await kidsResponse.json();
 
-                if (!Array.isArray(choresData) || !Array.isArray(kidsData)) {
-                    throw new Error('Invalid data format');
-                }
+                console.log('AppChoreManagement - Raw API data:', {
+                    choresData,
+                    kidsData
+                });
 
-                setChores(choresData);
-                setKids(kidsData);
+                // Handle different response formats
+                const processedChores = Array.isArray(choresData) ? choresData :
+                    (choresData.results && Array.isArray(choresData.results)) ? choresData.results : [];
+
+                const processedKids = Array.isArray(kidsData) ? kidsData :
+                    (kidsData.results && Array.isArray(kidsData.results)) ? kidsData.results : [];
+
+                console.log('AppChoreManagement - Processed data:', {
+                    choresCount: processedChores.length,
+                    kidsCount: processedKids.length
+                });
+
+                setChores(processedChores);
+                setKids(processedKids);
             } catch (err) {
                 console.error("Error fetching data:", err);
             } finally {
                 setIsLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [session?.user?.id]);
+            }        }; fetchData();    }, [session?.user?.id, session?.user?.accessToken, refreshTrigger]);
 
     // Select the first 3 kids for dynamic tabs
     const kidsForTabs = kids.slice(0, 3);
+
+    // Function to get kid's username by ID
+    const getKidUsername = useCallback((kidId: string): string => {
+        const kid = kids.find(k => k.id === kidId);
+        return kid?.username || kidId; // fallback to ID if username not found
+    }, [kids]);
 
     // Filter chores by the selected kid tab or kidId prop
     const filteredChores = useMemo(() => {
         let filtered = chores;
 
         if (kidId) {
-            filtered = chores.filter(chore => chore.assignedTo === kidId);
+            // Convert kidId to username for filtering
+            const kidUsername = getKidUsername(kidId);
+            filtered = chores.filter(chore => chore.assignedTo === kidUsername);
         } else if (activeKidTab !== "all") {
-            filtered = chores.filter(chore => chore.assignedTo === activeKidTab);
-        }
-
-        return filtered;
-    }, [chores, activeKidTab, kidId]);
+            // Convert activeKidTab (ID) to username for filtering
+            const kidUsername = getKidUsername(activeKidTab);
+            filtered = chores.filter(chore => chore.assignedTo === kidUsername);
+        }        return filtered;
+    }, [chores, activeKidTab, kidId, getKidUsername]);
 
     // Separate filtered chores by status for displaying counts
     const pendingFilteredChores = filteredChores.filter(chore => chore.status === "pending");
@@ -137,19 +177,24 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
     // Reset pagination when filters change
     useEffect(() => {
         setCurrentPendingPage(0);
-        setCurrentCompletedPage(0);
-    }, [activeKidTab, activeStatusTab]);
+        setCurrentCompletedPage(0);    }, [activeKidTab, activeStatusTab]);
 
-    // Function to get kid's name by ID
-    const getKidName = (kidId: string) => {
-        const kid = kids.find(k => k.id === kidId);
-        return kid?.name || 'Unknown Kid';
+    // Function to get kid's name by username (from chore.assignedTo)
+    const getKidNameByUsername = (username: string) => {
+        const kid = kids.find(k => k.username === username);
+        return kid?.name || kid?.username || 'Unknown Kid';
     };
 
-    // Function to get kid's avatar by ID
-    const getKidAvatar = (kidId: string): string | undefined => {
-        const kid = kids.find(k => k.id === kidId);
+    // Function to get kid's avatar by username (from chore.assignedTo)
+    const getKidAvatarByUsername = (username: string): string | undefined => {
+        const kid = kids.find(k => k.username === username);
         return kid?.avatar ?? undefined;
+    };
+
+    // Function to get kid's name by ID (for UI components that still use IDs)
+    const getKidName = (kidId: string) => {
+        const kid = kids.find(k => k.id === kidId);
+        return kid?.name || kid?.username || 'Unknown Kid';
     };
 
     return (
@@ -224,19 +269,18 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
                                     currentPendingChores.map((chore) => (
                                         <div key={chore.id} className="border rounded-md p-4">
                                             <div className="flex items-start justify-between">
-                                                <div>
-                                                    <h3 className="font-medium">{chore.title}</h3>
+                                                <div>                                                    <h3 className="font-medium">{chore.title}</h3>
                                                     <p className="text-sm text-muted-foreground mt-1">{chore.description}</p>
                                                 </div>
                                                 {kidId ? (
                                                     // Kid view: Show avatar and amount
                                                     <div className="flex items-center gap-2">
                                                         <div className="text-sm font-medium text-green-500">
-                                                            ₦{chore.reward.toLocaleString()}
+                                                            ₦{Number(chore.reward).toLocaleString()}
                                                         </div>
                                                         <Avatar className="w-6 h-6">
-                                                            <AvatarImage src={getKidAvatar(chore.assignedTo)} alt={getKidName(chore.assignedTo)} />
-                                                            <AvatarFallback>{getKidName(chore.assignedTo)?.charAt(0)}</AvatarFallback>
+                                                            <AvatarImage src={getKidAvatarByUsername(chore.assignedTo)} alt={getKidNameByUsername(chore.assignedTo)} />
+                                                            <AvatarFallback>{getKidNameByUsername(chore.assignedTo)?.charAt(0)}</AvatarFallback>
                                                         </Avatar>
                                                     </div>
                                                 ) : (
@@ -254,15 +298,14 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
 
                                             <div className="flex items-center justify-between mt-3">
                                                 <div className="text-sm font-medium text-green-500">
-                                                    {kidId ? "" : `₦${chore.reward.toLocaleString()}`}
+                                                    {kidId ? "" : `₦${Number(chore.reward).toLocaleString()}`}
                                                 </div>
                                                 {!kidId && (
-                                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                                        <Avatar className="w-5 h-5">
-                                                            <AvatarImage src={getKidAvatar(chore.assignedTo)} alt={getKidName(chore.assignedTo)} />
-                                                            <AvatarFallback>{getKidName(chore.assignedTo)?.charAt(0)}</AvatarFallback>
-                                                        </Avatar>
-                                                        <span className="text-xs">{getKidName(chore.assignedTo)}</span>
+                                                    <div className="flex items-center gap-1 text-muted-foreground">                                                        <Avatar className="w-5 h-5">
+                                                        <AvatarImage src={getKidAvatarByUsername(chore.assignedTo)} alt={getKidNameByUsername(chore.assignedTo)} />
+                                                        <AvatarFallback>{getKidNameByUsername(chore.assignedTo)?.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                        <span className="text-xs">{getKidNameByUsername(chore.assignedTo)}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -292,7 +335,7 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
                                     </span>
                                     <div className="flex gap-1">
                                         {Array.from({ length: totalPendingPages }).map((_, index) => (
-                                            <button
+                                            <Button
                                                 key={index}
                                                 onClick={() => setCurrentPendingPage(index)}
                                                 className={`w-2 h-2 rounded-full transition-colors ${index === currentPendingPage ? 'bg-primary' : 'bg-muted-foreground/30'}`}
@@ -347,53 +390,52 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
                                     <div className="text-center text-muted-foreground py-8">
                                         No completed chores found for {kidId ? getKidName(kidId) : (activeKidTab === "all" ? "all kids" : getKidName(activeKidTab))}.
                                     </div>
-                                ) : (
-                                    currentCompletedChores.map((chore) => (
-                                        <div key={chore.id} className="border rounded-md p-4">
-                                            <div className="flex items-start justify-between">
-                                                <div>
-                                                    <h3 className="font-medium">{chore.title}</h3>
-                                                    <p className="text-sm text-muted-foreground mt-1">{chore.description}</p>
-                                                </div>
-                                                {kidId ? (
-                                                    // Kid view: Show avatar and amount
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="text-sm font-medium text-green-500">
-                                                            ₦{chore.reward.toLocaleString()}
-                                                        </div>
-                                                        <Avatar className="w-6 h-6">
-                                                            <AvatarImage src={getKidAvatar(chore.assignedTo)} alt={getKidName(chore.assignedTo)} />
-                                                            <AvatarFallback>{getKidName(chore.assignedTo)?.charAt(0)}</AvatarFallback>
-                                                        </Avatar>
-                                                    </div>
-                                                ) : (
-                                                    // Parent view: Show edit/delete buttons
-                                                    <div className="flex items-center gap-2">
-                                                        <Button variant="ghost" size="icon" className="text-primary hover:text-primary/90">
-                                                            <Pencil className="w-5 h-5" />
-                                                        </Button>
-                                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/90">
-                                                            <Trash className="w-5 h-5" />
-                                                        </Button>
-                                                    </div>
-                                                )}
+                                ) : (currentCompletedChores.map((chore) => (
+                                    <div key={chore.id} className="border rounded-md p-4">
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <h3 className="font-medium">{chore.title}</h3>
+                                                <p className="text-sm text-muted-foreground mt-1">{chore.description}</p>
                                             </div>
-                                            <div className="flex items-center justify-between mt-3">
-                                                <div className="text-sm font-medium text-green-500">
-                                                    {kidId ? "" : `₦${chore.reward.toLocaleString()}`}
-                                                </div>
-                                                {!kidId && (
-                                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                                        <Avatar className="w-5 h-5">
-                                                            <AvatarImage src={getKidAvatar(chore.assignedTo)} alt={getKidName(chore.assignedTo)} />
-                                                            <AvatarFallback>{getKidName(chore.assignedTo)?.charAt(0)}</AvatarFallback>
-                                                        </Avatar>
-                                                        <span className="text-xs">{getKidName(chore.assignedTo)}</span>
+                                            {kidId ? (
+                                                // Kid view: Show avatar and amount
+                                                <div className="flex items-center gap-2">
+                                                    <div className="text-sm font-medium text-green-500">
+                                                        ₦{Number(chore.reward).toLocaleString()}
                                                     </div>
-                                                )}
-                                            </div>
+                                                    <Avatar className="w-6 h-6">
+                                                        <AvatarImage src={getKidAvatarByUsername(chore.assignedTo)} alt={getKidNameByUsername(chore.assignedTo)} />
+                                                        <AvatarFallback>{getKidNameByUsername(chore.assignedTo)?.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                </div>
+                                            ) : (
+                                                // Parent view: Show edit/delete buttons
+                                                <div className="flex items-center gap-2">
+                                                    <Button variant="ghost" size="icon" className="text-primary hover:text-primary/90">
+                                                        <Pencil className="w-5 h-5" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/90">
+                                                        <Trash className="w-5 h-5" />
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </div>
-                                    ))
+                                        <div className="flex items-center justify-between mt-3">
+                                            <div className="text-sm font-medium text-green-500">
+                                                {kidId ? "" : `₦${Number(chore.reward).toLocaleString()}`}
+                                            </div>
+                                            {!kidId && (
+                                                <div className="flex items-center gap-1 text-muted-foreground">
+                                                    <Avatar className="w-5 h-5">
+                                                        <AvatarImage src={getKidAvatarByUsername(chore.assignedTo)} alt={getKidNameByUsername(chore.assignedTo)} />
+                                                        <AvatarFallback>{getKidNameByUsername(chore.assignedTo)?.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <span className="text-xs">{getKidNameByUsername(chore.assignedTo)}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
                                 )}
                             </div>
                         </ScrollArea>
@@ -418,7 +460,7 @@ export function AppChoreManagement({ kidId }: AppChoreManagementProps = {}) {
                                     </span>
                                     <div className="flex gap-1">
                                         {Array.from({ length: totalCompletedPages }).map((_, index) => (
-                                            <button
+                                            <Button
                                                 key={index}
                                                 onClick={() => setCurrentCompletedPage(index)}
                                                 className={`w-2 h-2 rounded-full transition-colors ${index === currentCompletedPage ? 'bg-primary' : 'bg-muted-foreground/30'}`}
