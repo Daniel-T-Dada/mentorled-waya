@@ -79,7 +79,7 @@ const AppKidsActivities = ({ kidId }: AppKidsActivitiesProps = {}) => {
         try {
             const [kidsResponse, activitiesResponse] = await Promise.all([
                 fetch(getApiUrl(API_ENDPOINTS.LIST_CHILDREN)),
-                fetch(getApiUrl(API_ENDPOINTS.CHORES))
+                fetch(getApiUrl(API_ENDPOINTS.LIST_TASKS))
             ]);
 
             if (!kidsResponse.ok || !activitiesResponse.ok) {

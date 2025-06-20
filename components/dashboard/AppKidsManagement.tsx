@@ -9,6 +9,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import { Skeleton } from "../ui/skeleton";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useKid } from "@/contexts/KidContext";
 
 interface Kid {
@@ -27,6 +28,7 @@ interface Kid {
 
 interface AppKidsManagementProps {
     onCreateKidClick?: () => void;
+    onAssignChore?: (kidId: string) => void;
 }
 
 const EmptyState = ({ onCreateKidClick }: { onCreateKidClick?: () => void }) => (
@@ -62,9 +64,13 @@ const LoadingState = () => (
     </div>
 );
 
-const AppKidsManagement = ({ onCreateKidClick }: AppKidsManagementProps) => {
+const AppKidsManagement = ({ onCreateKidClick, onAssignChore }: AppKidsManagementProps) => {
     const { kids, isLoadingKids, getKidDisplayName } = useKid();
     const [currentPage, setCurrentPage] = useState(0);
+    const pathname = usePathname();
+
+    // Check if we're on the TaskMaster page
+    const isTaskMasterPage = pathname === '/dashboard/parents/taskmaster';
 
     // Debug logging
     console.log('AppKidsManagement - Debug:', {
@@ -72,7 +78,8 @@ const AppKidsManagement = ({ onCreateKidClick }: AppKidsManagementProps) => {
         kidsLength: kids.length,
         isLoadingKids,
         onCreateKidClick: !!onCreateKidClick
-    });    // Convert context kids to component Kid interface with placeholder data
+    });
+    // Convert context kids to component Kid interface with placeholder data
     const processedKids: Kid[] = kids.map(contextKid => {
         const displayName = getKidDisplayName(contextKid);
         return {
@@ -155,20 +162,25 @@ const AppKidsManagement = ({ onCreateKidClick }: AppKidsManagementProps) => {
                                         <div className="flex flex-col items-center p-2 rounded-md bg-muted">
                                             <span className="font-semibold">{kid.completedChoreCount}</span>
                                             <span className="text-xs text-muted-foreground">Completed</span>
-                                        </div>
-                                        <div className="flex flex-col items-center p-2 rounded-md bg-muted">
+                                        </div>                                        <div className="flex flex-col items-center p-2 rounded-md bg-muted">
                                             <span className="font-semibold">{kid.pendingChoreCount}</span>
                                             <span className="text-xs text-muted-foreground">Pending</span>
                                         </div>
                                     </div>
 
-                                    {/* Action Buttons */}
-                                    <div className="flex gap-2 mt-4">
-                                        <Link href={`/dashboard/parents/kids/${kid.id}`} className="flex-1">
+                                    {/* Action Buttons - Only show on TaskMaster page */}
+                                    {isTaskMasterPage && (
+                                        <div className="flex flex-col sm:flex-row gap-2 mt-4">                                            <Link href={`/dashboard/parents/kids/${kid.id}`} className="flex-1">
                                             <Button variant="outline" className="w-full"><Users className="mr-2 h-4 w-4" /> View Profile</Button>
                                         </Link>
-                                        <Button className="flex-1"><PlusCircle className="mr-2 h-4 w-4" /> Assign Chore</Button>
-                                    </div>
+                                            <Button
+                                                className="flex-1"
+                                                onClick={() => onAssignChore?.(kid.id)}
+                                            >
+                                                <PlusCircle className="mr-2 h-4 w-4" /> Assign Chore
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
 
@@ -247,20 +259,25 @@ const AppKidsManagement = ({ onCreateKidClick }: AppKidsManagementProps) => {
                                         <div className="flex flex-col items-center p-2 rounded-md bg-muted">
                                             <span className="font-semibold">{kid.completedChoreCount}</span>
                                             <span className="text-xs text-muted-foreground">Completed</span>
-                                        </div>
-                                        <div className="flex flex-col items-center p-2 rounded-md bg-muted">
+                                        </div>                                        <div className="flex flex-col items-center p-2 rounded-md bg-muted">
                                             <span className="font-semibold">{kid.pendingChoreCount}</span>
                                             <span className="text-xs text-muted-foreground">Pending</span>
                                         </div>
                                     </div>
 
-                                    {/* Action Buttons */}
-                                    <div className="flex gap-2 mt-4">
-                                        <Link href={`/dashboard/parents/kids/${kid.id}`} className="flex-1">
+                                    {/* Action Buttons - Only show on TaskMaster page */}
+                                    {isTaskMasterPage && (
+                                        <div className="flex flex-col sm:flex-row gap-2 mt-4">                                            <Link href={`/dashboard/parents/kids/${kid.id}`} className="flex-1">
                                             <Button variant="outline" className="w-full"><Users className="mr-2 h-4 w-4" /> View Profile</Button>
                                         </Link>
-                                        <Button className="flex-1"><PlusCircle className="mr-2 h-4 w-4" /> Assign Chore</Button>
-                                    </div>
+                                            <Button
+                                                className="flex-1"
+                                                onClick={() => onAssignChore?.(kid.id)}
+                                            >
+                                                <PlusCircle className="mr-2 h-4 w-4" /> Assign Chore
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>

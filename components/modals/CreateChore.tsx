@@ -25,6 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { mockDataService } from "@/lib/services/mockDataService";
+import { useKid } from "@/contexts/KidContext";
 
 interface Kid {
   id: string;
@@ -49,8 +50,8 @@ const formatDate = (date: Date) => {
 
 export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: CreateChoreProps) {
   const { data: session } = useSession();
+  const { kids, getKidDisplayName } = useKid();
   const [step, setStep] = useState<"form" | "success">("form");
-  const [kids, setKids] = useState<Kid[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [usedMockData, setUsedMockData] = useState(false);
   const [formData, setFormData] = useState({
@@ -61,33 +62,12 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
     assignedTo: ""
   });
 
-  // Fetch kids when modal opens
-  useEffect(() => {
-    const fetchKids = async () => {
-      if (session?.user?.id) {
-        try {
-          const response = await fetch(getApiUrl(API_ENDPOINTS.PARENT_KIDS).replace(':parentId', session.user.id));
-          if (!response.ok) throw new Error('Failed to fetch kids');
-          const data = await response.json();
-          setKids(data);
-        } catch (error) {
-          console.error('Error fetching kids:', error);
-          toast.warning('Using mock data for kids list');
-          // Use mock data for kids
-          const mockKids = mockDataService.getAllKids().map(kid => ({
-            id: kid.id,
-            name: kid.name,
-            username: kid.name.toLowerCase().replace(/\s+/g, '.')
-          }));
-          setKids(mockKids);
-        }
-      }
-    };
-
-    if (isOpen) {
-      fetchKids();
-    }
-  }, [isOpen, session?.user?.id]);
+  // Convert KidContext kids to modal Kid format
+  const modalKids: Kid[] = kids.map(kid => ({
+    id: kid.id,
+    name: getKidDisplayName(kid),
+    username: kid.username
+  }));
 
   // Update assignedTo field when preSelectedKid changes
   useEffect(() => {
@@ -116,29 +96,47 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    try {
+    setIsLoading(true); try {
       // Parse the reward value to a number, removing any non-numeric characters
       const rewardValue = Number(formData.reward.replace(/[^0-9]/g, ''));
 
-      const response = await fetch(getApiUrl(API_ENDPOINTS.CHORES), {
+      console.log('CreateChore - User session:', {
+        id: session?.user?.id,
+        role: session?.user?.role,
+        hasAccessToken: !!session?.user?.accessToken
+      });
+
+      console.log('CreateChore - Form data being sent:', {
+        ...formData,
+        parentId: session?.user?.id,
+        dueDate: formData.dueDate.toISOString(),
+        reward: rewardValue
+      });
+
+      console.log('CreateChore - Attempting to create chore...');
+
+      const response = await fetch(getApiUrl(API_ENDPOINTS.CREATE_TASK), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          parentId: session?.user?.id,
-          dueDate: formData.dueDate.toISOString(),
-          reward: rewardValue
+          'Authorization': `Bearer ${session?.user?.accessToken}`,
+        }, body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          reward: rewardValue,
+          due_date: formData.dueDate.toISOString().split('T')[0], // Convert to YYYY-MM-DD format
+          assigned_to: formData.assignedTo
         }),
-      });
+      }); console.log('CreateChore - Response status:', response.status);
 
       if (!response.ok) {
         const error = await response.json();
+        console.error('CreateChore - API Error:', error);
         throw new Error(error.error || 'Failed to create chore');
       }
+
+      const responseData = await response.json();
+      console.log('CreateChore - Success:', responseData);
 
       setStep("success");
       if (onSuccess) onSuccess();
@@ -195,10 +193,9 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
         {step === "form" ? (
           <>
             <DialogHeader>
-              <DialogTitle className="text-xl text-center">Create Chore</DialogTitle>
-              <p className="text-center text-sm text-muted-foreground">
+              <DialogTitle className="text-xl text-center">Create Chore</DialogTitle>              <p className="text-center text-sm text-muted-foreground">
                 {preSelectedKid
-                  ? `Create a new chore for ${kids.find(k => k.id === preSelectedKid)?.name || 'selected kid'}`
+                  ? `Create a new chore for ${modalKids.find(k => k.id === preSelectedKid)?.name || 'selected kid'}`
                   : "Create a new chore for your kids"}
               </p>
             </DialogHeader>
@@ -287,18 +284,17 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
                   Assign To<span className="text-destructive">*</span>
                 </Label>
                 <RadioGroup
-                  value={formData.assignedTo}
-                  onValueChange={handleRadioChange}
+                  value={formData.assignedTo} onValueChange={handleRadioChange}
                   className="flex flex-col space-y-2"
                 >
-                  {kids.map((kid) => (
+                  {modalKids.map((kid) => (
                     <div key={kid.id} className="flex items-center space-x-2 rounded-md border p-3">
                       <RadioGroupItem value={kid.id} id={kid.id} />
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold">
-                          {kid.name.charAt(0)}
+                          {kid.name?.charAt(0) || kid.username.charAt(0)}
                         </div>
-                        <Label htmlFor={kid.id} className="cursor-pointer">{kid.name}</Label>
+                        <Label htmlFor={kid.id} className="cursor-pointer">{kid.name || kid.username}</Label>
                       </div>
                     </div>
                   ))}
