@@ -85,6 +85,31 @@ export interface Allowance {
     createdAt: string;
 }
 
+export interface Goal {
+    id: string;
+    title: string;
+    description: string;
+    targetAmount: number;
+    currentAmount: number;
+    deadline: string;
+    status: "active" | "completed" | "paused";
+    createdAt: string;
+    completedAt?: string;
+    category: string;
+    kidId: string;
+}
+
+export interface Achievement {
+    id: string;
+    title: string;
+    description: string;
+    icon: string;
+    unlockedAt: string;
+    kidId: string;
+    category: string;
+    points: number;
+}
+
 // Helper functions
 const getDateRange = (range: string) => {
     const today = new Date();
@@ -505,6 +530,42 @@ class MockDataService {
         }
         console.log(`Chore ${choreId} not found`);
         return undefined;
+    }
+
+    // Goals related methods
+    getGoalsByKidId(kidId: string): Goal[] {
+        const goalsData = (this.data as any).goals || {};
+        return goalsData[kidId] || [];
+    }
+
+    getGoalById(goalId: string, kidId: string): Goal | undefined {
+        const goals = this.getGoalsByKidId(kidId);
+        return goals.find(goal => goal.id === goalId);
+    }
+
+    // Achievements related methods
+    getAchievementsByKidId(kidId: string): Achievement[] {
+        const achievementsData = (this.data as any).achievements || {};
+        return achievementsData[kidId] || [];
+    }
+
+    getAchievementById(achievementId: string, kidId: string): Achievement | undefined {
+        const achievements = this.getAchievementsByKidId(kidId);
+        return achievements.find(achievement => achievement.id === achievementId);
+    }
+
+    // Calculate goal statistics for a kid
+    getGoalStatsByKidId(kidId: string): { totalSaved: number; activeGoals: number; goalsAchieved: number } {
+        const goals = this.getGoalsByKidId(kidId);
+        const activeGoals = goals.filter(goal => goal.status === 'active').length;
+        const goalsAchieved = goals.filter(goal => goal.status === 'completed').length;
+        const totalSaved = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
+
+        return {
+            totalSaved,
+            activeGoals,
+            goalsAchieved
+        };
     }
 }
 
