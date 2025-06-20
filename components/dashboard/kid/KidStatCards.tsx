@@ -190,19 +190,12 @@ const KidStatCards = ({ kidId: propKidId, section = 'overview' }: KidStatCardsPr
                     </Card>
                 </>
             );
-        }
-
-        // Default overview stats (existing logic)
+        }        // Default overview stats (existing logic)
         // Calculate stats
         const completedChores = kidChores.filter(chore => chore.status === 'completed').length;
-        const totalEarnings = kidChores
-            .filter(chore => chore.status === 'completed')
-            .reduce((sum, chore) => sum + chore.reward, 0);
 
         // Mock level calculation (based on completed chores)
         const currentLevel = Math.min(Math.floor(completedChores / 3) + 1, 10); // Level up every 3 chores
-        const choresNeededForNextLevel = ((currentLevel) * 3) - completedChores;
-        const progressToNextLevel = ((completedChores % 3) / 3) * 100;
 
         return (
             <>

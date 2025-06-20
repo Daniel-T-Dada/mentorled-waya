@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Target, Trophy, Calendar, Edit, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { MockApiService } from "@/lib/services/mockApiService";
@@ -159,8 +158,8 @@ const KidGoalsList = ({ kidId: propKidId }: KidGoalsListProps) => {
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <h3 className="font-semibold text-lg">{goal.title}</h3>
                                                     <div className={`px-2 py-1 rounded-md text-xs font-medium ${calculateProgress(goal.currentAmount, goal.targetAmount) >= 60 ? 'bg-green-100 text-green-600' :
-                                                            calculateProgress(goal.currentAmount, goal.targetAmount) >= 30 ? 'bg-yellow-100 text-yellow-600' :
-                                                                'bg-red-100 text-red-600'
+                                                        calculateProgress(goal.currentAmount, goal.targetAmount) >= 30 ? 'bg-yellow-100 text-yellow-600' :
+                                                            'bg-red-100 text-red-600'
                                                         }`}>
                                                         {Math.round(calculateProgress(goal.currentAmount, goal.targetAmount))}%
                                                     </div>
