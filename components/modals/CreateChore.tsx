@@ -120,14 +120,17 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.user?.accessToken}`,
-        }, body: JSON.stringify({
+        },        
+        body: JSON.stringify({
           title: formData.title,
           description: formData.description,
           reward: rewardValue,
           due_date: formData.dueDate.toISOString().split('T')[0], // Convert to YYYY-MM-DD format
-          assigned_to: formData.assignedTo
+          assignedTo: formData.assignedTo, // Changed from assigned_to to assignedTo
+          parentId: session?.user?.id // Added missing parentId
         }),
-      }); console.log('CreateChore - Response status:', response.status);
+      }); 
+      console.log('CreateChore - Response status:', response.status);
 
       if (!response.ok) {
         const error = await response.json();
