@@ -530,9 +530,7 @@ class MockDataService {
         }
         console.log(`Chore ${choreId} not found`);
         return undefined;
-    }
-
-    // Goals related methods
+    }    // Goals related methods
     getGoalsByKidId(kidId: string): Goal[] {
         const goalsData = (this.data as any).goals || {};
         return goalsData[kidId] || [];
@@ -541,6 +539,39 @@ class MockDataService {
     getGoalById(goalId: string, kidId: string): Goal | undefined {
         const goals = this.getGoalsByKidId(kidId);
         return goals.find(goal => goal.id === goalId);
+    }
+
+    createMockGoal(
+        title: string,
+        description: string,
+        targetAmount: number,
+        deadline: Date,
+        kidId: string,
+        category: string = "General"
+    ): Goal {
+        const newGoal: Goal = {
+            id: `goal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            title,
+            description,
+            targetAmount,
+            currentAmount: 0,
+            deadline: deadline.toISOString(),
+            status: "active",
+            createdAt: new Date().toISOString(),
+            category,
+            kidId
+        };
+
+        // Add to mock data structure
+        if (!(this.data as any).goals) {
+            (this.data as any).goals = {};
+        }
+        if (!(this.data as any).goals[kidId]) {
+            (this.data as any).goals[kidId] = [];
+        }
+        (this.data as any).goals[kidId].push(newGoal);
+
+        return newGoal;
     }
 
     // Achievements related methods

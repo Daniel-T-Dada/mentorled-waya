@@ -14,15 +14,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 const chartConfig = {
     rewardEarned: {
         label: "Reward Earned",
-        color: "#7DE2D1" 
+        color: "#7DE2D1"
     },
     goalBudget: {
         label: "Goal Budget",
-        color: "#FFB800" 
+        color: "#FFB800"
     },
     rewardSpent: {
         label: "Reward Spent",
-        color: "#7D238E" 
+        color: "#7D238E"
     },
 } satisfies ChartConfig;
 
@@ -199,7 +199,7 @@ const KidBarChart = ({ kidId: propKidId }: KidBarChartProps) => {
 
     const formatCurrency = (value: number) => {
         return `NGN ${value.toLocaleString()}`;
-    };    if (loading) {
+    }; if (loading) {
         return (
             <Card className="h-[280px] sm:h-[320px] md:h-[360px] lg:h-[400px] xl:h-[420px] flex flex-col">
                 <CardHeader className="flex-shrink-0">
@@ -220,7 +220,7 @@ const KidBarChart = ({ kidId: propKidId }: KidBarChartProps) => {
                 </CardContent>
             </Card>
         );
-    }    if (error) {
+    } if (error) {
         return (
             <Card className="h-[280px] sm:h-[320px] md:h-[360px] lg:h-[400px] xl:h-[420px] flex flex-col">
                 <CardContent className="flex items-center justify-center h-full">
@@ -231,7 +231,7 @@ const KidBarChart = ({ kidId: propKidId }: KidBarChartProps) => {
                 </CardContent>
             </Card>
         );
-    }    return (
+    } return (
         <Card className="h-[280px] sm:h-[320px] md:h-[360px] lg:h-[400px] xl:h-[420px] flex flex-col">
             <CardHeader className="flex-shrink-0 pb-3 sm:pb-4">
                 <div className="space-y-2 sm:space-y-3">
