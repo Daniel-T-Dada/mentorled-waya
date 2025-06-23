@@ -114,6 +114,82 @@
                         "description": "Wash all the dishes in the kitchen and put them away.",
                         "isRedeemed": false
                     }
+                ],
+                "goals": [
+                    {
+                        "id": "goal-001",
+                        "title": "New Bicycle",
+                        "description": "To replace my old and broken one.",
+                        "targetAmount": 25000,
+                        "currentAmount": 15000,
+                        "progress": 60,
+                        "dueDate": "2025-08-20",
+                        "category": "Transportation",
+                        "status": "active",
+                        "createdAt": "2025-06-01T10:00:00.000Z"
+                    },
+                    {
+                        "id": "goal-002",
+                        "title": "New Shoes",
+                        "description": "For Ade's birthday party",
+                        "targetAmount": 8000,
+                        "currentAmount": 4000,
+                        "progress": 50,
+                        "dueDate": "2025-07-05",
+                        "category": "Clothing",
+                        "status": "active",
+                        "createdAt": "2025-06-05T10:00:00.000Z"
+                    },
+                    {
+                        "id": "goal-003",
+                        "title": "New Back Pack",
+                        "description": "To replace the old one",
+                        "targetAmount": 12000,
+                        "currentAmount": 1800,
+                        "progress": 15,
+                        "dueDate": "2025-07-30",
+                        "category": "School",
+                        "status": "active",
+                        "createdAt": "2025-06-08T10:00:00.000Z"
+                    },
+                    {
+                        "id": "goal-004",
+                        "title": "Video Game",
+                        "description": "Latest adventure game",
+                        "targetAmount": 15000,
+                        "currentAmount": 15000,
+                        "progress": 100,
+                        "dueDate": "2025-06-01",
+                        "category": "Entertainment",
+                        "status": "completed",
+                        "createdAt": "2025-05-01T10:00:00.000Z"
+                    }
+                ],
+                "achievements": [
+                    {
+                        "id": "achievement-001",
+                        "title": "First Goal Completed",
+                        "description": "Completed your first savings goal!",
+                        "icon": "trophy",
+                        "earnedAt": "2025-06-01T18:00:00.000Z",
+                        "type": "goal"
+                    },
+                    {
+                        "id": "achievement-002",
+                        "title": "Savings Streak",
+                        "description": "Saved money for 7 days in a row",
+                        "icon": "streak",
+                        "earnedAt": "2025-06-10T10:00:00.000Z",
+                        "type": "streak"
+                    },
+                    {
+                        "id": "achievement-003",
+                        "title": "Goal Getter",
+                        "description": "Set your first savings goal",
+                        "icon": "target",
+                        "earnedAt": "2025-05-01T10:00:00.000Z",
+                        "type": "milestone"
+                    }
                 ]
             },
             {
@@ -200,6 +276,42 @@
                         "description": "Sweep the living room and kitchen floor",
                         "isRedeemed": false
                     }
+                ],
+                "goals": [
+                    {
+                        "id": "goal-005",
+                        "title": "Art Supplies",
+                        "description": "Professional drawing set for art class",
+                        "targetAmount": 18000,
+                        "currentAmount": 9000,
+                        "progress": 50,
+                        "dueDate": "2025-09-01",
+                        "category": "Education",
+                        "status": "active",
+                        "createdAt": "2025-06-02T10:00:00.000Z"
+                    },
+                    {
+                        "id": "goal-006",
+                        "title": "Dance Shoes",
+                        "description": "New ballet shoes for dance class",
+                        "targetAmount": 6000,
+                        "currentAmount": 1800,
+                        "progress": 30,
+                        "dueDate": "2025-07-15",
+                        "category": "Sports",
+                        "status": "active",
+                        "createdAt": "2025-06-05T10:00:00.000Z"
+                    }
+                ],
+                "achievements": [
+                    {
+                        "id": "achievement-004",
+                        "title": "Savings Starter",
+                        "description": "Started your first savings goal",
+                        "icon": "target",
+                        "earnedAt": "2025-06-02T10:00:00.000Z",
+                        "type": "milestone"
+                    }
                 ]
             },
             {
@@ -277,6 +389,30 @@
                         "title": "Sort recycling",
                         "description": "Sort items into proper recycling bins",
                         "isRedeemed": true
+                    }
+                ],
+                "goals": [
+                    {
+                        "id": "goal-007",
+                        "title": "Science Kit",
+                        "description": "Chemistry set for school projects",
+                        "targetAmount": 22000,
+                        "currentAmount": 11000,
+                        "progress": 50,
+                        "dueDate": "2025-08-15",
+                        "category": "Education",
+                        "status": "active",
+                        "createdAt": "2025-06-03T10:00:00.000Z"
+                    }
+                ],
+                "achievements": [
+                    {
+                        "id": "achievement-005",
+                        "title": "Halfway Hero",
+                        "description": "Reached 50% of your savings goal",
+                        "icon": "target",
+                        "earnedAt": "2025-06-15T10:00:00.000Z",
+                        "type": "savings"
                     }
                 ]
             },

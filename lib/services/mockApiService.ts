@@ -244,4 +244,44 @@ export class MockApiService {
             throw error;
         }
     }
+
+    // Goals related methods
+    static async fetchGoalsByKidId(kidId: string) {
+        try {
+            const response = await fetch(`${this.getBaseUrl()}/goals/${kidId}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch goals: ${response.statusText}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching goals:', error);
+            throw error;
+        }
+    }
+
+    static async fetchAchievementsByKidId(kidId: string) {
+        try {
+            const response = await fetch(`${this.getBaseUrl()}/achievements/${kidId}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch achievements: ${response.statusText}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching achievements:', error);
+            throw error;
+        }
+    }
+
+    static async fetchGoalStatsByKidId(kidId: string) {
+        try {
+            const response = await fetch(`${this.getBaseUrl()}/goal-stats/${kidId}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch goal stats: ${response.statusText}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching goal stats:', error);
+            throw error;
+        }
+    }
 }

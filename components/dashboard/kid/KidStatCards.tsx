@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Zap } from "lucide-react";
+import { Trophy, Zap, Target } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { MockApiService } from "@/lib/services/mockApiService";
 import { mockDataService } from "@/lib/services/mockDataService";
@@ -11,9 +11,10 @@ import { useState, useEffect } from "react";
 
 interface KidStatCardsProps {
     kidId?: string;
+    section?: 'overview' | 'chore' | 'money-maze' | 'goal-getter' | 'earning-meter';
 }
 
-const KidStatCards = ({ kidId: propKidId }: KidStatCardsProps) => {
+const KidStatCards = ({ kidId: propKidId, section = 'overview' }: KidStatCardsProps) => {
     const { data: session } = useSession();
     const [kid, setKid] = useState<any>(null);
     const [kidChores, setKidChores] = useState<any[]>([]);
@@ -113,9 +114,7 @@ const KidStatCards = ({ kidId: propKidId }: KidStatCardsProps) => {
     // Mock level calculation (based on completed chores)
     const currentLevel = Math.min(Math.floor(completedChores / 3) + 1, 10); // Level up every 3 chores
     const choresNeededForNextLevel = ((currentLevel) * 3) - completedChores;
-    const progressToNextLevel = ((completedChores % 3) / 3) * 100;
-
-    const formatCurrency = (amount: number) => {
+    const progressToNextLevel = ((completedChores % 3) / 3) * 100; const formatCurrency = (amount: number) => {
         return amount.toLocaleString('en-NG', {
             style: 'currency',
             currency: 'NGN',
@@ -123,66 +122,148 @@ const KidStatCards = ({ kidId: propKidId }: KidStatCardsProps) => {
         });
     };
 
-    return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Level Progress Card */}
-            <Card className="border-2">
-                <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2">
-                        <Zap className="h-5 w-5 text-purple-600" />
-                        <CardTitle className="text-lg font-bold">Level {currentLevel}</CardTitle>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-3">
-                        <Progress
-                            value={progressToNextLevel}
-                            className="h-3 bg-gray-200"
-                        />
-                        <p className="text-sm text-muted-foreground">
-                            {choresNeededForNextLevel > 0
-                                ? `${choresNeededForNextLevel} chore${choresNeededForNextLevel > 1 ? 's' : ''} more to complete level ${currentLevel + 1}`
-                                : `Level ${currentLevel} complete!`
-                            }
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
+    // Get stats based on section
+    const getStatCards = () => {
+        if (section === 'goal-getter') {
+            // Mock goal data - in a real app, this would be fetched
+            const goals = mockDataService.getGoalsByKidId(kidId);
+            const activeGoals = goals.filter(goal => goal.status === "active").length;
+            const completedGoals = goals.filter(goal => goal.status === "completed").length;
+            const totalSaved = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
+            const savingsGrowth = 20; // Mock growth percentage
 
-            {/* Total Earnings Card */}
-            <Card className="border-2">
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Total Earnings
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex items-center justify-between">
-                        <div className="text-2xl font-bold">
-                            {formatCurrency(totalEarnings)}
+            return (
+                <>
+                    {/* Total Saved Card */}
+                    <Card className="border-2">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Total Saved
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center justify-between">
+                                <div className="text-2xl font-bold text-green-600">
+                                    {formatCurrency(totalSaved)}
+                                </div>
+                                <Badge className="bg-green-100 text-green-800 border-green-200">
+                                    +{savingsGrowth}%
+                                </Badge>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Active Goals Card */}
+                    <Card className="border-2">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Active Goals
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center gap-3">
+                                <Target className="h-8 w-8 text-blue-600" />
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-3xl font-bold text-gray-900">{activeGoals}</span>
+                                    <span className="text-sm text-muted-foreground">Goals set</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Goals Achieved Card */}
+                    <Card className="border-2">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Goals Achieved
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center gap-3">
+                                <Trophy className="h-8 w-8 text-yellow-500" />
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-3xl font-bold text-gray-900">{completedGoals}</span>
+                                    <span className="text-sm text-muted-foreground">Achieved goals</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </>
+            );
+        }        // Default overview stats (existing logic)
+        // Calculate stats
+        const completedChores = kidChores.filter(chore => chore.status === 'completed').length;
+
+        // Mock level calculation (based on completed chores)
+        const currentLevel = Math.min(Math.floor(completedChores / 3) + 1, 10); // Level up every 3 chores
+
+        return (
+            <>
+                {/* Level Progress Card */}
+                <Card className="border-2">
+                    <CardHeader className="pb-3">
+                        <div className="flex items-center gap-2">
+                            <Zap className="h-5 w-5 text-purple-600" />
+                            <CardTitle className="text-lg font-bold">Level {currentLevel}</CardTitle>
                         </div>
-                        <Badge className="bg-green-100 text-green-800 border-green-200">
-                            +20%
-                        </Badge>
-                    </div>
-                </CardContent>
-            </Card>            {/* Total Achievement Card */}
-            <Card className="border-2">
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Total Achievement
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex items-center gap-3">
-                        <Trophy className="h-8 w-8 text-yellow-500" />
-                        <div className="flex items-baseline gap-1">
-                            <span className="text-3xl font-bold text-gray-900">{completedChores}</span>
-                            <span className="text-sm text-muted-foreground">Chore Completed</span>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-3">
+                            <Progress
+                                value={progressToNextLevel}
+                                className="h-3 bg-gray-200"
+                            />
+                            <p className="text-sm text-muted-foreground">
+                                {choresNeededForNextLevel > 0
+                                    ? `${choresNeededForNextLevel} chore${choresNeededForNextLevel > 1 ? 's' : ''} more to complete level ${currentLevel + 1}`
+                                    : `Level ${currentLevel} complete!`
+                                }
+                            </p>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+
+                {/* Total Earnings Card */}
+                <Card className="border-2">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                            Total Earnings
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-center justify-between">
+                            <div className="text-2xl font-bold">
+                                {formatCurrency(totalEarnings)}
+                            </div>
+                            <Badge className="bg-green-100 text-green-800 border-green-200">
+                                +20%
+                            </Badge>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Total Achievement Card */}
+                <Card className="border-2">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                            Total Achievement
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-center gap-3">
+                            <Trophy className="h-8 w-8 text-yellow-500" />
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-3xl font-bold text-gray-900">{completedChores}</span>
+                                <span className="text-sm text-muted-foreground">Chore Completed</span>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </>
+        );
+    }; return (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {getStatCards()}
         </div>
     );
 };
