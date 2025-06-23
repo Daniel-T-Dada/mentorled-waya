@@ -1,10 +1,9 @@
 // Simple service worker for PWA
 
-const CACHE_NAME = 'waya-cache-v4';
+const CACHE_NAME = 'waya-cache-v5';
 
-// Add list of files to cache here
+// Add list of files to cache here - EXCLUDE authentication-related paths
 const urlsToCache = [
-    '/',
     '/offline',
     '/manifest.json',
     '/site.webmanifest',
@@ -28,6 +27,21 @@ const urlsToCache = [
     '/icons/maskable-icon.png'
 ];
 
+// Paths that should NEVER be cached (authentication-related)
+const NEVER_CACHE_PATHS = [
+    '/api/auth',
+    '/auth/',
+    '/signin',
+    '/signup',
+    '/api/',
+    '/dashboard'
+];
+
+// Helper function to check if a URL should never be cached
+function shouldNeverCache(url) {
+    return NEVER_CACHE_PATHS.some(path => url.includes(path));
+}
+
 // Install a service worker
 self.addEventListener('install', event => {
     // Perform install steps
@@ -43,6 +57,12 @@ self.addEventListener('install', event => {
 
 // Cache and return requests
 self.addEventListener('fetch', event => {
+    // Skip caching for authentication-related requests
+    if (shouldNeverCache(event.request.url)) {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request)
             .then(response => {
@@ -57,12 +77,17 @@ self.addEventListener('fetch', event => {
                             return response;
                         }
 
+                        // Don't cache authentication-related responses
+                        if (shouldNeverCache(event.request.url)) {
+                            return response;
+                        }
+
                         // Clone the response
                         const responseToCache = response.clone();
 
                         caches.open(CACHE_NAME)
                             .then(cache => {
-                                // Don't cache API responses or dynamic data
+                                // Only cache static assets
                                 if (!event.request.url.includes('/api/')) {
                                     cache.put(event.request, responseToCache);
                                 }
@@ -72,9 +97,11 @@ self.addEventListener('fetch', event => {
                     })
                     .catch(() => {
                         // If fetch fails (e.g., offline), show fallback page for navigation requests
-                        if (event.request.mode === 'navigate') {
+                        if (event.request.mode === 'navigate' && !shouldNeverCache(event.request.url)) {
                             return caches.match('/offline');
                         }
+                        // For auth-related requests, let them fail normally
+                        throw new Error('Network error');
                     });
             })
     );

@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
@@ -17,7 +17,7 @@ const mockActivities = [
         amount: 2000,
         status: "Completed",
         date: "20-April-2025",
-        avatar: "/assets/e-wallet.png",
+        // avatar: "/assets/e-wallet.png",
     },
     {
         id: 2,
@@ -26,7 +26,7 @@ const mockActivities = [
         amount: 2000,
         status: "Completed",
         date: "20-April-2025",
-        avatar: "/assets/saving-money.png",
+        // avatar: "/assets/saving-money.png",
     },
     {
         id: 3,
@@ -35,7 +35,7 @@ const mockActivities = [
         amount: 2000,
         status: "Pending",
         date: "20-April-2025",
-        avatar: "/assets/financial-quiz.png",
+        // avatar: "/assets/financial-quiz.png",
     },
 ];
 
@@ -74,7 +74,7 @@ export default function RecentActivities({ activities = mockActivities }) {
                         {paginated.map((activity) => (
                             <TableRow key={activity.id}>                                <TableCell className="flex items-center gap-2">
                                 <Avatar className="w-7 h-7">
-                                    <AvatarImage src={activity.avatar} alt={activity.name} />
+                                    {/* <AvatarImage src={activity.avatar} alt={activity.name} /> */}
                                     <AvatarFallback>{activity.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <span className="font-medium">{activity.name}</span>
