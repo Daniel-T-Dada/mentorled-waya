@@ -9,6 +9,7 @@ import CardWrapper from "./card-wrapper"
 import { ParentSignInSchema, KidSignInSchema } from "@/schemas"
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { handleProviderSwitch } from "@/lib/utils/auth-utils";
 
 
 
@@ -71,9 +72,7 @@ const SignInForm = () => {
         } else {
             kidForm.reset();
         }
-    };
-
-    // Parent login submission
+    };    // Parent login submission
     async function onParentSubmit(values: ParentFormValues) {
         console.log("Parent Form Values:", {
             email: values.email,
@@ -84,6 +83,9 @@ const SignInForm = () => {
         setSuccess("");
 
         try {
+            // Clear auth cache when switching to credentials
+            handleProviderSwitch('credentials');
+            
             const result = await signIn("parent-credentials", {
                 email: values.email,
                 password: values.password,
@@ -132,8 +134,7 @@ const SignInForm = () => {
         } finally {
             setIsLoading(false);
         }
-    }
-
+    }    
     // Kid login submission
     async function onKidSubmit(values: KidFormValues) {
         // console.log("Kid Form Values:", {
@@ -145,6 +146,9 @@ const SignInForm = () => {
         setSuccess("");
 
         try {
+            // Clear auth cache when switching to credentials
+            handleProviderSwitch('credentials');
+            
             const result = await signIn("kid-credentials", {
                 username: values.username,
                 pin: values.pin,

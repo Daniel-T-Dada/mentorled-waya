@@ -6,12 +6,23 @@ import { Button } from "../ui/button"
 import { FaFacebook, FaApple } from "react-icons/fa"
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes"
 import { toast } from "sonner"
+import { handleProviderSwitch } from "@/lib/utils/auth-utils"
 
 const Social = () => {
     const onClick = (provider: "google" | "facebook" | "apple") => {
         if (provider === "google") {
+            // Clear auth cache when switching to Google OAuth
+            handleProviderSwitch('google');
+            
             signIn(provider, {
                 callbackUrl: DEFAULT_LOGIN_REDIRECT
+            })
+        } else if (provider === "facebook") {
+            // Clear auth cache when switching to Facebook OAuth
+            handleProviderSwitch('facebook');
+            
+            toast.info("Coming Soon", {
+                description: `${provider.charAt(0).toUpperCase() + provider.slice(1)} authentication will be available soon!`
             })
         } else {
             toast.info("Coming Soon", {
