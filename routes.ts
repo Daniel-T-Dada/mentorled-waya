@@ -19,7 +19,8 @@ export const publicRoutes = [
     '/worker-*.js',
     '/fallback-*.js',
     '/not-found',
-    '/offline'
+    '/offline',
+    '/debug',
 ]
 
 /**
