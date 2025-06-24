@@ -7,7 +7,7 @@ export function clearAuthCache() {
         // Clear any stored authentication data
         localStorage.removeItem('auth-provider');
         sessionStorage.removeItem('auth-provider');
-        
+
         // Clear any cached authentication responses
         if ('caches' in window) {
             caches.keys().then(cacheNames => {
@@ -36,13 +36,13 @@ export function getAuthProvider(): string | null {
 
 export function handleProviderSwitch(newProvider: 'google' | 'facebook' | 'credentials') {
     const currentProvider = getAuthProvider();
-    
+
     if (currentProvider && currentProvider !== newProvider) {
         // User is switching providers - clear cache
         clearAuthCache();
         console.log(`Switching from ${currentProvider} to ${newProvider} - clearing auth cache`);
     }
-    
+
     setAuthProvider(newProvider);
 }
 
@@ -51,10 +51,10 @@ export function clearAllAuthData() {
         // Clear localStorage
         localStorage.removeItem('auth-provider');
         localStorage.removeItem('nextauth.message');
-        
+
         // Clear sessionStorage
         sessionStorage.clear();
-        
+
         // Clear all auth-related cookies
         document.cookie.split(";").forEach(cookie => {
             const eqPos = cookie.indexOf("=");
@@ -64,7 +64,7 @@ export function clearAllAuthData() {
                 document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
             }
         });
-        
+
         // Clear service worker caches
         if ('caches' in window) {
             caches.keys().then(cacheNames => {

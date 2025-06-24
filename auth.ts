@@ -5,6 +5,7 @@ import { ParentSignInSchema, KidSignInSchema, SignUpSchema } from "./schemas";
 import Google from "next-auth/providers/google";
 import Facebook from "next-auth/providers/facebook";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
+import { parseLoginErrorEnhanced, parseSignupErrorEnhanced, parseKidLoginErrorEnhanced } from '@/lib/utils/auth-errors';
 
 
 declare module "next-auth" {
@@ -249,7 +250,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             };
                         } catch (error) {
                             console.error('Login error:', error);
-                            throw new Error(error instanceof Error ? error.message : 'Failed to log in');
+                            const errorMessage = error instanceof Error ? error.message : 'Failed to log in';
+                            throw new Error(parseLoginErrorEnhanced(errorMessage));
                         }
                     }
 
@@ -257,9 +259,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 } catch (error) {
                     console.error("Authorization error:", error);
                     if (error instanceof ZodError) {
-                        throw new Error(error.errors[0].message);
+                        const validationError = error.errors[0].message;
+                        throw new Error(parseLoginErrorEnhanced(validationError));
                     }
-                    throw error;
+
+                    // If the error is already formatted (from our earlier processing), keep it
+                    if (error instanceof Error && error.message.includes('try again')) {
+                        throw error;
+                    }
+
+                    // Otherwise, parse it as a login error
+                    const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+                    throw new Error(parseLoginErrorEnhanced(errorMessage));
                 }
             }
         }),
@@ -315,7 +326,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     };
                 } catch (error) {
                     console.error("Kid login error:", error);
-                    throw new Error(error instanceof Error ? error.message : "Invalid kid credentials");
+                    const errorMessage = error instanceof Error ? error.message : "Invalid kid credentials";
+                    throw new Error(parseKidLoginErrorEnhanced(errorMessage));
                 }
             },
         }),
@@ -333,7 +345,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         error: '/auth/error',
         signOut: '/',
         verifyRequest: '/auth/verify-email', // Add verify-request page
-    }, callbacks: {
+    },
+    events: {
+        async signIn({ user, account, profile, isNewUser }) {
+            console.log('Sign in event:', { user: user?.email, provider: account?.provider, isNewUser });
+        }, async signOut(params) {
+            console.log('Sign out event:', { params });
+        },
+        async createUser({ user }) {
+            console.log('User created:', { user: user?.email });
+        },
+        async linkAccount({ user, account, profile }) {
+            console.log('Account linked:', { user: user?.email, provider: account?.provider });
+        },
+        async session({ session, token }) {
+            // Only log occasionally to avoid spam
+            if (Math.random() < 0.1) {
+                console.log('Session event:', { user: session?.user?.email, role: session?.user?.role });
+            }
+        },
+    },
+    callbacks: {
         async signIn({ user, account, profile }) {
 
             // For OAuth providers (Google, Facebook), assign parent role by default

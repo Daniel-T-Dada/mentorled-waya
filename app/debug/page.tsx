@@ -36,7 +36,7 @@ export default function DebugPage() {
     return (
         <div className="container mx-auto p-4 space-y-6">
             <h1 className="text-2xl font-bold">Debug & Diagnostics</h1>
-            
+
             {/* Session Info */}
             <Card>
                 <CardHeader>
@@ -54,7 +54,7 @@ export default function DebugPage() {
                     ) : (
                         <p>No active session</p>
                     )}
-                    
+
                     <div className="flex gap-2 mt-4">
                         <Button onClick={handleClearAuthData} variant="outline">
                             Clear Auth Data
@@ -68,33 +68,33 @@ export default function DebugPage() {
 
             {/* PWA Diagnostics */}
             <PWADiagnostics />
-            
+
             {/* Instructions */}
             <Card>
                 <CardHeader>
                     <CardTitle>Common Issues & Solutions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">                    <div>
-                        <h3 className="font-semibold">Issue: &quot;Configuration Error&quot; after switching providers</h3>
-                        <p className="text-sm text-muted-foreground">
-                            1. Click &quot;Clear All Data&quot; above<br/>
-                            2. Refresh the page<br/>
-                            3. Try signing in again
-                        </p>
-                    </div>
-                    
+                    <h3 className="font-semibold">Issue: &quot;Configuration Error&quot; after switching providers</h3>
+                    <p className="text-sm text-muted-foreground">
+                        1. Click &quot;Clear All Data&quot; above<br />
+                        2. Refresh the page<br />
+                        3. Try signing in again
+                    </p>
+                </div>
+
                     <div>
                         <h3 className="font-semibold">Issue: Can&apos;t sign in after closing browser</h3>
                         <p className="text-sm text-muted-foreground">
-                            1. Clear browser cache manually<br/>
-                            2. Use &quot;Force Sign Out&quot; button<br/>
+                            1. Clear browser cache manually<br />
+                            2. Use &quot;Force Sign Out&quot; button<br />
                             3. Try incognito/private mode
                         </p>
                     </div>
-                      <div>
+                    <div>
                         <h3 className="font-semibold">For Testers</h3>
                         <p className="text-sm text-muted-foreground">
-                            Share this URL with testers who encounter issues:<br/>                            <code className="bg-muted p-1 rounded">
+                            Share this URL with testers who encounter issues:<br />                            <code className="bg-muted p-1 rounded">
                                 {currentUrl}
                             </code>
                         </p>

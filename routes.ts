@@ -21,6 +21,7 @@ export const publicRoutes = [
     '/not-found',
     '/offline',
     '/debug',
+    '/auth/error'
 ]
 
 /**
@@ -33,7 +34,7 @@ export const publicRoutes = [
 export const authRoutes = [
     '/auth/signin',
     '/auth/signup',
-    '/auth/error'
+    // '/auth/error'
 ]
 
 /** 
