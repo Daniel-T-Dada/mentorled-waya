@@ -1,7 +1,7 @@
 import { TriangleAlert } from "lucide-react"
 
 interface FormErrorProps {
-    message: string | undefined
+    message: string | null | undefined
 }
 
 const FormError = ({ message }: FormErrorProps) => {
@@ -11,7 +11,7 @@ const FormError = ({ message }: FormErrorProps) => {
             <TriangleAlert className="w-4 h-4" />
             <p className="text-sm">{message}</p>
         </div>
-        )
+    )
 }
 
 export default FormError

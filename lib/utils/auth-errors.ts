@@ -1,6 +1,4 @@
-/**
- * Helper functions for handling authentication errors
- */
+
 
 /**
  * Parse login errors into user-friendly messages
@@ -46,7 +44,7 @@ export function parseLoginError(error: string): string {
 export function parseSignupError(error: string): string {
     // Email already exists
     if (error.includes("already exists") || error.includes("already in use")) {
-        return "An account with this email already exists. Please <a href='/auth/signin' class='text-blue-500 hover:underline'>sign in</a> or use a different email address.";
+        return "An account with this email already exists.";
     }
 
     // Password requirements
@@ -115,40 +113,7 @@ export function parsePasswordResetError(error: string): string {
 }
 
 /**
- * Intercept and transform NextAuth error codes to user-friendly messages
- */
-export function interceptNextAuthError(error: string): string {
-    // Common NextAuth error codes that we want to transform
-    const errorMappings: Record<string, string> = {
-        'Configuration': 'There was a problem with the authentication setup. Please try refreshing the page.',
-        'AccessDenied': 'Access was denied. Please make sure you have permission to access this application.',
-        'Verification': 'Email verification failed. The link may have expired or already been used.',
-        'Default': 'Sign in failed. Please check your credentials and try again.',
-        'Signin': 'Sign in failed. Please check your credentials and try again.',
-        'OAuthSignin': 'Authentication service error. Please try a different sign-in method.',
-        'OAuthCallback': 'Authentication service error. Please try a different sign-in method.',
-        'OAuthCreateAccount': 'Unable to create account with this provider. Please try a different method.',
-        'EmailCreateAccount': 'Unable to create account with this email. Please try a different method.',
-        'Callback': 'Authentication callback failed. Please try again.',
-        'OAuthAccountNotLinked': 'This account is already linked to a different authentication method. Please use your original sign-in method.',
-        'EmailSignin': 'Email sign-in failed. Please check the link in your email or request a new one.',
-        'CredentialsSignin': 'Invalid credentials. Please check your email and password.',
-        'SessionRequired': 'Please sign in to access this page.',
-    };
-
-    // Check if the error matches any of our known NextAuth errors
-    for (const [errorCode, message] of Object.entries(errorMappings)) {
-        if (error.toLowerCase().includes(errorCode.toLowerCase())) {
-            return message;
-        }
-    }
-
-    // If it's not a known NextAuth error, return the original error
-    return error;
-}
-
-/**
- * Enhanced error parser that matches the Django backend error patterns
+ * Parse email verification errors into user-friendly messages
  */
 export function parseBackendError(error: any): string {
     // Extract the actual error message from various response formats
@@ -219,7 +184,7 @@ export function parseLoginErrorEnhanced(error: any): string {
 
     // Authentication failed (from UserLoginView)
     if (lowerError.includes('invalid credentials')) {
-        return "Invalid email or password. Please check your credentials and try again.";
+        return "Invalid email or password. Please try again.";
     }
 
     // Account verification errors (from GoogleLoginView)

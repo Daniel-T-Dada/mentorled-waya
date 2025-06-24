@@ -14,7 +14,7 @@ import { Button } from "../ui/button"
 import FormError from "../form-error"
 import FormSuccess from "../form-sucess"
 // Use the router for client-side navigation
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { signIn, signOut } from "next-auth/react"
 import Link from "next/link"
 import { Checkbox } from "../ui/checkbox"
@@ -49,9 +49,12 @@ interface SignInResult {
 const SignUpForm = () => {
 
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const urlError = searchParams.get("error");
+
     const [isLoading, setIsLoading] = useState(false);
     const [success, setSuccess] = useState<string | undefined>("")
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(urlError ? decodeURIComponent(urlError) : null);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -146,12 +149,6 @@ const SignUpForm = () => {
             backButtonHref="/auth/signin"
             showSocial
         >
-            {error && (
-                <div
-                    className="p-2 sm:p-3 text-xs sm:text-sm bg-destructive/15 text-destructive rounded-md mb-3 sm:mb-4"
-                    dangerouslySetInnerHTML={{ __html: error }}
-                />
-            )}
             <Form {...signUpForm}>
                 <form onSubmit={signUpForm.handleSubmit(onSignUpSubmit)}
                     className="space-y-4 sm:space-y-6"
@@ -271,7 +268,7 @@ const SignUpForm = () => {
                             )}
                         />
                     </div>
-                    <FormError message="" />
+                    <FormError message={error} />
                     <FormSuccess message={success} />
                     <Button
                         disabled={isLoading}
