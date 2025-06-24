@@ -18,7 +18,7 @@ export default function PWADiagnostics() {
         try {
             // Check PWA installation status
             results.isInstalled = window.matchMedia('(display-mode: standalone)').matches
-            
+
             // Check service worker status
             if ('serviceWorker' in navigator) {
                 const registrations = await navigator.serviceWorker.getRegistrations()
@@ -71,7 +71,7 @@ export default function PWADiagnostics() {
             results.cookies = {
                 available: navigator.cookieEnabled,
                 count: document.cookie.split(';').filter(c => c.trim()).length,
-                authCookies: document.cookie.split(';').filter(c => 
+                authCookies: document.cookie.split(';').filter(c =>
                     c.includes('next-auth') || c.includes('auth') || c.includes('session')
                 ).length
             }

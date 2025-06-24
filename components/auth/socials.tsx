@@ -13,14 +13,14 @@ const Social = () => {
         if (provider === "google") {
             // Clear auth cache when switching to Google OAuth
             handleProviderSwitch('google');
-            
+
             signIn(provider, {
                 callbackUrl: DEFAULT_LOGIN_REDIRECT
             })
         } else if (provider === "facebook") {
             // Clear auth cache when switching to Facebook OAuth
             handleProviderSwitch('facebook');
-            
+
             toast.info("Coming Soon", {
                 description: `${provider.charAt(0).toUpperCase() + provider.slice(1)} authentication will be available soon!`
             })

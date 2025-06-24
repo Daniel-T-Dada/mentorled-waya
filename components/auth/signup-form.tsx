@@ -14,12 +14,12 @@ import { Button } from "../ui/button"
 import FormError from "../form-error"
 import FormSuccess from "../form-sucess"
 // Use the router for client-side navigation
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { signIn, signOut } from "next-auth/react"
 import Link from "next/link"
 import { Checkbox } from "../ui/checkbox"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
-import { parseSignupError } from "@/lib/utils/auth-errors"
+import { parseSignupErrorEnhanced } from "@/lib/utils/auth-errors"
 
 type SignUpFormValues = z.infer<typeof SignUpSchema>;
 
@@ -49,9 +49,12 @@ interface SignInResult {
 const SignUpForm = () => {
 
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const urlError = searchParams.get("error");
+
     const [isLoading, setIsLoading] = useState(false);
     const [success, setSuccess] = useState<string | undefined>("")
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(urlError ? decodeURIComponent(urlError) : null);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -85,16 +88,15 @@ const SignUpForm = () => {
             }) as SignInResult;
 
             console.log("SignIn result:", result);
-            console.log("Form values:", values);
-
-            if (result?.error) {
+            console.log("Form values:", values); if (result?.error) {
                 console.error("Signup error:", result.error);
 
-                // Use the utility function to parse signup errors
-                setError(parseSignupError(result.error));
+                // Use the enhanced error parsing that handles backend-specific errors
+                const errorMessage = parseSignupErrorEnhanced(result.error);
+                setError(errorMessage);
                 return;
-            }              
-            
+            }
+
             // Get verification data from the response
             const userData = result?.data || result || {};
             const email = ('email' in userData ? userData.email : undefined) || values.email;
@@ -115,7 +117,7 @@ const SignUpForm = () => {
             setTimeout(() => {
                 console.log('Now redirecting to verification page...');
 
-                
+
 
                 // Since the backend only returns a message and sends verification via email,
                 // we just redirect to the verification page with the email parameter
@@ -124,7 +126,8 @@ const SignUpForm = () => {
             }, 1500);
         } catch (error) {
             console.error("Registration failed:", error);
-            setError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
+            const errorMessage = parseSignupErrorEnhanced(error);
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -146,12 +149,6 @@ const SignUpForm = () => {
             backButtonHref="/auth/signin"
             showSocial
         >
-            {error && (
-                <div
-                    className="p-2 sm:p-3 text-xs sm:text-sm bg-destructive/15 text-destructive rounded-md mb-3 sm:mb-4"
-                    dangerouslySetInnerHTML={{ __html: error }}
-                />
-            )}
             <Form {...signUpForm}>
                 <form onSubmit={signUpForm.handleSubmit(onSignUpSubmit)}
                     className="space-y-4 sm:space-y-6"
@@ -271,7 +268,7 @@ const SignUpForm = () => {
                             )}
                         />
                     </div>
-                    <FormError message="" />
+                    <FormError message={error} />
                     <FormSuccess message={success} />
                     <Button
                         disabled={isLoading}
