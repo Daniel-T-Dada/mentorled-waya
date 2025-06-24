@@ -44,6 +44,7 @@ declare module "next-auth" {
         avatar?: string | null;
         accessToken?: string;
         refreshToken?: string;
+        error?: string;
         verification?: {
             token?: string;
             uidb64?: string;
@@ -65,6 +66,7 @@ declare module "@auth/core/jwt" {
         avatar?: string | null;
         accessToken?: string;
         refreshToken?: string;
+        error?: string;
 
         // Kid-specific fields
         childId?: string;
@@ -133,20 +135,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             const data = await response.json();
                             if (data.email && Array.isArray(data.email)) {
                                 if (data.email[0].includes('already exists')) {
-                                    throw new Error('This email is already registered. Please use a different email or sign in.');
+                                    return { id: 'signup-error', error: parseSignupErrorEnhanced('User with this email already exists'), role: 'parent' };
                                 }
                             }
-                            throw new Error(data.detail || "Failed to sign up");
+                            const detailMessage =
+                                data?.detail ||
+                                data?.message ||
+                                Object.values(data || {}).flat().join(" ") || // collect all error strings if multiple
+                                "Failed to sign up";
+
+                            return { id: 'signup-error', error: detailMessage, role: 'parent' };
                         }
 
                         let data;
                         try {
                             data = await response.json();
-                            console.log("Signup response data:", data);
                         } catch (parseError) {
-                            console.error("Error parsing signup response:", parseError);
-                            throw new Error("Received invalid response from server");
+                            const raw = await response.text();
+                            console.error("Non-JSON API response:", raw);
+                            return { id: 'signup-error', error: "Unexpected server response.", role: 'parent' };
                         }
+
 
                         // According to API documentation, signup returns:
                         // Response (201): { "message": "Registration successful! Check your email to verify your account." }
@@ -223,16 +232,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             if (!response.ok) {
                                 // Handle specific error cases
                                 if (data.detail === "Invalid credentials") {
-                                    throw new Error("Invalid email or password. Please try again.");
+                                    return { id: 'login-error', error: parseLoginErrorEnhanced('Invalid credentials'), role: 'parent' };
                                 }
 
                                 // Handle email not verified error
                                 if (response.status === 403 && data.error === 'email_not_verified') {
-                                    // Include verification needs in the error message
-                                    throw new Error(`${data.message || "Please verify your email address before logging in."}`);
+                                    return { id: 'login-error', error: `${data.message || "Please verify your email address before logging in."}`, role: 'parent' };
                                 }
 
-                                throw new Error(data.detail || data.error || "Failed to log in");
+                                return { id: 'login-error', error: data.detail || data.error || "Failed to log in", role: 'parent' };
                             }
                             // Handle the API response format from documentation
                             // Response: { "id": "uuid", "name": "string", "email": "string", "avatar": null, "token": "jwt", "refresh": "jwt" }
@@ -251,13 +259,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         } catch (error) {
                             console.error('Login error:', error);
                             const errorMessage = error instanceof Error ? error.message : 'Failed to log in';
-                            throw new Error(parseLoginErrorEnhanced(errorMessage));
+                            return { id: 'login-error', error: parseLoginErrorEnhanced(errorMessage), role: 'parent' };
                         }
                     }
 
                     return null;
                 } catch (error) {
                     console.error("Authorization error:", error);
+
+                    // If this is a signup attempt, return an error object instead of throwing.
+                    if (credentials?.name) {
+                        let errorMessage = 'An error occurred during sign up.';
+                        if (error instanceof ZodError) {
+                            errorMessage = error.errors[0].message;
+                        } else if (error instanceof Error) {
+                            errorMessage = error.message;
+                        }
+                        return { id: 'signup-error', error: parseSignupErrorEnhanced(errorMessage), role: 'parent' };
+                    }
+
+                    // If this is a login attempt, return an error object instead of throwing.
+                    if (credentials?.email && credentials?.password) {
+                        let errorMessage = 'An error occurred during sign in.';
+                        if (error instanceof ZodError) {
+                            errorMessage = error.errors[0].message;
+                        } else if (error instanceof Error) {
+                            errorMessage = error.message;
+                        }
+                        return { id: 'login-error', error: parseLoginErrorEnhanced(errorMessage), role: 'parent' };
+                    }
+
+                    // For other cases, keep the old behavior of throwing errors.
                     if (error instanceof ZodError) {
                         const validationError = error.errors[0].message;
                         throw new Error(parseLoginErrorEnhanced(validationError));
@@ -342,9 +374,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         strategy: "jwt",
     },
     pages: {
-        error: '/auth/error',
-        signOut: '/',
-        verifyRequest: '/auth/verify-email', // Add verify-request page
+        signIn: "/auth/signin",
+        error: "/auth/error",
     },
     events: {
         async signIn({ user, account, profile, isNewUser }) {
@@ -367,6 +398,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     callbacks: {
         async signIn({ user, account, profile }) {
+            // Check for the custom error object from the authorize function
+            if (user.id === 'signup-error' && user.error) {
+                const errorMessage = encodeURIComponent(user.error);
+                return `/auth/signup?error=${errorMessage}`;
+            }
+            if (user.id === 'login-error' && user.error) {
+                const errorMessage = encodeURIComponent(user.error);
+                return `/auth/signin?error=${errorMessage}`;
+            }
 
             // For OAuth providers (Google, Facebook), assign parent role by default
             if (account?.provider === "google" || account?.provider === "facebook") {
@@ -433,6 +473,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
 
         async jwt({ token, user, account, profile }) {
+            // Check for our special error user from the authorize callback
+            if (user?.id === 'error-user' && user.error) {
+                // This error will be caught by the client-side `signIn` call
+                throw new Error(user.error);
+            }
             if (user) {
                 console.log("JWT callback - processing user:", {
                     id: user.id,

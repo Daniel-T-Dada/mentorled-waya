@@ -19,7 +19,7 @@ import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import FormError from "../form-error"
 import FormSuccess from "../form-sucess"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
@@ -32,10 +32,12 @@ type KidFormValues = z.infer<typeof KidSignInSchema>
 
 const SignInForm = () => {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const urlError = searchParams.get("error");
     const [isLoading, setIsLoading] = useState(false);
     const [userType, setUserType] = useState<"parent" | "kid">("parent");
     const [success, setSuccess] = useState<string | undefined>("")
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(urlError ? decodeURIComponent(urlError) : null);
     const [showPassword, setShowPassword] = useState(false);
     const [showPin, setShowPin] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
@@ -95,45 +97,33 @@ const SignInForm = () => {
                 callbackUrl: "/dashboard/parents"
             });
 
-            console.log("SignIn result:", result); if (result?.error) {
-                console.log("Authentication error:", result.error);                // Use enhanced error parsing that handles backend-specific errors
-                const errorMessage = parseLoginErrorEnhanced(result.error);
-
-                // Check if the error is about email verification for redirect
-                if (errorMessage.includes("verify your email")) {
-                    setError(errorMessage);
-
-                    // Redirect to verification page after a short delay
-                    setTimeout(() => {
-                        router.push(`/auth/verify-email?email=${encodeURIComponent(values.email)}`);
-                    }, 2000);
-
+            console.log("SignIn result:", result);
+            if (result?.url) {
+                const redirectedUrl = new URL(result.url);
+                const errorParam = redirectedUrl.searchParams.get("error");
+                if (errorParam) {
+                    setError(decodeURIComponent(errorParam));
+                    setIsLoading(false);
                     return;
                 }
-
-                // Use the enhanced error message
-                setError(errorMessage);
+            }
+            if (result?.error) {
+                setError(parseLoginErrorEnhanced(result.error));
+                setIsLoading(false);
                 return;
             }
-
-            // User is successfully authenticated
-            console.log("User authenticated successfully, redirecting to dashboard");
-
-            // Log the response for debugging
-            console.log("Authentication result:", result);
-
-            setSuccess("Successfully signed in!");
-            if (result?.url) {
+            if (result?.ok && result?.url) {
                 router.push(result.url);
-            } else {
+            } else if (result?.ok) {
+                setSuccess("Sign in successful!");
                 router.push("/dashboard/parents");
+            } else {
+                setError("An unexpected error occurred during sign in.");
+                setIsLoading(false);
             }
-            router.refresh();
-        } catch (error) {
-            console.error("Login error:", error);
-            const errorMessage = parseLoginErrorEnhanced(error);
-            setError(errorMessage);
-        } finally {
+        } catch (e) {
+            console.error("Exception during sign in:", e);
+            setError("An unexpected error occurred.");
             setIsLoading(false);
         }
     }
@@ -217,13 +207,7 @@ const SignInForm = () => {
                 </TabsList>
             </Tabs>
 
-            {error && (
-                <div
-                    className="p-2 sm:p-3 text-xs sm:text-sm bg-destructive/15 text-destructive rounded-md mb-2 sm:mb-3"
-                    dangerouslySetInnerHTML={{ __html: error }}
-                />
-            )}
-            {/* Parent Form */}
+            {/* Only show the error above the button, not at the top */}
             {userType === "parent" && (
                 <Form {...parentForm}>
                     <form onSubmit={parentForm.handleSubmit(onParentSubmit)}
@@ -298,7 +282,7 @@ const SignInForm = () => {
                             </Link>
                         </div>
 
-                        <FormError message="" />
+                        <FormError message={error} />
                         <FormSuccess message={success} />
                         <Button
                             disabled={isLoading}
@@ -368,7 +352,7 @@ const SignInForm = () => {
                                 )}
                             />
                         </div>
-                        <FormError message="" />
+                        <FormError message={error} />
                         <FormSuccess message={success} />
                         <Button
                             disabled={isLoading}
