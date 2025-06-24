@@ -23,7 +23,7 @@ import { useRouter } from "next/navigation"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
-import { parseLoginError, parseKidLoginError } from "@/lib/utils/auth-errors";
+import { parseLoginErrorEnhanced, parseKidLoginErrorEnhanced } from "@/lib/utils/auth-errors";
 
 
 type ParentFormValues = z.infer<typeof ParentSignInSchema>;
@@ -72,7 +72,9 @@ const SignInForm = () => {
         } else {
             kidForm.reset();
         }
-    };    // Parent login submission
+    };
+
+    // Parent login submission
     async function onParentSubmit(values: ParentFormValues) {
         console.log("Parent Form Values:", {
             email: values.email,
@@ -85,7 +87,7 @@ const SignInForm = () => {
         try {
             // Clear auth cache when switching to credentials
             handleProviderSwitch('credentials');
-            
+
             const result = await signIn("parent-credentials", {
                 email: values.email,
                 password: values.password,
@@ -93,14 +95,13 @@ const SignInForm = () => {
                 callbackUrl: "/dashboard/parents"
             });
 
-            console.log("SignIn result:", result);
-
-            if (result?.error) {
-                console.log("Authentication error:", result.error);
+            console.log("SignIn result:", result); if (result?.error) {
+                console.log("Authentication error:", result.error);                // Use enhanced error parsing that handles backend-specific errors
+                const errorMessage = parseLoginErrorEnhanced(result.error);
 
                 // Check if the error is about email verification for redirect
-                if (result.error.includes("verify your email")) {
-                    setError(parseLoginError(result.error));
+                if (errorMessage.includes("verify your email")) {
+                    setError(errorMessage);
 
                     // Redirect to verification page after a short delay
                     setTimeout(() => {
@@ -110,8 +111,8 @@ const SignInForm = () => {
                     return;
                 }
 
-                // Use the utility function to parse all other errors
-                setError(parseLoginError(result.error));
+                // Use the enhanced error message
+                setError(errorMessage);
                 return;
             }
 
@@ -130,11 +131,14 @@ const SignInForm = () => {
             router.refresh();
         } catch (error) {
             console.error("Login error:", error);
-            setError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
+            const errorMessage = parseLoginErrorEnhanced(error);
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
-    }    
+    }
+
+
     // Kid login submission
     async function onKidSubmit(values: KidFormValues) {
         // console.log("Kid Form Values:", {
@@ -148,19 +152,18 @@ const SignInForm = () => {
         try {
             // Clear auth cache when switching to credentials
             handleProviderSwitch('credentials');
-            
+
             const result = await signIn("kid-credentials", {
                 username: values.username,
                 pin: values.pin,
                 redirect: false,
                 callbackUrl: "/dashboard/kids"
-            });
-
-            if (result?.error) {
+            }); if (result?.error) {
                 console.log("Authentication error:", result.error);
 
-                // Use the utility function to parse kid login errors
-                setError(parseKidLoginError(result.error));
+                // Use enhanced error parsing for kid login errors
+                const errorMessage = parseKidLoginErrorEnhanced(result.error);
+                setError(errorMessage);
                 return;
             }
 
@@ -172,8 +175,9 @@ const SignInForm = () => {
             }
             router.refresh();
         } catch (error) {
-            console.error("Login error:", error);
-            setError("Something went wrong. Please try again.");
+            console.error("Kid login error:", error);
+            const errorMessage = parseKidLoginErrorEnhanced(error);
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
