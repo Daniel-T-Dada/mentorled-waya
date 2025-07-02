@@ -11,7 +11,17 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useKid } from "@/contexts/KidContext";
-import { getFirstName } from "@/lib/utils/taskTransforms";
+import { getFirstName, transformTasksFromBackend, BackendTask } from "@/lib/utils/taskTransforms";
+import { useSession } from "next-auth/react";
+import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
+
+// Type for paginated API responses
+interface PaginatedResponse<T> {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: T[];
+}
 
 interface Kid {
     id: string;
@@ -68,33 +78,135 @@ const LoadingState = () => (
 const AppKidsManagement = ({ onCreateKidClick, onAssignChore }: AppKidsManagementProps) => {
     const { kids, isLoadingKids, getKidDisplayName } = useKid();
     const [currentPage, setCurrentPage] = useState(0);
+    const [processedKids, setProcessedKids] = useState<Kid[]>([]);
+    const [isLoadingChoreData, setIsLoadingChoreData] = useState(false);
     const pathname = usePathname();
+    const { data: session } = useSession();
 
     // Check if we're on the TaskMaster page
     const isTaskMasterPage = pathname === '/dashboard/parents/taskmaster';
+
+    // Fetch chore data for all kids
+    useEffect(() => {
+        const fetchChoreDataForKids = async () => {
+            if (!session?.user?.accessToken || kids.length === 0) {
+                return;
+            }
+
+            setIsLoadingChoreData(true);
+            try {
+                // Fetch all chores with pagination handling
+                const apiUrl = getApiUrl(API_ENDPOINTS.LIST_TASKS);
+                const response = await fetch(apiUrl, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.user.accessToken}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch chores');
+                }
+
+                const choresData: BackendTask[] | PaginatedResponse<BackendTask> = await response.json();
+
+                // Handle pagination to get all chores
+                let allChores: BackendTask[] = [];
+                if (Array.isArray(choresData)) {
+                    allChores = choresData;
+                } else if ('results' in choresData && Array.isArray(choresData.results)) {
+                    allChores = [...choresData.results];
+
+                    // Fetch all pages
+                    let nextUrl = choresData.next;
+                    while (nextUrl) {
+                        console.log('Fetching next page for kids management:', nextUrl);
+                        const nextResponse = await fetch(nextUrl, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${session.user.accessToken}`,
+                            },
+                        });
+
+                        if (!nextResponse.ok) {
+                            console.warn('Failed to fetch next page, stopping pagination');
+                            break;
+                        }
+
+                        const nextData: PaginatedResponse<BackendTask> = await nextResponse.json();
+                        allChores = [...allChores, ...nextData.results];
+                        nextUrl = nextData.next;
+                    }
+                }
+
+                console.log(`Fetched ${allChores.length} total chores for kids management`);
+
+                // Transform backend data
+                const transformedChores = transformTasksFromBackend(allChores);
+
+                // Process kids with real chore data
+                const updatedKids: Kid[] = kids.map(contextKid => {
+                    const displayName = getKidDisplayName(contextKid);
+                    
+                    // Filter chores for this specific kid
+                    const kidChores = transformedChores.filter(chore => chore.assignedTo === contextKid.id);
+                    const completedChores = kidChores.filter(chore => chore.status === "completed");
+                    const pendingChores = kidChores.filter(chore => chore.status === "pending");
+                    
+                    // Calculate progress based on completed vs total chores
+                    const totalChores = kidChores.length;
+                    const progress = totalChores > 0 ? Math.round((completedChores.length / totalChores) * 100) : 0;
+
+                    return {
+                        id: contextKid.id,
+                        username: contextKid.username,
+                        displayName: displayName,
+                        avatar: contextKid.avatar,
+                        level: Math.floor(Math.random() * 5) + 1, // Keep placeholder for now
+                        balance: Math.floor(Math.random() * 10000), // Keep placeholder for now
+                        progress: progress, // Real progress based on chore completion
+                        completedChoreCount: completedChores.length, // Real completed count
+                        pendingChoreCount: pendingChores.length, // Real pending count
+                        created_at: contextKid.created_at,
+                    };
+                });
+
+                setProcessedKids(updatedKids);
+            } catch (error) {
+                console.error('Error fetching chore data for kids:', error);
+                // Fallback to kids with placeholder chore data
+                const fallbackKids: Kid[] = kids.map(contextKid => {
+                    const displayName = getKidDisplayName(contextKid);
+                    return {
+                        id: contextKid.id,
+                        username: contextKid.username,
+                        displayName: displayName,
+                        avatar: contextKid.avatar,
+                        level: Math.floor(Math.random() * 5) + 1,
+                        balance: Math.floor(Math.random() * 10000),
+                        progress: 0, // No progress if we can't fetch data
+                        completedChoreCount: 0, // No chores if we can't fetch data
+                        pendingChoreCount: 0, // No chores if we can't fetch data
+                        created_at: contextKid.created_at,
+                    };
+                });
+                setProcessedKids(fallbackKids);
+            } finally {
+                setIsLoadingChoreData(false);
+            }
+        };
+
+        fetchChoreDataForKids();
+    }, [kids, session?.user?.accessToken, getKidDisplayName]);
 
     // Debug logging
     console.log('AppKidsManagement - Debug:', {
         kids: kids,
         kidsLength: kids.length,
+        processedKids: processedKids,
         isLoadingKids,
+        isLoadingChoreData,
         onCreateKidClick: !!onCreateKidClick
-    });
-    // Convert context kids to component Kid interface with placeholder data
-    const processedKids: Kid[] = kids.map(contextKid => {
-        const displayName = getKidDisplayName(contextKid);
-        return {
-            id: contextKid.id,
-            username: contextKid.username,
-            displayName: displayName, // Add display name for easy access
-            avatar: contextKid.avatar,
-            level: Math.floor(Math.random() * 5) + 1, // Random level 1-5 for now
-            balance: Math.floor(Math.random() * 10000), // Random balance for now
-            progress: Math.floor(Math.random() * 100), // Random progress for now
-            completedChoreCount: Math.floor(Math.random() * 10), // Random completed chores
-            pendingChoreCount: Math.floor(Math.random() * 5), // Random pending chores
-            created_at: contextKid.created_at,
-        };
     });
 
     // Pagination logic
@@ -126,7 +238,8 @@ const AppKidsManagement = ({ onCreateKidClick, onAssignChore }: AppKidsManagemen
                 <p className="text-sm text-muted-foreground">Track your kids progress</p>
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden">
-                <ScrollArea className="h-full">                    {isLoadingKids ? (
+                <ScrollArea className="h-full">
+                    {isLoadingKids || isLoadingChoreData ? (
                     <LoadingState />
                 ) : processedKids.length === 0 ? (
                     <EmptyState onCreateKidClick={onCreateKidClick} />

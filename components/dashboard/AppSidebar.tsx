@@ -260,10 +260,11 @@ const AppSidebar = () => {
                                                 <Skeleton className="h-3 w-32 mt-1" />
                                             </>
                                         ) : (
-                                            <>
-                                                <span className="truncate font-medium">{user?.name || "User"}</span>
+                                            <>                                <span className="truncate font-medium">
+                                                {user?.name || "User"}
+                                            </span>
                                                 <span className="truncate text-xs text-muted-foreground">
-                                                    {user?.email || "No email"}
+                                                    {isKid ? `@${user?.childUsername || user?.name || "kid"}` : (user?.email || "No email")}
                                                 </span>
                                             </>
                                         )}

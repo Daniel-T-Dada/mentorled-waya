@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Flame, Gift, CheckCircle } from "lucide-react"
-import { MockApiService } from '@/lib/services/mockApiService'
 
 interface DayStatus {
     day: string
@@ -20,18 +19,11 @@ interface RewardItem {
     isRedeemed: boolean
 }
 
-interface KidDailyStreaksProps {
-    kidId?: string
-}
-
-const KidDailyStreaks = ({ kidId = 'kid-001' }: KidDailyStreaksProps) => {
+const KidDailyStreaks = () => {
     const [weeklyProgress, setWeeklyProgress] = useState<DayStatus[]>([])
     const [rewards, setRewards] = useState<RewardItem[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-
-    // Always use the prop kidId or fallback to 'kid-001' to ensure we use valid mock data
-    const validKidId = kidId || 'kid-001';
 
     // Fetch data on component mount
     useEffect(() => {
@@ -40,23 +32,46 @@ const KidDailyStreaks = ({ kidId = 'kid-001' }: KidDailyStreaksProps) => {
                 setIsLoading(true)
                 setError(null)
 
-                console.log('Fetching data for kidId:', validKidId); // Debug log
+                // Use placeholder data instead of mock API
+                const placeholderWeeklyProgress: DayStatus[] = [
+                    { day: 'Mon', completed: true },
+                    { day: 'Tue', completed: true },
+                    { day: 'Wed', completed: false },
+                    { day: 'Thu', completed: false },
+                    { day: 'Fri', completed: false },
+                    { day: 'Sat', completed: false },
+                    { day: 'Sun', completed: false }
+                ];
 
-                // Fetch daily streaks data
-                const dailyStreaksData = await MockApiService.fetchDailyStreaksByKidId(validKidId)
-                console.log('Daily streaks data received:', dailyStreaksData); // Debug log
-                setWeeklyProgress(dailyStreaksData.weeklyProgress || [])
+                const placeholderRewards: RewardItem[] = [
+                    {
+                        id: 'reward-1',
+                        title: 'Screen Time Bonus',
+                        description: 'Extra 30 minutes of screen time',
+                        isRedeemed: false
+                    },
+                    {
+                        id: 'reward-2',
+                        title: 'Choose Weekend Activity',
+                        description: 'Pick what the family does this weekend',
+                        isRedeemed: true
+                    },
+                    {
+                        id: 'reward-3',
+                        title: 'Special Treat',
+                        description: 'Your favorite snack or dessert',
+                        isRedeemed: false
+                    }
+                ];
 
-                // Fetch rewards data
-                const rewardsData = await MockApiService.fetchRewardsByKidId(validKidId)
-                console.log('Rewards data received:', rewardsData); // Debug log
-                setRewards(rewardsData || [])
+                setWeeklyProgress(placeholderWeeklyProgress)
+                setRewards(placeholderRewards)
 
             } catch (err) {
-                console.error('Error fetching kid daily streaks data:', err)
+                console.error('Error setting up placeholder data:', err)
                 setError(`Failed to load data: ${err instanceof Error ? err.message : 'Unknown error'}`)
 
-                // Fallback to default data if API fails
+                // Fallback to default data if there's an issue
                 console.log('Using fallback data due to error')
                 setWeeklyProgress([
                     { day: 'Mon', completed: true },
@@ -70,20 +85,20 @@ const KidDailyStreaks = ({ kidId = 'kid-001' }: KidDailyStreaksProps) => {
                 setRewards([
                     {
                         id: '1',
-                        title: 'Clean your room',
-                        description: 'Make your bed, organize your wardrobe, clothes and toys',
+                        title: 'Screen Time Bonus',
+                        description: 'Extra 30 minutes of screen time',
                         isRedeemed: false
                     },
                     {
                         id: '2',
-                        title: 'Take out the trash',
-                        description: 'Empty all the trash can in the house.',
+                        title: 'Choose Weekend Activity',
+                        description: 'Pick what the family does this weekend',
                         isRedeemed: false
                     },
                     {
                         id: '3',
-                        title: 'Wash the dishes',
-                        description: 'Wash all the dishes in the kitchen and put them away.',
+                        title: 'Special Treat',
+                        description: 'Your favorite snack or dessert',
                         isRedeemed: false
                     }
                 ])
@@ -93,25 +108,15 @@ const KidDailyStreaks = ({ kidId = 'kid-001' }: KidDailyStreaksProps) => {
         }
 
         fetchData()
-    }, [validKidId])
+    }, [])
 
     const handleRedeem = async (rewardId: string) => {
-        try {
-            await MockApiService.updateRewardRedemption(validKidId, rewardId, true)
-            setRewards(prev => prev.map(reward =>
-                reward.id === rewardId
-                    ? { ...reward, isRedeemed: true }
-                    : reward
-            ))
-        } catch (err) {
-            console.error('Error redeeming reward:', err)
-            // Fallback to local state update if API fails
-            setRewards(prev => prev.map(reward =>
-                reward.id === rewardId
-                    ? { ...reward, isRedeemed: true }
-                    : reward
-            ))
-        }
+        // Just update local state for placeholder behavior
+        setRewards(prev => prev.map(reward =>
+            reward.id === rewardId
+                ? { ...reward, isRedeemed: true }
+                : reward
+        ))
     }
 
     const completedDaysCount = weeklyProgress.filter(day => day.completed).length;

@@ -40,7 +40,8 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
   const user = session?.user;
 
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     username: "",
     pin: "",
     avatar: "" as string | null,
@@ -91,13 +92,13 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
     try {
       console.log("CreateKidAccount - About to send data:", {
         username: formData.username,
-        name: formData.name,
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
         pin: formData.pin ? "****" : "NOT SET"
       });
 
       const response = await ChildrenService.createChild({
         username: formData.username,
-        name: formData.name, // Include the name field
+        name: `${formData.firstName} ${formData.lastName}`.trim(), // Combine first and last name
         pin: formData.pin,
       }, session?.user?.accessToken || '');
 
@@ -108,14 +109,15 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
       console.log("CreateKidAccount - Backend response:", response);
 
       // Check if the backend response name is 'Unknown' and try to update it
-      if (response.name === 'Unknown' && formData.name && formData.name !== 'Unknown') {
+      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+      if (response.name === 'Unknown' && fullName && fullName !== 'Unknown') {
         console.warn("CreateKidAccount - Backend returned 'Unknown' name, attempting to update...");
         try {
           // Try to update the child's name using the update endpoint
-          await ChildrenService.updateChild(response.id, { name: formData.name }, session?.user?.accessToken || '');
+          await ChildrenService.updateChild(response.id, { name: fullName }, session?.user?.accessToken || '');
           // Update the response object to reflect the correct name
-          response.name = formData.name;
-          console.log("CreateKidAccount - Successfully updated child name to:", formData.name);
+          response.name = fullName;
+          console.log("CreateKidAccount - Successfully updated child name to:", fullName);
         } catch (updateError) {
           console.error("CreateKidAccount - Failed to update child name:", updateError);
           // Continue with original response even if update fails
@@ -157,7 +159,7 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
     onClose();
     // Reset form after closing animation completes
     setTimeout(() => {
-      setFormData({ name: "", username: "", pin: "", avatar: null });
+      setFormData({ firstName: "", lastName: "", username: "", pin: "", avatar: null });
       setStep("form");
       setCreatedKid(null);
     }, 300);
@@ -178,18 +180,33 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
             </DialogHeader>
 
             <form onSubmit={handleSubmit} className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-medium">
-                  Name<span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="First Name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-sm font-medium">
+                    First Name<span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    placeholder="First Name"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-sm font-medium">
+                    Last Name<span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    placeholder="Last Name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -283,7 +300,7 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
                 <Button
                   type="submit"
                   className="bg-primary hover:bg-primary/90"
-                  disabled={isLoading || !formData.name || !formData.username || formData.pin.length !== 4}
+                  disabled={isLoading || !formData.firstName || !formData.lastName || !formData.username || formData.pin.length !== 4}
                 >
                   {isLoading ? "Creating..." : "Create Account"}
                 </Button>

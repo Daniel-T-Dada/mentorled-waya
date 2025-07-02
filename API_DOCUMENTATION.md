@@ -13,8 +13,7 @@
 
 ## Base URL
 
-- Development: `http://localhost:8000/api/`
-- Production: `https://waya-backend.onrender.com/api/`
+- Production: `https://waya-mentorled.onrender.com/api/`
 
 ## Authentication
 
@@ -480,9 +479,9 @@ Authorization: Bearer <access_token>
 
 ### 1. Create Task
 
-**Endpoint:** `POST /taskmaster/chores/create/`
+**Endpoint:** `POST /api/taskmaster/chores/create/`
 
-**Description:** Create a new task for a child.
+**Description:** Create a new chore/task for a child.
 
 **Authentication:** Required (Parent)
 
@@ -492,7 +491,7 @@ Authorization: Bearer <access_token>
 {
   "title": "Clean your room",
   "description": "Detailed description of the chore.",
-  "assigned_to": "child_id",
+  "assigned_to": "child-uuid-here",
   "reward": 10.5,
   "due_date": "2024-12-31"
 }
@@ -502,127 +501,107 @@ Authorization: Bearer <access_token>
 
 ```json
 {
-  "id": "task_id",
+  "id": "chore-uuid-here",
   "title": "Clean your room",
   "description": "Detailed description of the chore.",
-  "reward": "10.50",
-  "due_date": "2024-12-31",
-  "assigned_to": "child_id",
+  "amount": "10.50",
+  "assignedTo": "child-uuid-here",
+  "assignedToName": "Child Name",
+  "assignedToUsername": "child_username",
   "status": "pending",
-  "created_at": "2024-01-01T12:00:00Z",
-  "completed_at": null
+  "createdAt": "2024-01-01T12:00:00Z",
+  "completedAt": null,
+  "parentId": "parent-uuid-here",
+  "category": "Household"
 }
 ```
 
-### 2. List Tasks
+### 2. List Tasks/Chores
 
-**Endpoint:** `GET /taskmaster/chores/`
+**Endpoint:** `GET /api/taskmaster/chores/`
 
-**Description:** List all tasks created by the parent.
+**Description:** List all chores created by the parent. This is the **recommended endpoint** for retrieving chore data reliably.
 
-**Authentication:** Required (Parent)
+**Authentication:** Required (Parent or Child)
 
 **Query Parameters:**
 
-- `status`: (optional) Filter by task status (`pending`, `completed`, `missed`).
-- `assignedTo`: (optional) Filter by child ID.
-- `category`: (optional) Filter by category.
+- `status`: (optional) Filter by chore status (`pending`, `completed`, `missed`)
+- `assignedTo`: (optional) Filter by child UUID - **Use this for child-specific chores**
+- `category`: (optional) Filter by category
 
 **Response (200 OK):**
 
 ```json
 [
   {
-    "id": "task_id",
+    "id": "chore-uuid-here",
     "title": "Clean your room",
     "description": "Detailed description of the chore.",
-    "reward": "10.50",
-    "due_date": "2024-12-31",
-    "assigned_to": "child_username",
-    "parent_id": "parent_id",
+    "amount": "10.50",
+    "assignedTo": "child-uuid-here",
+    "assignedToName": "Child Name",
+    "assignedToUsername": "child_username",
     "status": "pending",
-    "created_at": "2024-01-01T12:00:00Z",
-    "completed_at": null
+    "createdAt": "2024-01-01T12:00:00Z",
+    "completedAt": null,
+    "parentId": "parent-uuid-here",
+    "category": "Household"
   }
 ]
 ```
 
+**Note for Client Applications:** For children's dashboards, use `/api/taskmaster/chores/?assignedTo=<childId>` instead of the children/chores endpoint for reliable data.
+
 ### 3. Task Detail
 
-**Endpoint:** `GET /taskmaster/chores/<uuid:pk>/`
+**Endpoint:** `GET /api/taskmaster/chores/<uuid:pk>/`
 
-**Description:** Retrieve details for a specific task.
+**Description:** Retrieve details for a specific chore.
 
-**Authentication:** Required (Parent)
+**Authentication:** Required (Parent or assigned Child)
 
-**Response (200 OK):**
-
-```json
-{
-  "id": "task_id",
-  "title": "Clean your room",
-  "description": "Detailed description of the chore.",
-  "reward": "10.50",
-  "due_date": "2024-12-31",
-  "assigned_to": "child_username",
-  "parent_id": "parent_id",
-  "status": "pending",
-  "created_at": "2024-01-01T12:00:00Z",
-  "completed_at": null
-}
-```
+**Response (200 OK):** Same format as the single chore object in list response.
 
 ### 4. Update Task
 
-**Endpoint:** `PUT /taskmaster/chores/<uuid:pk>/`
+**Endpoint:** `PUT /api/taskmaster/chores/<uuid:pk>/`
 
-**Description:** Update a task's details.
+**Description:** Update a chore's details.
 
-**Authentication:** Required (Parent)
+**Authentication:** Required (Parent who created the chore)
 
 **Request Body:**
 
 ```json
 {
   "title": "Clean your room thoroughly",
-  "reward": 12.0
-}
-```
-
-**Response (200 OK):**
-
-```json
-{
-  "id": "task_id",
-  "title": "Clean your room thoroughly",
-  "description": "Detailed description of the chore.",
-  "reward": "12.00",
+  "description": "Updated description",
+  "reward": 12.0,
   "due_date": "2024-12-31",
-  "assigned_to": "child_username",
-  "parent_id": "parent_id",
-  "status": "pending",
-  "created_at": "2024-01-01T12:00:00Z",
-  "completed_at": null
+  "assigned_to": "child-uuid-here"
 }
 ```
+
+**Response (200 OK):** Same format as the chore detail response.
 
 ### 5. Delete Task
 
-**Endpoint:** `DELETE /taskmaster/chores/<uuid:pk>/`
+**Endpoint:** `DELETE /api/taskmaster/chores/<uuid:pk>/`
 
-**Description:** Delete a task.
+**Description:** Delete a chore.
 
-**Authentication:** Required (Parent)
+**Authentication:** Required (Parent who created the chore)
 
 **Response (204 No Content):**
 
-### 6. Update Task Status
+### 6. Update Task Status (Parent)
 
-**Endpoint:** `PATCH /taskmaster/chores/<uuid:pk>/status/`
+**Endpoint:** `PATCH /api/taskmaster/chores/<uuid:pk>/status/`
 
-**Description:** Update the status of a task (e.g., mark as completed or missed).
+**Description:** Update the status of a chore (e.g., mark as completed or missed).
 
-**Authentication:** Required (Parent)
+**Authentication:** Required (Parent who created the chore)
 
 **Request Body:**
 
@@ -638,52 +617,69 @@ Authorization: Bearer <access_token>
 - `completed`: Task has been completed by the child
 - `missed`: Task was not completed by the due date
 
-**Response (200 OK):**
+**Response (200 OK):** Updated chore details with new status.
 
-```json
-{
-  "status": "completed"
-}
-```
+### 7. Child Chore List (Legacy/Inconsistent)
 
-### 7. Child Chore List
+**Endpoint:** `GET /api/taskmaster/children/chores/`
 
-**Endpoint:** `GET /taskmaster/child-chores/`
+**Description:** ⚠️ **DEPRECATED/UNRELIABLE** - List all chores assigned to a specific child.
 
-**Description:** List all chores assigned to a specific child. Parent must provide the child ID as a query parameter.
-
-**Authentication:** Required (Parent)
+**Authentication:** Required (Parent or Child)
 
 **Query Parameters:**
 
-- `childId`: (required) The ID of the child whose chores to retrieve.
+- `childId`: (required for Parents) The ID of the child whose chores to retrieve
+  Note: Children automatically see their own chores and don't need to provide this
 
-**Response (200 OK):**
+**⚠️ CRITICAL ISSUE:** This endpoint returns empty results for child users in practice.
+
+**Response (200 OK) - Often Empty:**
 
 ```json
-[
-  {
-    "id": "task_id",
-    "title": "Clean your room",
-    "description": "Detailed description of the chore.",
-    "reward": "10.50",
-    "due_date": "2024-12-31",
-    "assigned_to": "child_username",
-    "parent_id": "parent_id",
-    "status": "pending",
-    "created_at": "2024-01-01T12:00:00Z",
-    "completed_at": null
-  }
-]
+{
+  "count": 0,
+  "next": null,
+  "previous": null,
+  "results": []
+}
+```
+
+**🚨 RECOMMENDED ALTERNATIVE:**
+
+**Use `GET /api/taskmaster/chores/?assignedTo=<childId>` instead** for consistent, reliable results:
+
+```json
+{
+  "count": 3,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": "chore-uuid-here",
+      "title": "Clean your room",
+      "description": "Detailed description of the chore.",
+      "amount": "10.50",
+      "assignedTo": "child-uuid-here",
+      "assignedToName": "Child Name",
+      "assignedToUsername": "child_username",
+      "status": "pending",
+      "createdAt": "2024-01-01T12:00:00Z",
+      "completedAt": null,
+      "parentId": "parent-uuid-here",
+      "category": "Household"
+    }
+  ]
+}
 ```
 
 ### 8. Child Chore Status Update
 
-**Endpoint:** `PATCH /taskmaster/child-chores/<uuid:pk>/status/`
+**Endpoint:** `PATCH /api/taskmaster/children/chores/<uuid:pk>/status/`
 
-**Description:** Update the status of a chore (e.g., mark as completed). This endpoint is for children to update their own task statuses.
+**Description:** Update the status of a chore (e.g., mark as completed). This endpoint is for children to update their own chore statuses.
 
-**Authentication:** Required (Child)
+**Authentication:** Required (Child assigned to the chore)
 
 **Request Body:**
 
@@ -699,13 +695,65 @@ Authorization: Bearer <access_token>
 - `completed`: Task has been completed by the child
 - `missed`: Task was not completed by the due date
 
+**Response (200 OK):** Updated chore details with new status.
+
+### 9. Chore Summary Statistics
+
+**Endpoint:** `GET /api/taskmaster/chores/summary/`
+
+**Description:** Returns a summary of chore statistics for the parent (counts by status)
+
+**Authentication:** Required (Parent)
+
 **Response (200 OK):**
 
 ```json
 {
-  "status": "completed"
+  "pending": 5,
+  "completed": 12,
+  "missed": 2,
+  "total": 19
 }
 ```
+
+## Best Practices for Task Master Module
+
+### For Client Applications
+
+1. **Child Dashboard Development:**
+
+   - Always use `/api/taskmaster/chores/?assignedTo=<childId>` for reliable child chore data
+   - Avoid `/api/taskmaster/children/chores/` as it often returns empty results for child users
+   - Implement robust error handling for empty API responses
+
+2. **Data Fetching Patterns:**
+
+   ```javascript
+   // ✅ RECOMMENDED: Reliable endpoint for child chores
+   const fetchChildChores = async (childId) => {
+     const response = await fetch(
+       `/api/taskmaster/chores/?assignedTo=${childId}`
+     );
+     return response.json();
+   };
+   ```
+
+3. **Error Handling:**
+
+   - Always check for empty arrays in API responses
+   - Provide appropriate fallback data for empty states
+   - Log API errors for debugging but don't crash the UI
+
+4. **Performance:**
+   - Cache chore statistics when possible
+   - Use loading states while fetching data
+   - Consider implementing real-time updates for chore status changes
+
+### Known API Quirks
+
+- The `/api/taskmaster/children/chores/` endpoint has inconsistent behavior for child users
+- Always use UUIDs in string format, not as raw UUID objects
+- Status values are case-sensitive and must be lowercase
 
 ---
 
