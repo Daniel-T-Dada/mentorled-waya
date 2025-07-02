@@ -8,21 +8,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useSession } from "next-auth/react";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { ClipboardList } from 'lucide-react';
+import { Task, transformTasksFromBackend, BackendTask } from '@/lib/utils/taskTransforms';
 
 interface Kid {
     id: string;
     name: string;
     avatar?: string | null;
-}
-
-interface Activity {
-    id: string;
-    title: string;
-    description: string;
-    assignedTo: string;
-    status: "completed" | "pending" | "cancelled" | "paid" | "processing";
-    createdAt: string;
-    amount: number;
 }
 
 interface AppKidsActivitiesProps {
@@ -61,7 +52,7 @@ const InfoState = () => (
 
 const AppKidsActivities = ({ kidId }: AppKidsActivitiesProps = {}) => {
     const [kids, setKids] = useState<Kid[]>([]);
-    const [activities, setActivities] = useState<Activity[]>([]);
+    const [activities, setActivities] = useState<Task[]>([]);
     const [activeKidTab, setActiveKidTab] = useState("all");
     const [isLoading, setIsLoading] = useState(true);
     const [needsRetry, setNeedsRetry] = useState(false);
@@ -75,11 +66,20 @@ const AppKidsActivities = ({ kidId }: AppKidsActivitiesProps = {}) => {
 
         setIsLoading(true);
         setNeedsRetry(false);
-
         try {
             const [kidsResponse, activitiesResponse] = await Promise.all([
-                fetch(getApiUrl(API_ENDPOINTS.LIST_CHILDREN)),
-                fetch(getApiUrl(API_ENDPOINTS.LIST_TASKS))
+                fetch(getApiUrl(API_ENDPOINTS.LIST_CHILDREN), {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.user.accessToken}`,
+                    },
+                }),
+                fetch(getApiUrl(API_ENDPOINTS.LIST_TASKS), {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.user.accessToken}`,
+                    },
+                })
             ]);
 
             if (!kidsResponse.ok || !activitiesResponse.ok) {
@@ -87,22 +87,16 @@ const AppKidsActivities = ({ kidId }: AppKidsActivitiesProps = {}) => {
             }
 
             const kidsData = await kidsResponse.json();
-            const activitiesData = await activitiesResponse.json();
+            const activitiesData: BackendTask[] = await activitiesResponse.json();
 
             if (!Array.isArray(kidsData) || !Array.isArray(activitiesData)) {
                 throw new Error('Invalid data format');
             }
 
             setKids(kidsData);
-            setActivities(activitiesData.map(chore => ({
-                id: chore.id,
-                title: chore.title,
-                description: chore.description,
-                assignedTo: chore.assignedTo,
-                status: chore.status as Activity['status'],
-                createdAt: chore.createdAt,
-                amount: chore.reward
-            })));
+            // Transform backend task data to frontend format
+            const transformedActivities = transformTasksFromBackend(activitiesData);
+            setActivities(transformedActivities);
         } catch (error) {
             console.error('Error fetching data:', error);
             setNeedsRetry(true);
@@ -160,18 +154,13 @@ const AppKidsActivities = ({ kidId }: AppKidsActivitiesProps = {}) => {
             currency: 'NGN',
             maximumFractionDigits: 0
         });
-    };
-
-    const getStatusBadgeStyles = (status: Activity['status']) => {
+    }; const getStatusBadgeStyles = (status: Task['status']) => {
         switch (status) {
-            case 'paid':
             case 'completed':
                 return 'bg-green-100 text-green-800';
             case 'pending':
                 return 'bg-yellow-100 text-yellow-800';
-            case 'processing':
-                return 'bg-gray-200 text-gray-800';
-            case 'cancelled':
+            case 'missed':
                 return 'bg-red-100 text-red-800';
             default:
                 return 'bg-gray-100 text-gray-800';
@@ -248,7 +237,7 @@ const AppKidsActivities = ({ kidId }: AppKidsActivitiesProps = {}) => {
                                             </div>
                                             <div className="flex items-center justify-between mt-3">
                                                 <div className="text-lg font-semibold text-green-600">
-                                                    {formatCurrency(activity.amount)}
+                                                    {formatCurrency(parseFloat(activity.reward || '0'))}
                                                 </div>
                                                 <div className="flex items-center gap-1 text-muted-foreground">
                                                     <Avatar className="w-5 h-5">
@@ -286,7 +275,7 @@ const AppKidsActivities = ({ kidId }: AppKidsActivitiesProps = {}) => {
                                     </div>
                                     <div className="flex items-center justify-between mt-3">
                                         <div className="text-lg font-semibold text-green-600">
-                                            {formatCurrency(activity.amount)}
+                                            {formatCurrency(parseFloat(activity.reward || '0'))}
                                         </div>
                                         <div className="flex items-center gap-1 text-muted-foreground">
                                             <Avatar className="w-5 h-5">

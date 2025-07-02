@@ -159,12 +159,24 @@ const AppBarChart = () => {
                     throw new Error('Failed to fetch allowance data');
                 }
                 const data = await res.json();
+                console.log('Raw allowance data (BarChart):', data);
 
+                // Handle both paginated responses and direct arrays
+                let allowanceArray;
                 if (Array.isArray(data)) {
+                    allowanceArray = data;
+                } else if (data && typeof data === 'object' && Array.isArray(data.results)) {
+                    allowanceArray = data.results;
+                } else {
+                    console.error('Unexpected data format:', data);
+                    throw new Error('Invalid data format: Expected array or paginated response');
+                }
+
+                if (allowanceArray.length > 0) {
 
 
                     // Transform the data into the required format
-                    const transformedData = data.reduce((acc: ChartDataPoint[], allowance: ApiAllowance) => {
+                    const transformedData = allowanceArray.reduce((acc: ChartDataPoint[], allowance: ApiAllowance) => {
                         const date = new Date(allowance.createdAt).toLocaleDateString('en-US', {
                             month: 'long',
                             day: 'numeric'

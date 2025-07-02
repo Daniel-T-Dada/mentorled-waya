@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useKid } from "@/contexts/KidContext";
+import { getFirstName } from "@/lib/utils/taskTransforms";
 
 interface Kid {
     id: string;
@@ -136,13 +137,13 @@ const AppKidsManagement = ({ onCreateKidClick, onAssignChore }: AppKidsManagemen
                                 <div key={kid.id} className="border rounded-md p-4 mb-4">
                                     <div className="flex items-center gap-4">
                                         <Avatar className="w-12 h-12">
-                                            <AvatarImage src={kid.avatar ?? undefined} alt={kid.displayName || kid.username} />
-                                            <AvatarFallback>{(kid.displayName || kid.username).charAt(0).toUpperCase()}</AvatarFallback>
+                                            <AvatarImage src={kid.avatar ?? undefined} alt={getFirstName(kid.displayName) || kid.username} />
+                                            <AvatarFallback>{(getFirstName(kid.displayName) || kid.username).charAt(0).toUpperCase()}</AvatarFallback>
                                         </Avatar>
                                         <div className="flex-1">
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <h3 className="font-medium leading-none">{kid.displayName || kid.username}</h3>
+                                                    <h3 className="font-medium leading-none">{getFirstName(kid.displayName) || kid.username}</h3>
                                                     <p className="text-sm text-muted-foreground">Level {kid.level}</p>
                                                 </div>
                                                 <div className="text-sm text-muted-foreground">
@@ -227,19 +228,21 @@ const AppKidsManagement = ({ onCreateKidClick, onAssignChore }: AppKidsManagemen
                                     </Button>
                                 </div>
                             )}
-                        </div>                        {/* Mobile: Show ALL kids (no pagination) */}
+                        </div>                        
+                        
+                        {/* Mobile: Show ALL kids (no pagination) */}
                         <div className="block lg:hidden">
                             {processedKids.map(kid => (
                                 <div key={kid.id} className="border rounded-md p-4 mb-4">
                                     <div className="flex items-center gap-4">
                                         <Avatar className="w-12 h-12">
-                                            <AvatarImage src={kid.avatar ?? undefined} alt={kid.displayName || kid.username} />
-                                            <AvatarFallback>{(kid.displayName || kid.username).charAt(0).toUpperCase()}</AvatarFallback>
+                                            <AvatarImage src={kid.avatar ?? undefined} alt={getFirstName(kid.displayName) || kid.username} />
+                                            <AvatarFallback>{(getFirstName(kid.displayName) || kid.username).charAt(0).toUpperCase()}</AvatarFallback>
                                         </Avatar>
                                         <div className="flex-1">
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <h3 className="font-medium leading-none">{kid.displayName || kid.username}</h3>
+                                                    <h3 className="font-medium leading-none">{getFirstName(kid.displayName) || kid.username}</h3>
                                                     <p className="text-sm text-muted-foreground">Level {kid.level}</p>
                                                 </div>
                                                 <div className="text-sm text-muted-foreground">
