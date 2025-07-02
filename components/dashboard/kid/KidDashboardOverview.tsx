@@ -6,29 +6,33 @@ import KidPieChart from "./KidPieChart"
 import AppChoreManagement from "../AppChoreManagement"
 import KidDailyStreaks from "./KidDailyStreaks"
 import { useSession } from "next-auth/react"
+import { useKid } from "@/contexts/KidContext"
 
 interface KidDashboardOverviewProps {
     kidId?: string;
+    refreshTrigger?: number;
 }
 
-const KidDashboardOverview = ({ kidId: propKidId }: KidDashboardOverviewProps) => {
+const KidDashboardOverview = ({ kidId: propKidId, refreshTrigger }: KidDashboardOverviewProps) => {
     const { data: session } = useSession();
+    const { currentKid, isKidSession } = useKid();
 
-    // Get kid data - prioritize prop, then session, then fallback
-    // Ensure we use a valid kidId that exists in our mock data
-    const sessionKidId = session?.user?.id;
-    const validKidIds = ['kid-001', 'kid-002', 'kid-003', 'kid-004'];
+    // For kid sessions, use childId; for parent sessions viewing a kid, use the session user ID
+    const sessionKidId = session?.user?.isChild ? session.user.childId : session?.user?.id;
 
-    let kidId = propKidId || "kid-001";
+    // Priority: prop kidId, then session kid ID, then fallback
+    const kidId = propKidId || sessionKidId || "kid-001";
 
-    // If we have a session kid ID, check if it's valid, otherwise use fallback
-    if (sessionKidId && validKidIds.includes(sessionKidId)) {
-        kidId = sessionKidId;
-    } else if (sessionKidId) {
-        console.log(`Session kidId "${sessionKidId}" not found in mock data, using fallback: kid-001`);
-    }
-
-    console.log('KidDashboardOverview - Final kidId:', kidId);
+    console.log('KidDashboardOverview - Using kidId:', kidId, {
+        propKidId,
+        sessionKidId,
+        isChildSession: session?.user?.isChild,
+        childId: session?.user?.childId,
+        userId: session?.user?.id,
+        finalKidId: kidId,
+        currentKid,
+        isKidSession
+    });
 
     return (
         <main>
@@ -57,7 +61,7 @@ const KidDashboardOverview = ({ kidId: propKidId }: KidDashboardOverviewProps) =
                 </div>
                 <div className="lg:col-span-2 min-h-[400px] rounded">
 
-                    <AppChoreManagement kidId={kidId} />
+                    <AppChoreManagement kidId={kidId} refreshTrigger={refreshTrigger} />
 
                 </div><div className="lg:col-span-1 min-h-[400px] self-start">
                     <KidDailyStreaks kidId={kidId} />

@@ -8,22 +8,29 @@ import { useSession } from "next-auth/react";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { Badge } from "../ui/badge";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { Task, transformTasksFromBackend, BackendTask } from '@/lib/utils/taskTransforms';
 
-interface Chore {
-    id: string;
-    title: string;
-    description: string;
-    reward: number;
-    assignedTo: string;
-    status: "completed" | "pending" | "cancelled";
+// Type for paginated API responses
+interface PaginatedResponse<T> {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: T[];
 }
 
 interface Wallet {
     id: string;
-    kidId: string;
+    child: {
+        id: string;
+        username: string;
+        avatar: string;
+    };
     balance: number;
-    createdAt: string;
-    updatedAt: string;
+    total_earned?: number;
+    total_spent?: number;
+    savings_rate?: number;
+    created_at: string;
+    updated_at: string;
 }
 
 interface StatItem {
@@ -35,10 +42,11 @@ interface StatItem {
 
 interface AppStatCardProps {
     kidId?: string; // Optional prop for kid-specific stats
+    refreshTrigger?: number; // Trigger to refresh data
 }
 
-const AppStatCard = ({ kidId }: AppStatCardProps = {}) => {
-    const [chores, setChores] = useState<Chore[]>([]);
+const AppStatCard = ({ kidId, refreshTrigger }: AppStatCardProps = {}) => {
+    const [chores, setChores] = useState<Task[]>([]);
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const pathname = usePathname();
@@ -51,35 +59,67 @@ const AppStatCard = ({ kidId }: AppStatCardProps = {}) => {
                 return;
             }
 
-            setIsLoading(true);
-            try {
+            setIsLoading(true); try {
                 const [choresResponse, walletsResponse] = await Promise.all([
-                    fetch(getApiUrl(API_ENDPOINTS.LIST_TASKS)),
-                    fetch(getApiUrl(API_ENDPOINTS.WALLET))
+                    fetch(getApiUrl(API_ENDPOINTS.LIST_TASKS), {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.user.accessToken}`,
+                        },
+                    }),
+                    fetch(getApiUrl(API_ENDPOINTS.CHILDREN_WALLETS), {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.user.accessToken}`,
+                        },
+                    })
                 ]);
 
-                if (!choresResponse.ok || !walletsResponse.ok) {
-                    throw new Error('Failed to fetch data');
+                let walletsData = [];
+
+                // Handle children wallets response
+                if (walletsResponse.ok) {
+                    walletsData = await walletsResponse.json();
+                } else {
+                    console.error('Failed to fetch wallets data:', walletsResponse.status, walletsResponse.statusText);
+                    throw new Error(`Failed to fetch wallets data: ${walletsResponse.status}`);
                 }
 
-                const choresData = await choresResponse.json();
-                const walletsData = await walletsResponse.json();
-
-                if (!Array.isArray(choresData) || !Array.isArray(walletsData)) {
-                    throw new Error('Invalid data format');
+                if (!choresResponse.ok) {
+                    throw new Error('Failed to fetch chores data');
                 }
 
-                setChores(choresData);
+                const choresData: BackendTask[] | PaginatedResponse<BackendTask> = await choresResponse.json();
+                console.log('Raw chores data (StatCard):', choresData);
+                console.log('Raw wallets data (StatCard):', walletsData);
+
+                // Handle both paginated responses and direct arrays for chores
+                let tasksArray;
+                if (Array.isArray(choresData)) {
+                    tasksArray = choresData;
+                } else if (choresData && typeof choresData === 'object' && Array.isArray(choresData.results)) {
+                    tasksArray = choresData.results;
+                } else {
+                    console.error('Unexpected chores data format:', choresData);
+                    throw new Error('Invalid chores data format: Expected array or paginated response');
+                }
+
+                if (!Array.isArray(walletsData)) {
+                    console.error('Expected wallets array but got:', typeof walletsData, walletsData);
+                    throw new Error('Invalid wallets data format: Expected array');
+                }
+
+                // Transform backend task data to frontend format
+                const transformedChores = transformTasksFromBackend(tasksArray);
+                setChores(transformedChores);
                 setWallets(walletsData);
             } catch (err) {
                 console.error("Error fetching data:", err);
             } finally {
                 setIsLoading(false);
             }
-        };
-
-        fetchData();
-    }, [session?.user?.id]);
+        }; fetchData();
+    }, [session?.user?.id, refreshTrigger]);
 
     const formatCurrency = (amount: number) => {
         return amount.toLocaleString('en-NG', {
@@ -92,18 +132,17 @@ const AppStatCard = ({ kidId }: AppStatCardProps = {}) => {
     const getStats = (): StatItem[] => {
         // Filter data by kidId if provided
         const filteredChores = kidId ? chores.filter(chore => chore.assignedTo === kidId) : chores;
-        const filteredWallets = kidId ? wallets.filter(wallet => wallet.kidId === kidId) : wallets;
+        const filteredWallets = kidId ? wallets.filter(wallet => wallet.child.id === kidId) : wallets;
 
         const totalChores = filteredChores.length;
         const completedChores = filteredChores.filter(chore => chore.status === "completed").length;
         const pendingChores = filteredChores.filter(chore => chore.status === "pending").length;
-        const totalBalance = filteredWallets.reduce((sum, wallet) => sum + wallet.balance, 0);
-        const totalRewardSent = filteredChores
+        const totalBalance = filteredWallets.reduce((sum, wallet) => sum + wallet.balance, 0); const totalRewardSent = filteredChores
             .filter(chore => chore.status === "completed")
-            .reduce((sum, chore) => sum + chore.reward, 0);
+            .reduce((sum, chore) => sum + parseFloat(chore.reward || '0'), 0);
         const totalRewardPending = filteredChores
             .filter(chore => chore.status === "pending")
-            .reduce((sum, chore) => sum + chore.reward, 0);
+            .reduce((sum, chore) => sum + parseFloat(chore.reward || '0'), 0);
 
         // Kid-specific stats for individual kid dashboard
         if (kidId) {

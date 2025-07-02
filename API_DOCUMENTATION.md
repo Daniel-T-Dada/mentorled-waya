@@ -480,7 +480,7 @@ Authorization: Bearer <access_token>
 
 ### 1. Create Task
 
-**Endpoint:** `POST /taskmaster/tasks/create/`
+**Endpoint:** `POST /taskmaster/chores/create/`
 
 **Description:** Create a new task for a child.
 
@@ -493,9 +493,8 @@ Authorization: Bearer <access_token>
   "title": "Clean your room",
   "description": "Detailed description of the chore.",
   "assigned_to": "child_id",
-  "reward_amount": 10.5,
-  "due_date": "2024-12-31",
-  "status": "pending"
+  "reward": 10.5,
+  "due_date": "2024-12-31"
 }
 ```
 
@@ -506,17 +505,18 @@ Authorization: Bearer <access_token>
   "id": "task_id",
   "title": "Clean your room",
   "description": "Detailed description of the chore.",
-  "assigned_to": "child_id",
-  "reward_amount": "10.50",
+  "reward": "10.50",
   "due_date": "2024-12-31",
+  "assigned_to": "child_id",
   "status": "pending",
-  "parent": "parent_id"
+  "created_at": "2024-01-01T12:00:00Z",
+  "completed_at": null
 }
 ```
 
 ### 2. List Tasks
 
-**Endpoint:** `GET /taskmaster/tasks/`
+**Endpoint:** `GET /taskmaster/chores/`
 
 **Description:** List all tasks created by the parent.
 
@@ -524,7 +524,7 @@ Authorization: Bearer <access_token>
 
 **Query Parameters:**
 
-- `status`: (optional) Filter by task status (`pending`, `completed`, `approved`).
+- `status`: (optional) Filter by task status (`pending`, `completed`, `missed`).
 - `assignedTo`: (optional) Filter by child ID.
 - `category`: (optional) Filter by category.
 
@@ -535,20 +535,21 @@ Authorization: Bearer <access_token>
   {
     "id": "task_id",
     "title": "Clean your room",
+    "description": "Detailed description of the chore.",
+    "reward": "10.50",
+    "due_date": "2024-12-31",
+    "assigned_to": "child_username",
+    "parent_id": "parent_id",
     "status": "pending",
-    "assigned_to": {
-      "id": "child_id",
-      "username": "child_username"
-    },
-    "reward_amount": "10.50",
-    "due_date": "2024-12-31"
+    "created_at": "2024-01-01T12:00:00Z",
+    "completed_at": null
   }
 ]
 ```
 
 ### 3. Task Detail
 
-**Endpoint:** `GET /taskmaster/tasks/<uuid:pk>/`
+**Endpoint:** `GET /taskmaster/chores/<uuid:pk>/`
 
 **Description:** Retrieve details for a specific task.
 
@@ -561,17 +562,19 @@ Authorization: Bearer <access_token>
   "id": "task_id",
   "title": "Clean your room",
   "description": "Detailed description of the chore.",
-  "assigned_to": "child_id",
-  "reward_amount": "10.50",
+  "reward": "10.50",
   "due_date": "2024-12-31",
+  "assigned_to": "child_username",
+  "parent_id": "parent_id",
   "status": "pending",
-  "parent": "parent_id"
+  "created_at": "2024-01-01T12:00:00Z",
+  "completed_at": null
 }
 ```
 
 ### 4. Update Task
 
-**Endpoint:** `PUT /taskmaster/tasks/<uuid:pk>/update/`
+**Endpoint:** `PUT /taskmaster/chores/<uuid:pk>/`
 
 **Description:** Update a task's details.
 
@@ -582,7 +585,7 @@ Authorization: Bearer <access_token>
 ```json
 {
   "title": "Clean your room thoroughly",
-  "reward_amount": 12.0
+  "reward": 12.0
 }
 ```
 
@@ -593,17 +596,19 @@ Authorization: Bearer <access_token>
   "id": "task_id",
   "title": "Clean your room thoroughly",
   "description": "Detailed description of the chore.",
-  "assigned_to": "child_id",
-  "reward_amount": "12.00",
+  "reward": "12.00",
   "due_date": "2024-12-31",
+  "assigned_to": "child_username",
+  "parent_id": "parent_id",
   "status": "pending",
-  "parent": "parent_id"
+  "created_at": "2024-01-01T12:00:00Z",
+  "completed_at": null
 }
 ```
 
 ### 5. Delete Task
 
-**Endpoint:** `DELETE /taskmaster/tasks/<uuid:pk>/delete/`
+**Endpoint:** `DELETE /taskmaster/chores/<uuid:pk>/`
 
 **Description:** Delete a task.
 
@@ -613,9 +618,9 @@ Authorization: Bearer <access_token>
 
 ### 6. Update Task Status
 
-**Endpoint:** `PATCH /taskmaster/tasks/<uuid:pk>/status/`
+**Endpoint:** `PATCH /taskmaster/chores/<uuid:pk>/status/`
 
-**Description:** Update the status of a task (e.g., approve a completed task).
+**Description:** Update the status of a task (e.g., mark as completed or missed).
 
 **Authentication:** Required (Parent)
 
@@ -623,15 +628,21 @@ Authorization: Bearer <access_token>
 
 ```json
 {
-  "status": "approved"
+  "status": "completed"
 }
 ```
+
+**Valid Status Values:**
+
+- `pending`: Task is assigned but not yet completed
+- `completed`: Task has been completed by the child
+- `missed`: Task was not completed by the due date
 
 **Response (200 OK):**
 
 ```json
 {
-  "message": "Task status updated successfully."
+  "status": "completed"
 }
 ```
 
@@ -639,9 +650,13 @@ Authorization: Bearer <access_token>
 
 **Endpoint:** `GET /taskmaster/child-chores/`
 
-**Description:** List all chores assigned to the authenticated child.
+**Description:** List all chores assigned to a specific child. Parent must provide the child ID as a query parameter.
 
-**Authentication:** Required (Child)
+**Authentication:** Required (Parent)
+
+**Query Parameters:**
+
+- `childId`: (required) The ID of the child whose chores to retrieve.
 
 **Response (200 OK):**
 
@@ -650,9 +665,14 @@ Authorization: Bearer <access_token>
   {
     "id": "task_id",
     "title": "Clean your room",
+    "description": "Detailed description of the chore.",
+    "reward": "10.50",
+    "due_date": "2024-12-31",
+    "assigned_to": "child_username",
+    "parent_id": "parent_id",
     "status": "pending",
-    "reward_amount": "10.50",
-    "due_date": "2024-12-31"
+    "created_at": "2024-01-01T12:00:00Z",
+    "completed_at": null
   }
 ]
 ```
@@ -661,7 +681,7 @@ Authorization: Bearer <access_token>
 
 **Endpoint:** `PATCH /taskmaster/child-chores/<uuid:pk>/status/`
 
-**Description:** Update the status of a chore (e.g., mark as completed).
+**Description:** Update the status of a chore (e.g., mark as completed). This endpoint is for children to update their own task statuses.
 
 **Authentication:** Required (Child)
 
@@ -673,11 +693,17 @@ Authorization: Bearer <access_token>
 }
 ```
 
+**Valid Status Values:**
+
+- `pending`: Task is assigned but not yet completed
+- `completed`: Task has been completed by the child
+- `missed`: Task was not completed by the due date
+
 **Response (200 OK):**
 
 ```json
 {
-  "message": "Chore status updated to completed."
+  "status": "completed"
 }
 ```
 

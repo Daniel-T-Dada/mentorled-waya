@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
-import { mockDataService } from "@/lib/services/mockDataService";
+import { createAllowancePayload } from '@/lib/utils/allowanceTransforms';
 
 interface AddAllowanceProps {
   isOpen: boolean;
@@ -36,7 +36,6 @@ export function AddAllowance({ isOpen, onClose, onSuccess }: AddAllowanceProps) 
   const [step, setStep] = useState<"form" | "success">("form");
   const [kids, setKids] = useState<Kid[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [usedMockData, setUsedMockData] = useState(false);
   const [formData, setFormData] = useState({
     kidName: "",
     amount: "",
@@ -50,22 +49,21 @@ export function AddAllowance({ isOpen, onClose, onSuccess }: AddAllowanceProps) 
 
       try {
         // const response = await fetch(`http://localhost:3001/api/parent/${session.user.id}/kids`);
-        const response = await fetch(getApiUrl(API_ENDPOINTS.PARENT_KIDS).replace(':parentId', session.user.id));
+        const response = await fetch(getApiUrl(API_ENDPOINTS.LIST_CHILDREN), {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.user.accessToken}`,
+          },
+        });
         if (!response.ok) throw new Error('Failed to fetch kids');
         const data = await response.json();
         setKids(data);
       } catch (error) {
         console.error('Error fetching kids:', error);
-        toast.warning('Using mock data for kids list');
-
-        // Use mock data for kids
-        const mockKids = mockDataService.getAllKids().map(kid => ({
-          id: kid.id,
-          name: kid.name,
-          username: kid.name.toLowerCase().replace(/\s+/g, '.'),
-          parentId: session.user.id || 'mock-parent-id'
-        }));
-        setKids(mockKids);
+        toast.error('Failed to load children list', {
+          description: 'Please try again or contact support if the problem persists.'
+        });
+        setKids([]); // Set empty array instead of mock data
       }
     };
 
@@ -117,25 +115,24 @@ export function AddAllowance({ isOpen, onClose, onSuccess }: AddAllowanceProps) 
 
       // Convert amount string to number (remove commas)
       const amount = parseInt(formData.amount.replace(/,/g, ''));
-      if (isNaN(amount)) throw new Error('Invalid amount');
-
-      // Map 'once' to 'daily' for the mock server
+      if (isNaN(amount)) throw new Error('Invalid amount');      // Map 'once' to 'daily' for the mock server
       const frequency = formData.frequency === 'once' ? 'daily' : formData.frequency;
 
+      // Create properly formatted payload
+      const payload = createAllowancePayload({
+        childId: selectedKid.id,
+        amount,
+        frequency,
+        status: 'pending',
+      });
+
       // Create allowance record
-      const response = await fetch(getApiUrl(API_ENDPOINTS.ALLOWANCES), {
+      const response = await fetch(getApiUrl(API_ENDPOINTS.CREATE_ALLOWANCE), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          kidId: selectedKid.id,
-          parentId: session.user.id,
-          amount,
-          frequency, // use mapped value
-          status: 'pending',
-          createdAt: new Date().toISOString()
-        }),
+          'Authorization': `Bearer ${session.user.accessToken}`,
+        }, body: JSON.stringify(payload),
       });
 
       if (!response.ok) throw new Error('Failed to create allowance');
@@ -144,38 +141,15 @@ export function AddAllowance({ isOpen, onClose, onSuccess }: AddAllowanceProps) 
       toast.success('Allowance added successfully');
     } catch (error) {
       console.error('Error creating allowance:', error);
-
-      // Use mock data as fallback
-      toast.warning("Using mock data", {
-        description: "API call failed. Creating a mock allowance for development."
+      
+      // Show proper error message instead of using mock data
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create allowance. Please try again.';
+      
+      toast.error("Failed to create allowance", {
+        description: errorMessage
       });
-
-      // Find the selected kid's ID
-      const selectedKid = kids.find(k => k.name === formData.kidName);
-      if (!selectedKid) {
-        toast.error("Selected kid not found");
-        setIsLoading(false);
-        return;
-      }
-
-      // Convert amount string to number (remove commas)
-      const amount = parseInt(formData.amount.replace(/,/g, ''));
-      if (isNaN(amount)) {
-        toast.error("Invalid amount");
-        setIsLoading(false);
-        return;
-      }
-
-      // Create mock allowance
-      mockDataService.createMockAllowance(
-        selectedKid.id,
-        session.user.id || 'mock-parent-id',
-        amount,
-        formData.frequency
-      );
-
-      setUsedMockData(true);
-      setStep("success");
+      
+      // Don't proceed to success step, keep the form open for retry
     } finally {
       setIsLoading(false);
     }
@@ -191,7 +165,6 @@ export function AddAllowance({ isOpen, onClose, onSuccess }: AddAllowanceProps) 
         frequency: "once"
       });
       setStep("form");
-      setUsedMockData(false);
     }, 300);
   };
 
@@ -302,11 +275,6 @@ export function AddAllowance({ isOpen, onClose, onSuccess }: AddAllowanceProps) 
             <h3 className="text-lg font-medium text-center mb-2">Allowance Added Successfully</h3>
             <p className="text-center text-muted-foreground mb-6">
               {formData.amount ? `NGN ${formData.amount}` : "Allowance"} has been successfully sent to {formData.kidName}
-              {usedMockData && (
-                <span className="block text-xs mt-2 text-yellow-500">
-                  (Mock data - API connection failed)
-                </span>
-              )}
             </p>
             <Button
               onClick={handleSuccess}

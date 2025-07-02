@@ -36,7 +36,7 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
   const [isLoading, setIsLoading] = useState(false);
   const [createdKid, setCreatedKid] = useState<KidData | null>(null);
   const { data: session } = useSession();
-  const { addKid, setKidName } = useKid();
+  const { addKid } = useKid();
   const user = session?.user;
 
   const [formData, setFormData] = useState({
@@ -89,8 +89,15 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
     setIsLoading(true);
 
     try {
+      console.log("CreateKidAccount - About to send data:", {
+        username: formData.username,
+        name: formData.name,
+        pin: formData.pin ? "****" : "NOT SET"
+      });
+
       const response = await ChildrenService.createChild({
         username: formData.username,
+        name: formData.name, // Include the name field
         pin: formData.pin,
       }, session?.user?.accessToken || '');
 
@@ -98,10 +105,27 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
         throw new Error("Failed to create kid account");
       }
 
+      console.log("CreateKidAccount - Backend response:", response);
+
+      // Check if the backend response name is 'Unknown' and try to update it
+      if (response.name === 'Unknown' && formData.name && formData.name !== 'Unknown') {
+        console.warn("CreateKidAccount - Backend returned 'Unknown' name, attempting to update...");
+        try {
+          // Try to update the child's name using the update endpoint
+          await ChildrenService.updateChild(response.id, { name: formData.name }, session?.user?.accessToken || '');
+          // Update the response object to reflect the correct name
+          response.name = formData.name;
+          console.log("CreateKidAccount - Successfully updated child name to:", formData.name);
+        } catch (updateError) {
+          console.error("CreateKidAccount - Failed to update child name:", updateError);
+          // Continue with original response even if update fails
+        }
+      }
+
       // Convert the response to match KidData interface
       const kidData: KidData = {
         id: response.id,
-        name: formData.name, // Use the name from form data since it's not in the response
+        name: response.name, // Use the name from backend response
         username: response.username,
         parentId: user.id,
       };
@@ -110,15 +134,14 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
       const newKid = {
         id: response.id,
         username: response.username,
-        name: formData.name, // Include the name from the form
+        name: response.name, // Use the name from backend response
         avatar: response.avatar,
         parent: user.id,
       };
 
       addKid(newKid);
 
-      // Also store the name locally for persistence
-      setKidName(response.id, formData.name);
+      // Don't override backend name with local storage
 
       setCreatedKid(kidData);
       setStep("success");

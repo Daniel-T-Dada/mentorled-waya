@@ -8,88 +8,116 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "next-auth/react";
-import { MockApiService } from "@/lib/services/mockApiService";
-import { mockDataService } from "@/lib/services/mockDataService";
+import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
+import { Task, transformTasksFromBackend, BackendTask } from '@/lib/utils/taskTransforms';
+import { useKid } from '@/contexts/KidContext';
 
-interface Chore {
-    id: string;
-    title: string;
-    description: string;
-    reward: number;
-    status: "completed" | "pending" | "cancelled";
-    assignedTo: string;
-    createdAt: string;
+// Type for paginated API responses
+interface PaginatedResponse<T> {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: T[];
 }
 
 interface KidMyChoreProps {
     kidId?: string;
+    refreshTrigger?: number;
 }
 
-const KidChoreQuest = ({ kidId: propKidId }: KidMyChoreProps) => {
-    const { data: session } = useSession(); const [chores, setChores] = useState<Chore[]>([]);
+const KidChoreQuest = ({ kidId: propKidId, refreshTrigger }: KidMyChoreProps) => {
+    const { data: session } = useSession();
+    const { kids, getKidDisplayName } = useKid();
+    
+    const [chores, setChores] = useState<Task[]>([]);
     const [kidName, setKidName] = useState<string>("Kid");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState("all");
 
-    const sessionKidId = session?.user?.id;
-    const validKidIds = ['kid-001', 'kid-002', 'kid-003', 'kid-004'];
+    // For kid sessions, use childId; for parent sessions viewing a kid, use the session user ID
+    const sessionKidId = session?.user?.isChild ? session.user.childId : session?.user?.id;
+    
+    // Use real session kid ID instead of mock fallbacks
+    const kidId = propKidId || sessionKidId || "kid-001";
 
-    let kidId = propKidId || "kid-001";
+    console.log('KidChoreQuest - Using kidId:', kidId, {
+        propKidId,
+        sessionKidId,
+        isChildSession: session?.user?.isChild,
+        childId: session?.user?.childId,
+        userId: session?.user?.id,
+        finalKidId: kidId
+    });
 
-    // If we have a session kid ID, check if it's valid, otherwise use fallback
-    if (sessionKidId && validKidIds.includes(sessionKidId)) {
-        kidId = sessionKidId;
-    } else if (sessionKidId && !propKidId) {
-        console.log(`KidMyChore - Session kidId "${sessionKidId}" not found in mock data, using fallback: kid-001`);
-    } useEffect(() => {
+    // Get kid name from the kids context
+    useEffect(() => {
+        const kid = kids.find(k => k.id === kidId);
+        if (kid) {
+            setKidName(getKidDisplayName(kid));
+        }
+    }, [kidId, kids, getKidDisplayName]);    useEffect(() => {
         const fetchChoreData = async () => {
+            if (!session?.user?.id || !session?.user?.accessToken) {
+                setLoading(false);
+                return;
+            }
+            
             try {
                 setLoading(true);
                 setError(null);
 
-                // Try to fetch from API first
-                try {
-                    const choresData = await MockApiService.fetchChoresByKidId(kidId);
-                    setChores(choresData);
+                console.log('KidChoreQuest - Fetching chores for kidId:', kidId);
 
-                    // Also fetch kid data to get the name
-                    try {
-                        const kidData = await MockApiService.fetchKidById(kidId);
-                        setKidName(kidData.name || "Kid");
-                    } catch (kidError) {
-                        console.log('Failed to fetch kid data, using fallback:', kidError);
-                        const kidData = mockDataService.getKidById(kidId);
-                        setKidName(kidData?.name || "Kid");
-                    }
-                } catch (apiError) {
-                    console.log('API fetch failed, falling back to direct mock data service:', apiError);
+                // Use the same API pattern as AppChoreManagement
+                const apiUrl = `${getApiUrl(API_ENDPOINTS.LIST_TASKS)}?page_size=100&assignedTo=${kidId}`;
 
-                    // Fallback to direct mock data service
-                    const choresData = mockDataService.getChoresByKidId(kidId);
-                    setChores(choresData);
+                const choresResponse = await fetch(apiUrl, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.user.accessToken}`,
+                    },
+                });
 
-                    // Also get kid name from fallback
-                    const kidData = mockDataService.getKidById(kidId);
-                    setKidName(kidData?.name || "Kid");
+                console.log('KidChoreQuest - Response status:', choresResponse.status);
+
+                if (!choresResponse.ok) {
+                    console.error('KidChoreQuest - API Error:', choresResponse.status);
+                    throw new Error('Failed to fetch chores');
                 }
-            } catch (err) {
-                console.error('Error fetching chore data:', err);
-                setError('Failed to load chore data');
+                
+                const choresData: BackendTask[] | PaginatedResponse<BackendTask> = await choresResponse.json();
 
-                // Last resort fallback
+                console.log('KidChoreQuest - Raw API data:', choresData);
+
+                // Handle different response formats
+                const processedChores = Array.isArray(choresData) ? choresData :
+                    ('results' in choresData && Array.isArray(choresData.results)) ? choresData.results : [];
+
+                console.log('KidChoreQuest - Processed data:', {
+                    choresCount: processedChores.length
+                });
+
+                // Transform backend task data to frontend format
+                const transformedChores = transformTasksFromBackend(processedChores);
+                setChores(transformedChores);
+            } catch (err) {
+                console.error("KidChoreQuest - Error fetching chores:", err);
+                setError('Failed to load chore data');
                 setChores([]);
-                setKidName("Kid");
             } finally {
                 setLoading(false);
             }
         };
 
         fetchChoreData();
-    }, [kidId]);    // Show all chores in the All Activities column
+    }, 
+    [kidId, session?.user?.id, session?.user?.accessToken, refreshTrigger]);    // Show all chores in the All Activities column
     const allChores = chores;
     const completedChores = chores.filter(chore => chore.status === "completed");    // Handle status change for chores
     const handleStatusChange = async (choreId: string, newStatus: "completed" | "pending") => {
+        if (!session?.user?.accessToken) return;
+        
         try {
             // Optimistically update the UI
             setChores(prevChores =>
@@ -100,18 +128,34 @@ const KidChoreQuest = ({ kidId: propKidId }: KidMyChoreProps) => {
                 )
             );
 
+            console.log(`KidChoreQuest - Updating chore ${choreId} status to ${newStatus}`);
+
             // Make API call to update the status
-            await MockApiService.updateChoreStatus(choreId, newStatus);
-            console.log(`Successfully updated chore ${choreId} status to ${newStatus}`);
-        } catch (error) {
-            console.error('Error updating chore status:', error);
-            // Revert the optimistic update on error
-            try {
-                const originalChores = await MockApiService.fetchChoresByKidId(kidId);
-                setChores(originalChores);
-            } catch (fetchError) {
-                console.error('Error reverting chore data:', fetchError);
+            const statusUpdateUrl = API_ENDPOINTS.UPDATE_TASK_STATUS.replace(':taskId', choreId);
+            const response = await fetch(getApiUrl(statusUpdateUrl), {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.user.accessToken}`,
+                },
+                body: JSON.stringify({ status: newStatus }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update chore status');
             }
+
+            console.log(`KidChoreQuest - Successfully updated chore ${choreId} status to ${newStatus}`);
+        } catch (error) {
+            console.error('KidChoreQuest - Error updating chore status:', error);
+            // Revert the optimistic update on error
+            setChores(prevChores =>
+                prevChores.map(chore =>
+                    chore.id === choreId
+                        ? { ...chore, status: newStatus === "completed" ? "pending" : "completed" }
+                        : chore
+                )
+            );
         }
     };
 

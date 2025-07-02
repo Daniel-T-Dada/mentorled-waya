@@ -5,7 +5,7 @@ import KidChoreQuest from "@/components/dashboard/kid/KidChoreQuest"
 const ChoreQuestPage = () => {
     return (
         <div>
-            <KidChoreQuest />
+            <KidChoreQuest refreshTrigger={0} />
         </div>
     )
 }

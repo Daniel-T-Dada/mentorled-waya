@@ -27,9 +27,51 @@ const TaskMasterPage = () => {
     const [selectedKid, setSelectedKid] = useState("");
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [chores, setChores] = useState<Chore[]>([]);
-    return (
-        <div className="">
-            <TaskMasterDashboard onCreateChoreClick={() => setIsCreateChoreOpen(true)} />
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+    const handleCreateChore = () => {
+        setSelectedKid(""); // Clear any pre-selected kid
+        setIsCreateChoreOpen(true);
+    };
+
+    const handleAssignChore = (kidId: string) => {
+        setSelectedKid(kidId); // Pre-select the kid
+        setIsCreateChoreOpen(true);
+    }; const handleChoreSuccess = () => {
+        // Trigger refresh of data immediately
+        setRefreshTrigger(prev => prev + 1);
+
+        // Also manually refresh chores list as backup
+        const fetchChores = async () => {
+            if (!session?.user?.id || !session?.user?.accessToken) return;
+            try {
+                console.log('TaskMaster - Refreshing chores after creation...');
+                const response = await fetch(getApiUrl(API_ENDPOINTS.LIST_TASKS), {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.user.accessToken}`,
+                    },
+                });
+                if (!response.ok) throw new Error('Failed to fetch chores');
+                const data = await response.json();
+                console.log('TaskMaster - Refreshed chores:', data);
+                setChores(data);
+                toast.success('Chore created successfully!');
+            } catch (error) {
+                console.error('Error fetching chores:', error);
+                toast.error('Failed to refresh chores list');
+            }
+        };
+
+        // Add small delay to ensure backend consistency
+        setTimeout(fetchChores, 600);
+        setSelectedKid("");
+    }; return (
+        <div className="">            <TaskMasterDashboard
+            onCreateChoreClick={handleCreateChore}
+            onAssignChore={handleAssignChore}
+            refreshTrigger={refreshTrigger}
+        />
             {/* Create Chore Modal */}
             <CreateChore
                 isOpen={isCreateChoreOpen}
@@ -37,22 +79,7 @@ const TaskMasterPage = () => {
                     setIsCreateChoreOpen(false);
                     setSelectedKid("");
                 }}
-                onSuccess={() => {
-                    // Refresh chores list
-                    const fetchChores = async () => {
-                        if (!session?.user?.id) return;
-                        try {
-                            const response = await fetch(`${getApiUrl(API_ENDPOINTS.LIST_TASKS)}?parentId=${session.user.id}`);
-                            if (!response.ok) throw new Error('Failed to fetch chores');
-                            const data = await response.json();
-                            setChores(data);
-                        } catch (error) {
-                            console.error('Error fetching chores:', error);
-                            toast.error('Failed to load chores');
-                        }
-                    };
-                    fetchChores(); setSelectedKid("");
-                }}
+                onSuccess={handleChoreSuccess}
                 preSelectedKid={selectedKid}
             />
         </div>)

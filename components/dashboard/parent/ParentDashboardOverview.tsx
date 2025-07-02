@@ -9,12 +9,13 @@ import AppStatCard from "../AppStatCard"
 
 interface ParentDashboardProps {
     onCreateKidClick?: () => void;
+    refreshTrigger?: number;
 }
 
 import { Button } from "@/components/ui/button"
 
 
-const ParentDashboardOverview = ({ onCreateKidClick }: ParentDashboardProps = {}) => {
+const ParentDashboardOverview = ({ onCreateKidClick, refreshTrigger }: ParentDashboardProps = {}) => {
 
     return (
         <main className="">
@@ -28,9 +29,8 @@ const ParentDashboardOverview = ({ onCreateKidClick }: ParentDashboardProps = {}
 
                 </Button>
 
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                <AppStatCard />
+            </div>            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <AppStatCard refreshTrigger={refreshTrigger} />
                 {/* <DebugBarChart/> */}
 
                 <div className="lg:col-span-2 ">
@@ -39,7 +39,7 @@ const ParentDashboardOverview = ({ onCreateKidClick }: ParentDashboardProps = {}
 
 
                 <div className="lg:col-span-1 self-start">
-                    <AppPieChart />
+                    <AppPieChart refreshTrigger={refreshTrigger} />
                 </div>
 
 
@@ -49,7 +49,7 @@ const ParentDashboardOverview = ({ onCreateKidClick }: ParentDashboardProps = {}
 
 
 
-                    <AppChoreManagement />
+                    <AppChoreManagement refreshTrigger={refreshTrigger} />
 
 
 
