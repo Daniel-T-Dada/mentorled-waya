@@ -70,7 +70,7 @@ export function AddAllowance({ isOpen, onClose, onSuccess }: AddAllowanceProps) 
     if (isOpen) {
       fetchKids();
     }
-  }, [isOpen, session?.user?.id]);
+  }, [isOpen, session?.user?.id, session?.user?.accessToken]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -141,14 +141,14 @@ export function AddAllowance({ isOpen, onClose, onSuccess }: AddAllowanceProps) 
       toast.success('Allowance added successfully');
     } catch (error) {
       console.error('Error creating allowance:', error);
-      
+
       // Show proper error message instead of using mock data
       const errorMessage = error instanceof Error ? error.message : 'Failed to create allowance. Please try again.';
-      
+
       toast.error("Failed to create allowance", {
         description: errorMessage
       });
-      
+
       // Don't proceed to success step, keep the form open for retry
     } finally {
       setIsLoading(false);

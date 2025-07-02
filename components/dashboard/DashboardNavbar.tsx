@@ -40,6 +40,20 @@ const DashboardNavbar = () => {
         return user.name.charAt(0).toUpperCase();
     };
 
+    // Helper function to get display name
+    const getDisplayName = () => {
+        if (!user?.name) return "User";
+
+        // Check if this is a kid session and extract first name
+        if (user.isChild && user.name) {
+            const firstName = user.name.split(' ')[0];
+            return firstName;
+        }
+
+        // For parents, show full name
+        return user.name;
+    };
+
     // Debug: Log user avatar for troubleshooting
     React.useEffect(() => {
         if (user && !isLoading) {
@@ -70,7 +84,7 @@ const DashboardNavbar = () => {
                             </>
                         ) : (
                             <>
-                                <h1 className="text-xl md:text-2xl font-semibold">Hello {user?.name || "User"}</h1>
+                                <h1 className="text-xl md:text-2xl font-semibold">Hello {getDisplayName()}</h1>
                                 <p className="text-muted-foreground text-xs md:text-sm">Building Smart Money Habits, One Chore at a Time.</p>
                             </>
                         )}

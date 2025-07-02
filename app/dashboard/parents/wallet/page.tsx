@@ -7,7 +7,7 @@ import FamilyWalletDashboard from "@/components/dashboard/parent/FamilyWalletDas
 import { AddAllowance } from "@/components/modals/AddAllowance";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 
@@ -50,7 +50,7 @@ const FamilyWalletPage = () => {
         ? wallets.reduce((sum, wallet) => sum + (typeof wallet.balance === 'number' ? wallet.balance : 0), 0)
         : 0;
     // Fetch wallet data
-    const fetchWalletData = async () => {
+    const fetchWalletData = useCallback(async () => {
         if (!session?.user?.accessToken) return;
 
         try {
@@ -68,10 +68,10 @@ const FamilyWalletPage = () => {
             toast.error('Failed to load wallet data');
             setWallets([]);
         }
-    };
+    }, [session?.user?.accessToken]);
 
     // Fetch transactions
-    const fetchTransactions = async () => {
+    const fetchTransactions = useCallback(async () => {
         try {
             const response = await fetch(getApiUrl(API_ENDPOINTS.TRANSACTIONS));
             if (!response.ok) throw new Error('Failed to fetch transactions');
@@ -81,10 +81,10 @@ const FamilyWalletPage = () => {
             console.error('Error fetching transactions:', error);
             toast.error('Failed to load transactions');
         }
-    };
+    }, []);
 
     // Fetch notifications
-    const fetchNotifications = async () => {
+    const fetchNotifications = useCallback(async () => {
         try {
             const response = await fetch(getApiUrl(API_ENDPOINTS.NOTIFICATIONS));
             if (!response.ok) throw new Error('Failed to fetch notifications');
@@ -93,7 +93,7 @@ const FamilyWalletPage = () => {
         } catch (error) {
             console.error('Error fetching notifications:', error);
         }
-    };
+    }, []);
 
 
     useEffect(() => {
@@ -102,7 +102,7 @@ const FamilyWalletPage = () => {
             fetchTransactions();
             fetchNotifications();
         }
-    }, [session]);
+    }, [session, fetchWalletData, fetchTransactions, fetchNotifications]);
 
 
     return (

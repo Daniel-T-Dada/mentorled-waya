@@ -344,12 +344,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
                     // If childName is not provided by backend, try to fetch it
                     let childName = kidLoginResponse.childName || kidLoginResponse.childUsername;
-                    
+
                     if (!kidLoginResponse.childName && kidLoginResponse.token && kidLoginResponse.childId) {
                         try {
                             // Try to fetch child details to get the name
                             const childDetails = await ChildrenService.getChildDetail(
-                                kidLoginResponse.childId, 
+                                kidLoginResponse.childId,
                                 kidLoginResponse.token
                             );
                             childName = childDetails.name || kidLoginResponse.childUsername;
@@ -363,7 +363,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     // Return user object with kid context
                     return {
                         id: kidLoginResponse.parentId, // Use parent ID for session
-                        name: kidLoginResponse.childUsername,
+                        name: childName, // Use fetched child name instead of username
                         email: `${kidLoginResponse.childUsername}@kid.local`, // Dummy email for session
                         role: "kid",
                         emailVerified: new Date(),
@@ -462,7 +462,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 // Default to parent for OAuth users
                 session.user.role = (token.role as string) || "parent";
                 session.user.email = (token.email as string) || "";
-                session.user.name = token.name as string | undefined;
+
+                // For kids, use childName if available, otherwise fallback to name
+                if (token.isChild && token.childName) {
+                    session.user.name = token.childName as string;
+                } else {
+                    session.user.name = token.name as string | undefined;
+                }
+
                 session.user.emailVerified = token.emailVerified ? new Date(token.emailVerified as string) : null;
                 session.user.avatar = token.avatar as string | null;
                 session.user.accessToken = token.accessToken as string | undefined;
@@ -525,13 +532,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     // Kid-specific fields
                     childId: user.childId,
                     childUsername: user.childUsername,
+                    childName: user.childName, // Include childName in the user object
                     isChild: user.isChild
                 };
 
                 // Also store individual fields for backward compatibility
                 token.role = user.role;
                 token.email = user.email;
-                token.name = user.name;
+
+                // For kids, prioritize childName over name
+                if (user.isChild && user.childName) {
+                    token.name = user.childName;
+                } else {
+                    token.name = user.name;
+                }
+
                 token.emailVerified = user.emailVerified;
                 token.avatar = user.avatar;
                 token.accessToken = user.accessToken;
