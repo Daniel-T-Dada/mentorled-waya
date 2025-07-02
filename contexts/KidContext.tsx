@@ -4,39 +4,13 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { useSession, signOut } from 'next-auth/react';
 import { ChildrenService, ApiError } from '@/lib/services/childrenService';
 
-// Local storage utilities for kid names
-const KID_NAMES_STORAGE_KEY = 'kid_names';
-
-const getStoredKidNames = (): Record<string, string> => {
-    if (typeof window === 'undefined') return {};
-    try {
-        const stored = localStorage.getItem(KID_NAMES_STORAGE_KEY);
-        return stored ? JSON.parse(stored) : {};
-    } catch {
-        return {};
-    }
-};
-
-const storeKidName = (kidId: string, name: string) => {
-    if (typeof window === 'undefined') return;
-    try {
-        const names = getStoredKidNames();
-        names[kidId] = name;
-        localStorage.setItem(KID_NAMES_STORAGE_KEY, JSON.stringify(names));
-    } catch (error) {
-        console.warn('Failed to store kid name:', error);
-    }
-};
-
 const getKidDisplayName = (kid: { id: string; username: string; name?: string }): string => {
-    // 1. Use name from API if available
-    if (kid.name) return kid.name;
+    // 1. Use name from API if available (backend now provides this)
+    if (kid.name && kid.name.trim()) {
+        return kid.name.trim();
+    }
 
-    // 2. Use stored name if available
-    const storedNames = getStoredKidNames();
-    if (storedNames[kid.id]) return storedNames[kid.id];
-
-    // 3. Fallback to formatted username
+    // 2. Fallback to formatted username if backend doesn't provide name
     return formatUsername(kid.username);
 };
 
@@ -53,7 +27,7 @@ const formatUsername = (username: string): string => {
 export interface Kid {
     id: string;
     username: string;
-    name?: string; // Display name (stored locally if not from API)
+    name?: string; // Display name from backend
     avatar?: string | null;
     created_at?: string;
     parent?: string;
@@ -81,6 +55,9 @@ export interface KidContextType {
     // Name management
     setKidName: (kidId: string, name: string) => void;
     getKidDisplayName: (kid: Kid) => string;
+
+    // Add new method for fetching child profile
+    fetchChildProfile: (childId: string, parentToken: string) => Promise<Kid | null>;
 }
 
 
@@ -101,6 +78,7 @@ export function KidProvider({ children }: KidProviderProps) {
     const currentKid: Kid | null = isKidSession && session?.user ? {
         id: session.user.childId || '',
         username: session.user.childUsername || '',
+        name: session.user.childName && session.user.childName.trim() ? session.user.childName.trim() : undefined, // Use backend name if available
         avatar: session.user.avatar,
     } : null;
 
@@ -147,18 +125,23 @@ export function KidProvider({ children }: KidProviderProps) {
 
             console.log('KidContext - All kids collected:', allKids);
 
-            // Get stored names
-            const storedNames = getStoredKidNames();
-
-            // Map response to Kid interface and merge with stored names
-            const mappedKids: Kid[] = allKids.map((kid: any) => ({
-                id: kid.id,
-                username: kid.username,
-                name: kid.name || storedNames[kid.id] || undefined, // Use API name, fallback to stored, then undefined
-                avatar: kid.avatar,
-                created_at: kid.created_at,
-                parent: kid.parent,
-            }));
+            // Map response to Kid interface, prioritizing backend-provided name
+            const mappedKids: Kid[] = allKids.map((kid: any) => {
+                console.log('KidContext - Processing kid:', {
+                    id: kid.id,
+                    username: kid.username,
+                    name: kid.name,
+                    avatar: kid.avatar
+                });
+                return {
+                    id: kid.id,
+                    username: kid.username,
+                    name: kid.name && kid.name.trim() ? kid.name.trim() : undefined, // Use backend name if provided and not empty
+                    avatar: kid.avatar,
+                    created_at: kid.created_at,
+                    parent: kid.parent,
+                };
+            });
 
             setKids(mappedKids);
             console.log('KidContext - Successfully mapped kids:', mappedKids);
@@ -206,6 +189,31 @@ export function KidProvider({ children }: KidProviderProps) {
         }
     }, [session, status]);
 
+    // New method to fetch child profile after login
+    const fetchChildProfile = async (childId: string, parentToken: string): Promise<Kid | null> => {
+        try {
+            const profile = await ChildrenService.getChildDetail(childId, parentToken);
+            console.log('KidContext - Fetched child profile:', profile);
+
+            const kid: Kid = {
+                id: profile.id,
+                username: profile.username,
+                name: profile.name || 'Unknown',
+                parent: profile.parent,
+                avatar: profile.avatar || '',
+                created_at: profile.created_at
+            };
+
+            // Update the kid in local state if it exists
+            updateKid(childId, { name: kid.name });
+
+            return kid;
+        } catch (error) {
+            console.error('KidContext - Failed to fetch child profile:', error);
+            return null;
+        }
+    };
+
     // Helper functions
     const addKid = (kid: Kid) => {
         setKids(prev => [...prev, kid]);
@@ -227,15 +235,19 @@ export function KidProvider({ children }: KidProviderProps) {
 
     // Name management methods
     const setKidName = (kidId: string, name: string) => {
-        // Store locally
-        storeKidName(kidId, name);
-
-        // Update kid in state with the name
+        // Update kid in state with the name (no longer storing locally since backend provides it)
         updateKid(kidId, { name });
     };
 
     const getKidDisplayNameHelper = (kid: Kid): string => {
-        return getKidDisplayName(kid);
+        const displayName = getKidDisplayName(kid);
+        console.log('KidContext - Getting display name for kid:', {
+            kidId: kid.id,
+            username: kid.username,
+            backendName: kid.name,
+            displayName
+        });
+        return displayName;
     };
 
     const value: KidContextType = {
@@ -251,6 +263,7 @@ export function KidProvider({ children }: KidProviderProps) {
         updateKid,
         setKidName,
         getKidDisplayName: getKidDisplayNameHelper,
+        fetchChildProfile, // Add the new method
     };
 
     return (

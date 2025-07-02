@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, CheckIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
@@ -24,8 +24,8 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
-import { mockDataService } from "@/lib/services/mockDataService";
 import { useKid } from "@/contexts/KidContext";
+import { createTaskRequest } from "@/lib/utils/taskTransforms";
 
 interface Kid {
   id: string;
@@ -53,13 +53,12 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
   const { kids, getKidDisplayName } = useKid();
   const [step, setStep] = useState<"form" | "success">("form");
   const [isLoading, setIsLoading] = useState(false);
-  const [usedMockData, setUsedMockData] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     reward: "",
     dueDate: new Date(),
-    assignedTo: ""
+    assignedTo: "",
   });
 
   // Convert KidContext kids to modal Kid format
@@ -86,17 +85,17 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
       [name]: value,
     });
   };
-
-  const handleRadioChange = (value: string) => {
+  const handleSelectChange = (value: string) => {
     setFormData({
       ...formData,
       assignedTo: value,
     });
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true); try {
+    setIsLoading(true);
+
+    try {
       // Parse the reward value to a number, removing any non-numeric characters
       const rewardValue = Number(formData.reward.replace(/[^0-9]/g, ''));
 
@@ -108,62 +107,60 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
 
       console.log('CreateChore - Form data being sent:', {
         ...formData,
-        parentId: session?.user?.id,
         dueDate: formData.dueDate.toISOString(),
         reward: rewardValue
       });
 
       console.log('CreateChore - Attempting to create chore...');
 
+      // Create the properly formatted request payload
+      const requestPayload = createTaskRequest(
+        formData.title,
+        formData.description,
+        formData.assignedTo,
+        rewardValue,
+        formData.dueDate
+      );
+
+      console.log('CreateChore - Request payload:', requestPayload);
+
       const response = await fetch(getApiUrl(API_ENDPOINTS.CREATE_TASK), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.user?.accessToken}`,
-        },        
-        body: JSON.stringify({
-          title: formData.title,
-          description: formData.description,
-          reward: rewardValue,
-          due_date: formData.dueDate.toISOString().split('T')[0], // Convert to YYYY-MM-DD format
-          assignedTo: formData.assignedTo, // Changed from assigned_to to assignedTo
-          parentId: session?.user?.id // Added missing parentId
-        }),
-      }); 
+        },
+        body: JSON.stringify(requestPayload),
+      });
       console.log('CreateChore - Response status:', response.status);
 
       if (!response.ok) {
         const error = await response.json();
         console.error('CreateChore - API Error:', error);
         throw new Error(error.error || 'Failed to create chore');
-      }
-
-      const responseData = await response.json();
+      } const responseData = await response.json();
       console.log('CreateChore - Success:', responseData);
 
       setStep("success");
-      if (onSuccess) onSuccess();
+
+      // Call onSuccess immediately after successful creation to refresh data
+      if (onSuccess) {
+        // Add a small delay to ensure backend has processed the request
+        setTimeout(() => {
+          onSuccess();
+        }, 500);
+      }
     } catch (error) {
       console.error('Error creating chore:', error);
-
-      // Use mock data as fallback
-      toast.warning("Using mock data", {
-        description: "API call failed. Creating a mock chore for development."
+      
+      // Show proper error message instead of using mock data
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create chore. Please try again.';
+      
+      toast.error("Failed to create chore", {
+        description: errorMessage
       });
-
-      // Create a mock chore using mockDataService
-      mockDataService.createMockChore(
-        formData.title,
-        formData.description,
-        Number(formData.reward.replace(/[^0-9]/g, '')),
-        formData.assignedTo,
-        formData.dueDate,
-        session?.user?.id || 'mock-parent-id'
-      );
-
-      setUsedMockData(true);
-      setStep("success");
-      if (onSuccess) onSuccess();
+      
+      // Don't proceed to success step, keep the form open for retry
     } finally {
       setIsLoading(false);
     }
@@ -178,16 +175,14 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
         description: "",
         reward: "",
         dueDate: new Date(),
-        assignedTo: ""
+        assignedTo: "",
       });
       setStep("form");
-      setUsedMockData(false);
     }, 300);
   };
-
   const handleSuccess = () => {
     closeAndReset();
-    if (onSuccess) onSuccess();
+    // onSuccess is already called after API success, no need to call again
   };
 
   return (
@@ -280,28 +275,27 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
                     />
                   </PopoverContent>
                 </Popover>
-              </div>
-
-              <div className="space-y-2">
+              </div>              <div className="space-y-2">
                 <Label className="text-sm font-medium">
                   Assign To<span className="text-destructive">*</span>
                 </Label>
-                <RadioGroup
-                  value={formData.assignedTo} onValueChange={handleRadioChange}
-                  className="flex flex-col space-y-2"
-                >
-                  {modalKids.map((kid) => (
-                    <div key={kid.id} className="flex items-center space-x-2 rounded-md border p-3">
-                      <RadioGroupItem value={kid.id} id={kid.id} />
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold">
-                          {kid.name?.charAt(0) || kid.username.charAt(0)}
+                <Select value={formData.assignedTo} onValueChange={handleSelectChange} required>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a child" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {modalKids.map((kid) => (
+                      <SelectItem key={kid.id} value={kid.id}>
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold">
+                            {kid.name?.charAt(0) || kid.username.charAt(0)}
+                          </div>
+                          <span>{kid.name || kid.username}</span>
                         </div>
-                        <Label htmlFor={kid.id} className="cursor-pointer">{kid.name || kid.username}</Label>
-                      </div>
-                    </div>
-                  ))}
-                </RadioGroup>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <DialogFooter className="mt-6">
@@ -329,11 +323,6 @@ export function CreateChore({ isOpen, onClose, onSuccess, preSelectedKid }: Crea
             <h3 className="text-lg font-semibold mb-2">Chore Created!</h3>
             <p className="text-sm text-muted-foreground text-center mb-6">
               The chore has been successfully created and assigned.
-              {usedMockData && (
-                <span className="block text-xs mt-2 text-yellow-500">
-                  (Mock data - API connection failed)
-                </span>
-              )}
             </p>
             <Button onClick={handleSuccess}>
               Done

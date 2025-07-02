@@ -10,6 +10,16 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { Wallet, ClipboardList } from 'lucide-react';
+import { transformTasksFromBackend, BackendTask } from '@/lib/utils/taskTransforms';
+import { transformAllowancesFromBackend } from '@/lib/utils/allowanceTransforms';
+
+// Type for paginated API responses
+interface PaginatedResponse<T> {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: T[];
+}
 
 // Chart configurations for different pages
 const chartConfigs = {
@@ -111,7 +121,11 @@ const InfoState = ({ isWallet }: InfoStateProps) => (
     </Card>
 );
 
-const AppPieChart = () => {
+interface AppPieChartProps {
+    refreshTrigger?: number;
+}
+
+const AppPieChart = ({ refreshTrigger }: AppPieChartProps = {}) => {
     const [range, setRange] = useState("7");
     const [isLoading, setIsLoading] = useState(true);
     const [needsRetry, setNeedsRetry] = useState(false);
@@ -133,18 +147,35 @@ const AppPieChart = () => {
             try {
                 if (isWallet) {
                     // Fetch savings data from API
-                    const response = await fetch(getApiUrl(API_ENDPOINTS.ALLOWANCES));
+                    const response = await fetch(getApiUrl(API_ENDPOINTS.ALLOWANCES), {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session?.user?.accessToken}`,
+                        },
+                    });
                     if (!response.ok) {
                         throw new Error('Failed to fetch allowance data');
                     }
                     const data = await response.json();
-
-                    if (!Array.isArray(data)) {
-                        throw new Error('Invalid data format');
+                    console.log('Raw allowance data (PieChart):', data);
+                    
+                    // Handle both paginated responses and direct arrays
+                    let allowanceArray;
+                    if (Array.isArray(data)) {
+                        allowanceArray = data;
+                    } else if (data && typeof data === 'object' && Array.isArray(data.results)) {
+                        allowanceArray = data.results;
+                    } else {
+                        console.error('Unexpected data format:', data);
+                        throw new Error('Invalid data format: Expected array or paginated response');
                     }
 
-                    const totalSaved = data.reduce((sum, allowance) => sum + allowance.amount, 0);
-                    const totalSpent = data.reduce((sum, allowance) =>
+                    // Transform backend data to frontend format
+                    const transformedAllowances = transformAllowancesFromBackend(allowanceArray);
+                    console.log('Transformed allowances (PieChart):', transformedAllowances);
+
+                    const totalSaved = transformedAllowances.reduce((sum, allowance) => sum + allowance.amount, 0);
+                    const totalSpent = transformedAllowances.reduce((sum, allowance) =>
                         sum + (allowance.status === 'completed' ? allowance.amount : 0), 0);
 
                     setChartData([
@@ -159,19 +190,37 @@ const AppPieChart = () => {
                             color: chartConfigs.savings.Spent.color
                         },
                     ]);
-                } else {                    // Fetch chores data from API
-                    const response = await fetch(getApiUrl(API_ENDPOINTS.LIST_TASKS));
+                } else {
+                    // Fetch chores data from API
+                    const response = await fetch(getApiUrl(API_ENDPOINTS.LIST_TASKS), {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session?.user?.accessToken}`,
+                        },
+                    });
                     if (!response.ok) {
                         throw new Error('Failed to fetch chores data');
                     }
-                    const data = await response.json();
+                    const data: BackendTask[] | PaginatedResponse<BackendTask> = await response.json();
+                    console.log('Raw tasks data (PieChart):', data);
 
-                    if (!Array.isArray(data)) {
-                        throw new Error('Invalid data format');
+                    // Handle both paginated responses and direct arrays
+                    let tasksArray: BackendTask[];
+                    if (Array.isArray(data)) {
+                        tasksArray = data;
+                    } else if (data && typeof data === 'object' && 'results' in data && Array.isArray(data.results)) {
+                        tasksArray = data.results;
+                    } else {
+                        console.error('Unexpected data format:', data);
+                        throw new Error('Invalid data format: Expected array or paginated response');
                     }
 
-                    const completedCount = data.filter(chore => chore.status === "completed").length;
-                    const pendingCount = data.filter(chore => chore.status === "pending").length;
+                    // Transform backend data to frontend format
+                    const transformedData = transformTasksFromBackend(tasksArray);
+                    console.log('Transformed tasks (PieChart):', transformedData);
+
+                    const completedCount = transformedData.filter(chore => chore.status === "completed").length;
+                    const pendingCount = transformedData.filter(chore => chore.status === "pending").length;
 
                     setChartData([
                         {
@@ -192,10 +241,8 @@ const AppPieChart = () => {
             } finally {
                 setIsLoading(false);
             }
-        };
-
-        fetchData();
-    }, [session?.user?.id, pathname, range, isWallet]);
+        }; fetchData();
+    }, [session?.user?.id, pathname, range, isWallet, refreshTrigger]);
 
     const totalValue = chartData.reduce((acc, curr) => acc + curr.value, 0);
     const currentConfig = isWallet ? chartConfigs.savings : chartConfigs.chores;

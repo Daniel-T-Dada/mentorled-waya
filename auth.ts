@@ -31,6 +31,7 @@ declare module "next-auth" {
             // Kid-specific fields
             childId?: string;
             childUsername?: string;
+            childName?: string; // Child's display name from backend
             isChild?: boolean;
         }
     }interface User {
@@ -55,6 +56,7 @@ declare module "next-auth" {
         // Kid-specific fields
         childId?: string;
         childUsername?: string;
+        childName?: string; // Child's display name from backend
         isChild?: boolean;
     }
 }
@@ -71,6 +73,7 @@ declare module "@auth/core/jwt" {
         // Kid-specific fields
         childId?: string;
         childUsername?: string;
+        childName?: string; // Child's display name from backend
         isChild?: boolean;
     }
 }
@@ -339,6 +342,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
                     console.log("Kid login response:", kidLoginResponse);
 
+                    // If childName is not provided by backend, try to fetch it
+                    let childName = kidLoginResponse.childName || kidLoginResponse.childUsername;
+                    
+                    if (!kidLoginResponse.childName && kidLoginResponse.token && kidLoginResponse.childId) {
+                        try {
+                            // Try to fetch child details to get the name
+                            const childDetails = await ChildrenService.getChildDetail(
+                                kidLoginResponse.childId, 
+                                kidLoginResponse.token
+                            );
+                            childName = childDetails.name || kidLoginResponse.childUsername;
+                            console.log("Fetched child name from details:", childName);
+                        } catch (error) {
+                            console.warn("Could not fetch child name, using username:", error);
+                            childName = kidLoginResponse.childUsername;
+                        }
+                    }
+
                     // Return user object with kid context
                     return {
                         id: kidLoginResponse.parentId, // Use parent ID for session
@@ -353,6 +374,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         // Kid-specific fields
                         childId: kidLoginResponse.childId,
                         childUsername: kidLoginResponse.childUsername,
+                        childName: childName, // Use fetched name or fallback to username
                         parentId: kidLoginResponse.parentId,
                         isChild: true,
                     };
@@ -449,6 +471,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 // Add kid-specific fields
                 session.user.childId = token.childId as string | undefined;
                 session.user.childUsername = token.childUsername as string | undefined;
+                session.user.childName = token.childName as string | undefined;
                 session.user.isChild = token.isChild as boolean | undefined;
 
                 // Add any additional user data from the token
@@ -517,6 +540,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 // Store kid-specific fields
                 token.childId = user.childId;
                 token.childUsername = user.childUsername;
+                token.childName = user.childName;
                 token.isChild = user.isChild;
             }
 

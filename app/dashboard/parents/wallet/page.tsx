@@ -49,12 +49,17 @@ const FamilyWalletPage = () => {
     const totalBalance = Array.isArray(wallets)
         ? wallets.reduce((sum, wallet) => sum + (typeof wallet.balance === 'number' ? wallet.balance : 0), 0)
         : 0;
-
-
     // Fetch wallet data
     const fetchWalletData = async () => {
+        if (!session?.user?.accessToken) return;
+
         try {
-            const response = await fetch(getApiUrl(API_ENDPOINTS.WALLET));
+            const response = await fetch(getApiUrl(API_ENDPOINTS.CHILDREN_WALLETS), {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.user.accessToken}`,
+                },
+            });
             if (!response.ok) throw new Error('Failed to fetch wallet data');
             const data = await response.json();
             setWallets(Array.isArray(data) ? data : []);

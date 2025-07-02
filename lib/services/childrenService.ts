@@ -16,12 +16,14 @@ export class ApiError extends Error {
 // Types for Child API requests and responses
 export interface CreateChildRequest {
     username: string;
+    name: string; // Child's display name
     pin: string;
 }
 
 export interface CreateChildResponse {
     id: string;
     username: string;
+    name: string; // Child's display name
     avatar: string | null;
 }
 
@@ -33,6 +35,7 @@ export interface KidLoginRequest {
 export interface KidLoginResponse {
     childId: string;
     childUsername: string;
+    childName?: string; // Display name from backend
     parentId: string;
     token: string;
     refresh: string;
@@ -42,6 +45,7 @@ export interface Child {
     id: string;
     parent: string;
     username: string;
+    name?: string; // Display name from backend
     avatar: string | null;
     created_at: string;
 }
@@ -57,17 +61,20 @@ export interface ChildDetailResponse {
     id: string;
     parent: string;
     username: string;
+    name?: string; // Display name from backend
     avatar: string | null;
     created_at: string;
 }
 
 export interface UpdateChildRequest {
     username?: string;
+    name?: string; // Allow updating the child's display name
     pin?: string;
 }
 
 export interface UpdateChildResponse {
     username: string;
+    name?: string; // Display name from backend
     avatar: string | null;
 }
 
@@ -167,6 +174,11 @@ export class ChildrenService {
      * Create a new child account (requires parent authentication)
      */
     static async createChild(data: CreateChildRequest, parentToken: string): Promise<CreateChildResponse> {
+        console.log("ChildrenService.createChild - Request data:", {
+            username: data.username,
+            name: data.name,
+            pin: data.pin ? "****" : "NOT_SET"
+        });
         return this.makeRequest<CreateChildResponse>(
             API_ENDPOINTS.CREATE_CHILD,
             {
@@ -422,6 +434,7 @@ export class ChildrenService {
                 console.log('3️⃣ Testing create child...');
                 results.createChild.result = await this.createChild({
                     username: testData.childUsername,
+                    name: testData.childUsername, // Use username as name for test
                     pin: testData.childPin,
                 }, results.parentLogin.token);
                 results.createChild.status = 'passed';
