@@ -103,7 +103,7 @@ const AppKidsActivities = ({ kidId }: AppKidsActivitiesProps = {}) => {
         } finally {
             setIsLoading(false);
         }
-    }, [session?.user?.id]);
+    }, [session?.user?.id, session?.user?.accessToken]);
 
     useEffect(() => {
         fetchData();

@@ -6,8 +6,8 @@ import { type ChartConfig, ChartContainer, ChartTooltip } from "@/components/ui/
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { MockApiService } from "@/lib/services/mockApiService";
-import { mockDataService } from "@/lib/services/mockDataService";
+import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
+import { Task, transformTasksFromBackend, BackendTask } from '@/lib/utils/taskTransforms';
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Chart configuration matching the image colors
@@ -43,17 +43,13 @@ const KidPieChart = ({ kidId: propKidId }: KidPieChartProps) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Valid kid IDs from mock data
-    const validKidIds = ["kid-001", "kid-002", "kid-003", "kid-004"];
+    // Get kid ID from session when available, otherwise use the prop
+    const childId = session?.user?.childId || propKidId;
 
-    // Get kid data - prioritize prop, then session, then fallback
-    // Validate that the kidId exists in our mock data
-    const sessionKidId = session?.user?.id;
-    const validKidId = propKidId ||
-        (sessionKidId && validKidIds.includes(sessionKidId) ? sessionKidId : null) ||
-        "kid-001";
+    // If we don't have a valid kid ID, use the user ID (for a kid session)
+    const kidId = childId || session?.user?.id;
 
-    console.log('[KidPieChart] Session kidId:', sessionKidId, 'Using valid kidId:', validKidId);    // Generate fallback data that matches the image
+    console.log('[KidPieChart] Session user:', session?.user?.name, 'Using kidId:', kidId);    // Generate fallback data that matches the image
     const generateFallbackData = (): ChartDataPoint[] => {
         return [
             {
@@ -79,33 +75,31 @@ const KidPieChart = ({ kidId: propKidId }: KidPieChartProps) => {
     };
 
     useEffect(() => {
-        // Process kid and chore data into expense breakdown format
-        const processExpenseData = (kid: any, chores: any[], days: number): ChartDataPoint[] => {
-            if (!kid) return generateFallbackData();
-
+        // Process task data into expense breakdown format
+        const processExpenseData = (tasks: Task[], days: number): ChartDataPoint[] => {
             const today = new Date();
             const startDate = new Date(today);
             startDate.setDate(today.getDate() - days);
 
-            // Filter chores for the selected date range
-            const recentChores = chores.filter(chore => {
-                const choreDate = new Date(chore.createdAt || chore.dueDate);
-                return choreDate >= startDate;
+            // Filter tasks for the selected date range
+            const recentTasks = tasks.filter(task => {
+                const taskDate = new Date(task.createdAt || task.dueDate);
+                return taskDate >= startDate;
             });
 
             // Calculate expenses
-            const totalEarned = recentChores
-                .filter(chore => chore.status === 'completed')
-                .reduce((sum, chore) => sum + (chore.reward || 0), 0);
+            const totalEarned = recentTasks
+                .filter(task => task.status === 'completed')
+                .reduce((sum, task) => sum + (parseFloat(task.reward) || 0), 0);
 
             // Assume 70% of earned money is saved, 30% is spent
             const rewardSaved = totalEarned * 0.7;
             const rewardSpent = totalEarned * 0.3;
 
-            // Goals budget from pending/upcoming chores
-            const goalsBudget = recentChores
-                .filter(chore => chore.status === 'pending')
-                .reduce((sum, chore) => sum + (chore.reward || 0), 0);
+            // Goals budget from pending/upcoming tasks
+            const goalsBudget = recentTasks
+                .filter(task => task.status === 'pending')
+                .reduce((sum, task) => sum + (parseFloat(task.reward) || 0), 0);
 
             // If no data, return fallback to show something meaningful
             if (totalEarned === 0 && goalsBudget === 0) {
@@ -132,42 +126,75 @@ const KidPieChart = ({ kidId: propKidId }: KidPieChartProps) => {
         };
 
         const fetchKidExpenseData = async () => {
+            if (!session?.user || !kidId) {
+                setLoading(false);
+                setChartData(generateFallbackData());
+                return;
+            }
+
             try {
                 setLoading(true);
                 setError(null);
 
-                // Try to fetch from API first
+                // Determine which endpoint to use based on user role
+                const choreEndpoint = session.user.isChild
+                    ? `${API_ENDPOINTS.LIST_TASKS}?assignedTo=${kidId}`  // Kid viewing their own chores using the working endpoint
+                    : API_ENDPOINTS.LIST_TASKS;   // Parent viewing chores
+
                 try {
-                    const [kidData, choresData] = await Promise.all([
-                        MockApiService.fetchKidById(validKidId),
-                        MockApiService.fetchChoresByKidId(validKidId)
-                    ]);
+                    // Fetch the chores data from the API
+                    const choresResponse = await fetch(getApiUrl(choreEndpoint), {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.user.accessToken}`,
+                        },
+                    });
+
+                    if (!choresResponse.ok) {
+                        throw new Error(`Failed to fetch chores: ${choresResponse.status}`);
+                    }
+
+                    const choresData = await choresResponse.json();
+                    console.log('[KidPieChart] Raw chores data:', choresData);
+
+                    // Process chores data (handle both array and paginated responses)
+                    let tasksArray: BackendTask[] = [];
+                    if (Array.isArray(choresData)) {
+                        tasksArray = choresData;
+                    } else if (choresData && typeof choresData === 'object' && Array.isArray(choresData.results)) {
+                        tasksArray = choresData.results;
+                    }
+
+                    // Convert to frontend format
+                    const transformedChores = transformTasksFromBackend(tasksArray);
+
+                    // For kids using the assignedTo parameter, the API already filters their chores
+                    // For parents, we need to filter by kidId
+                    const kidChores = session.user.isChild
+                        ? transformedChores  // Already filtered by the API using assignedTo parameter
+                        : transformedChores.filter(chore => chore.assignedTo === kidId);
 
                     // Process the data to create expense breakdown
-                    const processedData = processExpenseData(kidData, choresData, parseInt(range));
+                    const processedData = processExpenseData(kidChores, parseInt(range));
                     setChartData(processedData);
                 } catch (apiError) {
-                    console.log('API fetch failed, falling back to mock data service:', apiError);
-
-                    // Fallback to direct mock data service
-                    const kidData = mockDataService.getKidById(validKidId) || mockDataService.getParent().children[0];
-                    const choresData = mockDataService.getChoresByKidId(kidData.id);
-
-                    // Process mock data
-                    const processedData = processExpenseData(kidData, choresData, parseInt(range));
-                    setChartData(processedData);
+                    console.error('API fetch failed:', apiError);
+                    setError('Failed to load expense data');
+                    // Use fallback data for chart visualization
+                    setChartData(generateFallbackData());
                 }
             } catch (err) {
                 console.error('Error fetching kid expense data:', err);
                 setError('Failed to load expense data');
-
                 // Generate fallback mock data matching the image
                 setChartData(generateFallbackData());
             } finally {
                 setLoading(false);
             }
-        }; fetchKidExpenseData();
-    }, [validKidId, range]); if (loading) {
+        };
+
+        fetchKidExpenseData();
+    }, [kidId, range, session]); if (loading) {
         return (
             <Card className="flex flex-col">
                 <CardHeader className="flex-shrink-0 pb-4">

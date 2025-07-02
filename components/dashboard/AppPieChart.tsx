@@ -158,7 +158,7 @@ const AppPieChart = ({ refreshTrigger }: AppPieChartProps = {}) => {
                     }
                     const data = await response.json();
                     console.log('Raw allowance data (PieChart):', data);
-                    
+
                     // Handle both paginated responses and direct arrays
                     let allowanceArray;
                     if (Array.isArray(data)) {
@@ -202,22 +202,46 @@ const AppPieChart = ({ refreshTrigger }: AppPieChartProps = {}) => {
                         throw new Error('Failed to fetch chores data');
                     }
                     const data: BackendTask[] | PaginatedResponse<BackendTask> = await response.json();
-                    console.log('Raw tasks data (PieChart):', data);
 
-                    // Handle both paginated responses and direct arrays
-                    let tasksArray: BackendTask[];
+                    // Handle different response formats and pagination
+                    let allTasks: BackendTask[] = [];
+
                     if (Array.isArray(data)) {
-                        tasksArray = data;
+                        // Direct array response
+                        allTasks = data;
                     } else if (data && typeof data === 'object' && 'results' in data && Array.isArray(data.results)) {
-                        tasksArray = data.results;
+                        // Paginated response - collect all pages
+                        allTasks = [...data.results];
+
+                        // If there are more pages, fetch them all
+                        let nextUrl = data.next;
+                        while (nextUrl) {
+                            console.log('Fetching next page for pie chart:', nextUrl);
+                            const nextResponse = await fetch(nextUrl, {
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${session?.user?.accessToken}`,
+                                },
+                            });
+
+                            if (!nextResponse.ok) {
+                                console.warn('Failed to fetch next page, stopping pagination');
+                                break;
+                            }
+
+                            const nextData: PaginatedResponse<BackendTask> = await nextResponse.json();
+                            allTasks = [...allTasks, ...nextData.results];
+                            nextUrl = nextData.next;
+                        }
                     } else {
                         console.error('Unexpected data format:', data);
                         throw new Error('Invalid data format: Expected array or paginated response');
                     }
 
+                    console.log(`Fetched ${allTasks.length} total tasks across all pages for pie chart`);
+
                     // Transform backend data to frontend format
-                    const transformedData = transformTasksFromBackend(tasksArray);
-                    console.log('Transformed tasks (PieChart):', transformedData);
+                    const transformedData = transformTasksFromBackend(allTasks);
 
                     const completedCount = transformedData.filter(chore => chore.status === "completed").length;
                     const pendingCount = transformedData.filter(chore => chore.status === "pending").length;
@@ -242,7 +266,7 @@ const AppPieChart = ({ refreshTrigger }: AppPieChartProps = {}) => {
                 setIsLoading(false);
             }
         }; fetchData();
-    }, [session?.user?.id, pathname, range, isWallet, refreshTrigger]);
+    }, [session?.user?.id, pathname, range, isWallet, refreshTrigger, session?.user?.accessToken]);
 
     const totalValue = chartData.reduce((acc, curr) => acc + curr.value, 0);
     const currentConfig = isWallet ? chartConfigs.savings : chartConfigs.chores;

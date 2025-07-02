@@ -7,8 +7,6 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, BookOpen, BarChart3 } from "lucide-react";
-import { MockApiService } from "@/lib/services/mockApiService";
-import { mockDataService } from "@/lib/services/mockDataService";
 
 interface FinancialConcept {
     id: string;
@@ -53,17 +51,68 @@ const KidLearn = () => {
                 setLoading(true);
                 setError(null);
 
-                // Try to fetch from API first
-                try {
-                    const data = await MockApiService.fetchLearningData();
-                    setLearningData(data);
-                } catch (apiError) {
-                    console.log('API fetch failed, falling back to direct mock data service:', apiError);
+                // Use placeholder data instead of mock API
+                const placeholderLearningData: LearningData = {
+                    financialConcepts: [
+                        {
+                            id: 'concept-1',
+                            title: 'Understanding Money',
+                            description: 'Learn the basics of money and its value',
+                            progress: 100,
+                            isCompleted: true
+                        },
+                        {
+                            id: 'concept-2',
+                            title: 'Saving vs Spending',
+                            description: 'Understand the difference between saving and spending',
+                            progress: 60,
+                            isCompleted: false
+                        },
+                        {
+                            id: 'concept-3',
+                            title: 'Setting Financial Goals',
+                            description: 'Learn how to set and achieve financial goals',
+                            progress: 0,
+                            isCompleted: false
+                        }
+                    ],
+                    achievements: [
+                        {
+                            id: 'ach-1',
+                            title: 'First Lesson Complete',
+                            description: 'Completed your first financial lesson',
+                            progress: 100,
+                            isCompleted: true,
+                            hasTrophy: true
+                        },
+                        {
+                            id: 'ach-2',
+                            title: 'Quick Learner',
+                            description: 'Completed 3 lessons in one day',
+                            progress: 100,
+                            isCompleted: true,
+                            hasTrophy: true
+                        }
+                    ],
+                    progressLessons: [
+                        {
+                            id: 'progress-1',
+                            title: 'Money Basics',
+                            description: 'Learn fundamental concepts about money',
+                            progress: 60,
+                            isCompleted: false
+                        },
+                        {
+                            id: 'progress-2',
+                            title: 'Smart Spending',
+                            description: 'Learn how to spend money wisely',
+                            progress: 25,
+                            isCompleted: false
+                        }
+                    ]
+                };
 
-                    // Fallback to direct mock data service
-                    const data = mockDataService.getLearningData();
-                    setLearningData(data);
-                }
+                setLearningData(placeholderLearningData);
             } catch (err) {
                 console.error('Error fetching learning data:', err);
                 setError('Failed to load learning data');
