@@ -9,6 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes"
 import { Avatar, AvatarFallback, AvatarImage, } from "../ui/avatar";
+import { getAvatarUrl, getAvatarDebugInfo } from "@/lib/utils/avatarUtils";
 import { Button } from "../ui/button";
 import ThemeToggle from "@/components/theme-toggle";
 import { useUser } from "@/contexts/UserContext";
@@ -27,11 +28,14 @@ const AppSidebar = () => {
     // Debug: Log user avatar for troubleshooting
     React.useEffect(() => {
         if (user && !isLoading) {
+            const debugInfo = getAvatarDebugInfo(user.avatar);
+            console.log("AppSidebar - Avatar debug info:", debugInfo);
             console.log("AppSidebar - User data:", {
                 name: user.name,
                 email: user.email,
-                avatar: user.avatar,
-                role: user.role
+                role: user.role,
+                id: user.id,
+                isChild: user.isChild
             });
         }
     }, [user, isLoading]);
@@ -233,17 +237,14 @@ const AppSidebar = () => {
                                         <>
                                             {user?.avatar ? (
                                                 <AvatarImage
-                                                    src={user.avatar}
+                                                    src={getAvatarUrl(user.avatar)}
                                                     alt={user.name || "User avatar"}
                                                     onError={(e) => {
                                                         const target = e.target as HTMLImageElement;
                                                         target.style.display = 'none';
-                                                        console.error("AppSidebar - Failed to load avatar image:", {
-                                                            avatarUrl: user.avatar,
-                                                            userName: user.name,
-                                                            userEmail: user.email,
-                                                            error: e
-                                                        });
+                                                        const debugInfo = getAvatarDebugInfo(user.avatar);
+                                                        console.error("AppSidebar - Failed to load avatar image:", debugInfo);
+                                                        console.error("Image load error:", e);
                                                     }}
                                                     referrerPolicy="no-referrer"
                                                 />
@@ -260,11 +261,10 @@ const AppSidebar = () => {
                                                 <Skeleton className="h-3 w-32 mt-1" />
                                             </>
                                         ) : (
-                                            <>                                <span className="truncate font-medium">
-                                                {user?.name || "User"}
-                                            </span>
+                                            <>
+                                                <span className="truncate font-medium">{user?.name || "User"}</span>
                                                 <span className="truncate text-xs text-muted-foreground">
-                                                    {isKid ? `@${user?.childUsername || user?.name || "kid"}` : (user?.email || "No email")}
+                                                    {user?.email || "No email"}
                                                 </span>
                                             </>
                                         )}

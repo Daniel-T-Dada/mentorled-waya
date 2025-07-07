@@ -6,30 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Target, Trophy, Calendar, Edit, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { MockApiService } from "@/lib/services/mockApiService";
+import { Goal, Achievement, mockDataService } from "@/lib/services/mockDataService";
 
-// Define interfaces locally instead of importing from mock services
-interface Goal {
-    id: string;
-    kidId: string;
-    title: string;
-    description: string;
-    targetAmount: number;
-    currentAmount: number;
-    deadline: string;
-    category: string;
-    status: 'active' | 'completed' | 'paused';
-    createdAt: string;
-}
-
-interface Achievement {
-    id: string;
-    kidId: string;
-    title: string;
-    description: string;
-    category: string;
-    dateEarned: string;
-    points: number;
-    badge: string;
+interface KidGoalsListProps {
+    kidId?: string;
 }
 
 // Utility functions
@@ -57,7 +38,7 @@ const getProgressColor = (progress: number): string => {
     return "bg-red-500";
 };
 
-const KidGoalsList = () => {
+const KidGoalsList = ({ kidId: propKidId }: KidGoalsListProps) => {
     const { data: session } = useSession();
     const [goals, setGoals] = useState<Goal[]>([]);
     const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -65,68 +46,41 @@ const KidGoalsList = () => {
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState("goals");
 
+    const sessionKidId = session?.user?.id;
+    const validKidIds = ['kid-001', 'kid-002', 'kid-003', 'kid-004'];
+
+    let kidId = propKidId || "kid-001";
+
+    // If we have a session kid ID, check if it's valid, otherwise use fallback
+    if (sessionKidId && validKidIds.includes(sessionKidId)) {
+        kidId = sessionKidId;
+    }
+
     useEffect(() => {
         const fetchGoalData = async () => {
             try {
                 setLoading(true);
                 setError(null);
 
-                // Use placeholder data instead of mock API
-                const placeholderGoals: Goal[] = [
-                    {
-                        id: 'goal-1',
-                        kidId: session?.user?.id || 'kid-1',
-                        title: 'Save for a New Bike',
-                        description: 'Save money to buy a cool new bicycle',
-                        targetAmount: 20000,
-                        currentAmount: 12000,
-                        deadline: '2024-12-31',
-                        category: 'savings',
-                        status: 'active',
-                        createdAt: '2024-01-01'
-                    },
-                    {
-                        id: 'goal-2',
-                        kidId: session?.user?.id || 'kid-1',
-                        title: 'Video Game Fund',
-                        description: 'Save for the latest video game',
-                        targetAmount: 15000,
-                        currentAmount: 8000,
-                        deadline: '2024-11-30',
-                        category: 'entertainment',
-                        status: 'active',
-                        createdAt: '2024-02-01'
-                    }
-                ];
+                // Try to fetch from API first
+                try {
+                    const [goalsData, achievementsData] = await Promise.all([
+                        MockApiService.fetchGoalsByKidId(kidId),
+                        MockApiService.fetchAchievementsByKidId(kidId)
+                    ]);
+                    setGoals(goalsData);
+                    setAchievements(achievementsData);
+                } catch (apiError) {
+                    console.log('API fetch failed, falling back to direct mock data service:', apiError);
 
-                const placeholderAchievements: Achievement[] = [
-                    {
-                        id: 'achievement-1',
-                        kidId: session?.user?.id || 'kid-1',
-                        title: 'First Goal Completed',
-                        description: 'Successfully completed your first savings goal',
-                        category: 'milestone',
-                        dateEarned: '2024-01-15',
-                        points: 100,
-                        badge: '🏆'
-                    },
-                    {
-                        id: 'achievement-2',
-                        kidId: session?.user?.id || 'kid-1',
-                        title: 'Consistent Saver',
-                        description: 'Saved money for 7 days in a row',
-                        category: 'streak',
-                        dateEarned: '2024-02-01',
-                        points: 50,
-                        badge: '🔥'
-                    }
-                ];
-
-                setGoals(placeholderGoals);
-                setAchievements(placeholderAchievements);
-
+                    // Fallback to direct mock data service
+                    const goalsData = mockDataService.getGoalsByKidId(kidId);
+                    const achievementsData = mockDataService.getAchievementsByKidId(kidId);
+                    setGoals(goalsData);
+                    setAchievements(achievementsData);
+                }
             } catch (err) {
-                console.error('Error setting up placeholder data:', err);
+                console.error('Error fetching goal data:', err);
                 setError('Failed to load goal data');
                 setGoals([]);
                 setAchievements([]);
@@ -136,7 +90,7 @@ const KidGoalsList = () => {
         };
 
         fetchGoalData();
-    }, [session?.user?.id]);
+    }, [kidId]);
 
     const handleEditGoal = (goalId: string) => {
         console.log('Edit goal:', goalId);
@@ -278,7 +232,7 @@ const KidGoalsList = () => {
                                             </div>
                                             <div className="text-right text-sm text-muted-foreground">
                                                 <div>Earned</div>
-                                                <div>{new Date(achievement.dateEarned).toLocaleDateString()}</div>
+                                                <div>{new Date(achievement.unlockedAt).toLocaleDateString()}</div>
                                             </div>
                                         </div>
                                     </div>

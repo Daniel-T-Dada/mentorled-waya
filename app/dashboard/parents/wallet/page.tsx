@@ -4,10 +4,10 @@
 
 
 import FamilyWalletDashboard from "@/components/dashboard/parent/FamilyWalletDashboard"
-import { AddAllowance } from "@/components/modals/AddAllowance";
+import { MakePayment } from "@/components/modals/MakePayment";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 
@@ -40,7 +40,7 @@ interface Notification {
 
 const FamilyWalletPage = () => {
     const { data: session } = useSession();
-    const [isAddAllowanceOpen, setIsAddAllowanceOpen] = useState(false);
+    const [isMakePaymentOpen, setIsMakePaymentOpen] = useState(false);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -50,7 +50,7 @@ const FamilyWalletPage = () => {
         ? wallets.reduce((sum, wallet) => sum + (typeof wallet.balance === 'number' ? wallet.balance : 0), 0)
         : 0;
     // Fetch wallet data
-    const fetchWalletData = useCallback(async () => {
+    const fetchWalletData = async () => {
         if (!session?.user?.accessToken) return;
 
         try {
@@ -68,32 +68,50 @@ const FamilyWalletPage = () => {
             toast.error('Failed to load wallet data');
             setWallets([]);
         }
-    }, [session?.user?.accessToken]);
+    };
 
     // Fetch transactions
-    const fetchTransactions = useCallback(async () => {
+    const fetchTransactions = async () => {
+        if (!session?.user?.accessToken) return;
+
         try {
-            const response = await fetch(getApiUrl(API_ENDPOINTS.TRANSACTIONS));
+            const response = await fetch(getApiUrl(API_ENDPOINTS.TRANSACTIONS), {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.user.accessToken}`,
+                },
+            });
             if (!response.ok) throw new Error('Failed to fetch transactions');
             const data = await response.json();
-            setTransactions(data.transactions);
+            // Handle paginated response - use data.results for the transactions array
+            setTransactions(Array.isArray(data.results) ? data.results : []);
         } catch (error) {
             console.error('Error fetching transactions:', error);
             toast.error('Failed to load transactions');
+            setTransactions([]);
         }
-    }, []);
+    };
 
     // Fetch notifications
-    const fetchNotifications = useCallback(async () => {
+    const fetchNotifications = async () => {
+        if (!session?.user?.accessToken) return;
+
         try {
-            const response = await fetch(getApiUrl(API_ENDPOINTS.NOTIFICATIONS));
+            const response = await fetch(getApiUrl(API_ENDPOINTS.NOTIFICATIONS_LIST), {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.user.accessToken}`,
+                },
+            });
             if (!response.ok) throw new Error('Failed to fetch notifications');
             const data = await response.json();
-            setNotifications(data);
+            setNotifications(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Error fetching notifications:', error);
+            toast.error('Failed to load notifications');
+            setNotifications([]);
         }
-    }, []);
+    };
 
 
     useEffect(() => {
@@ -102,15 +120,15 @@ const FamilyWalletPage = () => {
             fetchTransactions();
             fetchNotifications();
         }
-    }, [session, fetchWalletData, fetchTransactions, fetchNotifications]);
+    }, [session]);
 
 
     return (
         <div>
-            <FamilyWalletDashboard onAddAllowanceClick={() => setIsAddAllowanceOpen(true)} />
-            <AddAllowance
-                isOpen={isAddAllowanceOpen}
-                onClose={() => setIsAddAllowanceOpen(false)}
+            <FamilyWalletDashboard onAddAllowanceClick={() => setIsMakePaymentOpen(true)} />
+            <MakePayment
+                isOpen={isMakePaymentOpen}
+                onClose={() => setIsMakePaymentOpen(false)}
                 onSuccess={() => {
                     fetchWalletData(); fetchTransactions();
                 }} />

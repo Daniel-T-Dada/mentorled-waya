@@ -16,7 +16,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
-import { createAllowancePayload } from '@/lib/utils/allowanceTransforms';
 
 interface AddAllowanceProps {
   isOpen: boolean;
@@ -39,7 +38,7 @@ export function AddAllowance({ isOpen, onClose, onSuccess }: AddAllowanceProps) 
   const [formData, setFormData] = useState({
     kidName: "",
     amount: "",
-    frequency: "once"
+    frequency: "weekly" as 'weekly' | 'monthly'
   });
 
   // Fetch kids data when modal opens
@@ -99,7 +98,7 @@ export function AddAllowance({ isOpen, onClose, onSuccess }: AddAllowanceProps) 
   const handleRadioChange = (value: string) => {
     setFormData({
       ...formData,
-      frequency: value,
+      frequency: value as 'weekly' | 'monthly',
     });
   };
 
@@ -115,14 +114,17 @@ export function AddAllowance({ isOpen, onClose, onSuccess }: AddAllowanceProps) 
 
       // Convert amount string to number (remove commas)
       const amount = parseInt(formData.amount.replace(/,/g, ''));
-      if (isNaN(amount)) throw new Error('Invalid amount');      // Map 'once' to 'daily' for the mock server
-      const frequency = formData.frequency === 'once' ? 'daily' : formData.frequency;
+      if (isNaN(amount)) throw new Error('Invalid amount');
 
+      // Temporarily disable allowance creation due to backend 500 error
+      throw new Error('Creating allowances is currently unavailable due to backend issues. Please try again later.');
+
+      /* Original implementation (disabled due to backend 500 error):
       // Create properly formatted payload
       const payload = createAllowancePayload({
         childId: selectedKid.id,
         amount,
-        frequency,
+        frequency: formData.frequency,
         status: 'pending',
       });
 
@@ -132,17 +134,19 @@ export function AddAllowance({ isOpen, onClose, onSuccess }: AddAllowanceProps) 
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.user.accessToken}`,
-        }, body: JSON.stringify(payload),
+        }, 
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) throw new Error('Failed to create allowance');
 
       setStep("success");
       toast.success('Allowance added successfully');
+      */
     } catch (error) {
       console.error('Error creating allowance:', error);
 
-      // Show proper error message instead of using mock data
+      // Show proper error message
       const errorMessage = error instanceof Error ? error.message : 'Failed to create allowance. Please try again.';
 
       toast.error("Failed to create allowance", {
@@ -162,7 +166,7 @@ export function AddAllowance({ isOpen, onClose, onSuccess }: AddAllowanceProps) 
       setFormData({
         kidName: "",
         amount: "",
-        frequency: "once"
+        frequency: "weekly" as 'weekly' | 'monthly'
       });
       setStep("form");
     }, 300);
@@ -234,10 +238,6 @@ export function AddAllowance({ isOpen, onClose, onSuccess }: AddAllowanceProps) 
                   onValueChange={handleRadioChange}
                   className="flex flex-col space-y-2"
                 >
-                  <div className="flex items-center space-x-2 rounded-md border p-3">
-                    <RadioGroupItem value="once" id="once" />
-                    <Label htmlFor="once" className="cursor-pointer">One-time allowance</Label>
-                  </div>
                   <div className="flex items-center space-x-2 rounded-md border p-3">
                     <RadioGroupItem value="weekly" id="weekly" />
                     <Label htmlFor="weekly" className="cursor-pointer">Weekly allowance</Label>

@@ -1,6 +1,6 @@
 'use client'
 
-import AppBarChart from "../AppBarChart"
+import BarChartAllowance from "./barchart/BarChartAllowance"
 import AppChoreManagement from "../AppChoreManagement"
 import AppKidsManagement from "../AppKidsManagement"
 import AppPieChart from "../AppPieChart"
@@ -34,7 +34,7 @@ const ParentDashboardOverview = ({ onCreateKidClick, refreshTrigger }: ParentDas
                 {/* <DebugBarChart/> */}
 
                 <div className="lg:col-span-2 ">
-                    <AppBarChart />
+                    <BarChartAllowance />
                 </div>
 
 

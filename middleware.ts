@@ -26,7 +26,12 @@ export default auth((req) => {
     console.log("Is auth route:", isAuthRoute);
 
     if (isApiAuthRoute) {
-        return NextResponse.next();
+        const response = NextResponse.next();
+        // Add no-cache headers for authentication routes
+        response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        response.headers.set('Pragma', 'no-cache');
+        response.headers.set('Expires', '0');
+        return response;
     }
 
     // For auth routes (signin, signup)
@@ -36,10 +41,17 @@ export default auth((req) => {
             // Redirect based on user role
             const redirectUrl = userRole === 'kid' ? '/dashboard/kids' : '/dashboard/parents';
             console.log("User is logged in and trying to access auth route, redirecting to:", redirectUrl);
-            return Response.redirect(new URL(redirectUrl, nextUrl));
+            const response = NextResponse.redirect(new URL(redirectUrl, nextUrl));
+            // Add no-cache headers
+            response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+            response.headers.set('Pragma', 'no-cache');
+            return response;
         }
-        // Otherwise allow access to auth pages
-        return NextResponse.next();
+        // Otherwise allow access to auth pages with no-cache headers
+        const response = NextResponse.next();
+        response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        response.headers.set('Pragma', 'no-cache');
+        return response;
     }
 
     // For protected routes
@@ -51,9 +63,9 @@ export default auth((req) => {
 
         const encodedCallbackUrl = encodeURIComponent(callbackUrl);
         console.log("User is not logged in and trying to access protected route, redirecting to signin with callback:", encodedCallbackUrl);
-        return Response.redirect(new URL(`/auth/signin?callbackUrl=${encodedCallbackUrl}`, nextUrl));
+        return NextResponse.redirect(new URL(`/auth/signin?callbackUrl=${encodedCallbackUrl}`, nextUrl));
 
-    }    
+    }
     // Role-based access control for dashboard routes
     if (isLoggedIn && nextUrl.pathname.startsWith('/dashboard/')) {
         const isParentRoute = nextUrl.pathname.startsWith('/dashboard/parents');
@@ -64,7 +76,7 @@ export default auth((req) => {
             // Kids can only access kid routes
             if (isParentRoute) {
                 console.log("Kid trying to access parent route, redirecting to kid dashboard");
-                return Response.redirect(new URL('/dashboard/kids', nextUrl));
+                return NextResponse.redirect(new URL('/dashboard/kids', nextUrl));
             }
         }
         // If user is a parent
@@ -72,13 +84,13 @@ export default auth((req) => {
             // Parents can access parent routes, redirect kid routes to parent dashboard
             if (isKidRoute) {
                 console.log("Parent trying to access kid route, redirecting to parent dashboard");
-                return Response.redirect(new URL('/dashboard/parents', nextUrl));
+                return NextResponse.redirect(new URL('/dashboard/parents', nextUrl));
             }
         }
         // If user role is completely missing or unrecognized
         else {
             console.log("Invalid or missing user role:", userRole, "redirecting to signin");
-            return Response.redirect(new URL('/auth/signin', nextUrl));
+            return NextResponse.redirect(new URL('/auth/signin', nextUrl));
         }
     }
 

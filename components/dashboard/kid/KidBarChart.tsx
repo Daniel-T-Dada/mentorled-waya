@@ -6,8 +6,8 @@ import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } f
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
-import { Task, transformTasksFromBackend, BackendTask } from '@/lib/utils/taskTransforms';
+import { MockApiService } from "@/lib/services/mockApiService";
+import { mockDataService } from "@/lib/services/mockDataService";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Chart configuration matching the image colors
@@ -45,13 +45,17 @@ const KidBarChart = ({ kidId: propKidId }: KidBarChartProps) => {
     const [error, setError] = useState<string | null>(null);
     const [screenSize, setScreenSize] = useState('sm');
 
-    // Get kid ID from session when available, otherwise use the prop
-    const childId = session?.user?.childId || propKidId;
+    // Get kid data - prioritize prop, then session, then fallback
+    // Ensure we use a valid kidId that exists in our mock data
+    const sessionKidId = session?.user?.id;
+    const validKidIds = ['kid-001', 'kid-002', 'kid-003', 'kid-004'];
 
-    // If we don't have a valid kid ID, use the user ID (for a kid session)
-    const kidId = childId || session?.user?.id;
-
-    console.log('[KidBarChart] Session user:', session?.user?.name, 'Using kidId:', kidId);
+    let kidId = propKidId || "kid-001";    // If we have a session kid ID, check if it's valid, otherwise use fallback
+    if (sessionKidId && validKidIds.includes(sessionKidId)) {
+        kidId = sessionKidId;
+    } else if (sessionKidId && !propKidId) {
+        console.log(`KidBarChart - Session kidId "${sessionKidId}" not found in mock data, using fallback: kid-001`);
+    }
 
     // Custom hook for screen size detection to handle responsive chart margins
     useEffect(() => {
@@ -101,63 +105,28 @@ const KidBarChart = ({ kidId: propKidId }: KidBarChartProps) => {
 
     useEffect(() => {
         const fetchKidChartData = async () => {
-            if (!session?.user || !kidId) {
-                setLoading(false);
-                setChartData(generateFallbackData());
-                return;
-            }
-
             try {
                 setLoading(true);
-                setError(null);
-
-                // Determine which endpoint to use based on user role
-                const choreEndpoint = session.user.isChild
-                    ? `${API_ENDPOINTS.LIST_TASKS}?assignedTo=${kidId}`  // Kid viewing their own chores using the working endpoint
-                    : API_ENDPOINTS.LIST_TASKS;   // Parent viewing chores
-
+                setError(null);                // Try to fetch from API first
                 try {
-                    // Fetch the chores data from the API
-                    const choresResponse = await fetch(getApiUrl(choreEndpoint), {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${session.user.accessToken}`,
-                        },
-                    });
-
-                    if (!choresResponse.ok) {
-                        throw new Error(`Failed to fetch chores: ${choresResponse.status}`);
-                    }
-
-                    const choresData = await choresResponse.json();
-                    console.log('[KidBarChart] Raw chores data:', choresData);
-
-                    // Process chores data (handle both array and paginated responses)
-                    let tasksArray: BackendTask[] = [];
-                    if (Array.isArray(choresData)) {
-                        tasksArray = choresData;
-                    } else if (choresData && typeof choresData === 'object' && Array.isArray(choresData.results)) {
-                        tasksArray = choresData.results;
-                    }
-
-                    // Convert to frontend format
-                    const transformedChores = transformTasksFromBackend(tasksArray);
-
-                    // For kids using the assignedTo parameter, the API already filters their chores
-                    // For parents, we need to filter by kidId
-                    const kidChores = session.user.isChild
-                        ? transformedChores  // Already filtered by the API using assignedTo parameter
-                        : transformedChores.filter(chore => chore.assignedTo === kidId);
+                    const [, choresData] = await Promise.all([
+                        MockApiService.fetchKidById(kidId),
+                        MockApiService.fetchChoresByKidId(kidId)
+                    ]);
 
                     // Process the data to create chart data points
-                    const processedData = processChoreDataForChart(kidChores, parseInt(range));
+                    const processedData = processChoreDataForChart(choresData, parseInt(range));
                     setChartData(processedData);
                 } catch (apiError) {
-                    console.error('API fetch failed:', apiError);
-                    setError('Failed to load chart data');
+                    console.log('API fetch failed, falling back to mock data service:', apiError);
 
-                    // Use fallback data for visualization
-                    setChartData(generateFallbackData());
+                    // Fallback to direct mock data service
+                    const kidData = mockDataService.getKidById(kidId) || mockDataService.getParent().children[0];
+                    const choresData = mockDataService.getChoresByKidId(kidData.id);
+
+                    // Process mock data
+                    const processedData = processChoreDataForChart(choresData, parseInt(range));
+                    setChartData(processedData);
                 }
             } catch (err) {
                 console.error('Error fetching kid chart data:', err);
@@ -171,10 +140,10 @@ const KidBarChart = ({ kidId: propKidId }: KidBarChartProps) => {
         };
 
         fetchKidChartData();
-    }, [kidId, range, session]);
+    }, [kidId, range]);
 
-    // Process task data into chart format
-    const processChoreDataForChart = (tasks: Task[], days: number): ChartDataPoint[] => {
+    // Process chore data into chart format
+    const processChoreDataForChart = (chores: any[], days: number): ChartDataPoint[] => {
         const today = new Date();
         const chartData: ChartDataPoint[] = [];
 
@@ -188,19 +157,19 @@ const KidBarChart = ({ kidId: propKidId }: KidBarChartProps) => {
                 day: 'numeric'
             });
 
-            // Filter tasks for this date
-            const dayTasks = tasks.filter(task => {
-                const taskDate = new Date(task.createdAt || task.dueDate);
-                return taskDate.toDateString() === date.toDateString();
+            // Filter chores for this date
+            const dayChores = chores.filter(chore => {
+                const choreDate = new Date(chore.createdAt || chore.dueDate);
+                return choreDate.toDateString() === date.toDateString();
             });
 
             // Calculate metrics for this day
-            const rewardEarned = dayTasks
-                .filter(task => task.status === 'completed')
-                .reduce((sum: number, task) => sum + (parseFloat(task.reward) || 0), 0);
+            const rewardEarned = dayChores
+                .filter(chore => chore.status === 'completed')
+                .reduce((sum, chore) => sum + (chore.reward || 0), 0);
 
-            const goalBudget = dayTasks
-                .reduce((sum: number, task) => sum + (parseFloat(task.reward) || 0), 0);
+            const goalBudget = dayChores
+                .reduce((sum, chore) => sum + (chore.reward || 0), 0);
 
             const rewardSpent = rewardEarned * 0.3; // Assume 30% of earned is spent
 

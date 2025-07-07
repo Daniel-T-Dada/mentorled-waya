@@ -1,6 +1,8 @@
 'use client'
 
 import PWADiagnostics from '@/components/PWADiagnostics'
+import DebugSession from '@/components/debug/DebugSession'
+import APIDebugger from '@/components/debug/APIDebugger'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { signOut, useSession } from 'next-auth/react'
@@ -69,7 +71,18 @@ export default function DebugPage() {
             {/* PWA Diagnostics */}
             <PWADiagnostics />
 
-            {/* Instructions */}
+            {/* Debug Session Component */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Session Debug Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <DebugSession />
+                </CardContent>
+            </Card>
+
+            <APIDebugger />
+
             <Card>
                 <CardHeader>
                     <CardTitle>Common Issues & Solutions</CardTitle>
@@ -94,7 +107,8 @@ export default function DebugPage() {
                     <div>
                         <h3 className="font-semibold">For Testers</h3>
                         <p className="text-sm text-muted-foreground">
-                            Share this URL with testers who encounter issues:<br />                            <code className="bg-muted p-1 rounded">
+                            Share this URL with testers who encounter issues:<br />                            
+                            <code className="bg-muted p-1 rounded">
                                 {currentUrl}
                             </code>
                         </p>

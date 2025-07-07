@@ -64,7 +64,7 @@ const KidDashboardOverview = ({ kidId: propKidId, refreshTrigger }: KidDashboard
                     <AppChoreManagement kidId={kidId} refreshTrigger={refreshTrigger} />
 
                 </div><div className="lg:col-span-1 min-h-[400px] self-start">
-                    <KidDailyStreaks />
+                    <KidDailyStreaks kidId={kidId} />
                 </div>
 
 
