@@ -15,6 +15,7 @@ import { getFirstName } from "@/lib/utils/taskTransforms";
 import { useSession } from "next-auth/react";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { transformTasksFromBackend, BackendTask } from '@/lib/utils/taskTransforms';
+import { formatNaira } from '@/lib/utils/currency';
 
 // Type for paginated API responses
 interface PaginatedResponse<T> {
@@ -152,18 +153,19 @@ const AppKidsManagement = ({ onCreateKidClick, onAssignChore, refreshTrigger }: 
                     walletsArray = [];
                 }
 
-                // Create a mapping of child ID to wallet data
+                // Create a mapping of child name to wallet data (since API doesn't provide child_id)
                 const walletsMap: { [key: string]: any } = {};
                 walletsArray.forEach((wallet: any) => {
-                    // Use the child ID from the wallet data
-                    const childId = wallet.child_id || wallet.id;
-                    if (childId) {
-                        walletsMap[childId] = {
+                    // Use the child name as the key for mapping
+                    const childName = wallet.child_name;
+                    if (childName) {
+                        walletsMap[childName] = {
                             balance: parseFloat(wallet.balance) || 0,
                             total_earned: parseFloat(wallet.total_earned) || 0,
                             total_spent: parseFloat(wallet.total_spent) || 0,
                             savings_rate: parseFloat(wallet.savings_rate) || 0,
-                            child_name: wallet.child_name || ''
+                            child_name: wallet.child_name || '',
+                            wallet_id: wallet.id // Store the wallet ID for reference
                         };
                     }
                 });
@@ -274,8 +276,8 @@ const AppKidsManagement = ({ onCreateKidClick, onAssignChore, refreshTrigger }: 
         const completedChoreCount = kidChores.filter(chore => chore.status === 'completed').length;
         const pendingChoreCount = kidChores.filter(chore => chore.status === 'pending').length;
 
-        // Get wallet data for this kid
-        const walletData = childWallets[contextKid.id];
+        // Get wallet data for this kid by matching the display name
+        const walletData = childWallets[displayName] || childWallets[contextKid.username];
         const balance = walletData?.balance || 0;
         const totalEarned = walletData?.total_earned || 0;
         const totalSpent = walletData?.total_spent || 0;
@@ -286,6 +288,10 @@ const AppKidsManagement = ({ onCreateKidClick, onAssignChore, refreshTrigger }: 
 
         // Debug logging for per-child data
         console.log(`Kid ${contextKid.username} (${contextKid.id}):`, {
+            displayName,
+            walletDataFound: !!walletData,
+            walletKey: displayName,
+            fallbackWalletKey: contextKid.username,
             totalChores: kidChores.length,
             completedChoreCount,
             pendingChoreCount,
@@ -371,8 +377,7 @@ const AppKidsManagement = ({ onCreateKidClick, onAssignChore, refreshTrigger }: 
                     ) : processedKids.length === 0 ? (
                         <EmptyState onCreateKidClick={onCreateKidClick} />
                     ) : (
-                        <div className="space-y-4 pr-4">
-                            {/* Desktop: Show 2 kids per page with pagination */}
+                        <div className="space-y-4 pr-4">                                            {/* Desktop: Show 2 kids per page with pagination */}
                             <div className="hidden xl:block">
                                 {currentKids.map(kid => (
                                     <div key={kid.id} className="border rounded-md p-4 mb-6">
@@ -388,7 +393,7 @@ const AppKidsManagement = ({ onCreateKidClick, onAssignChore, refreshTrigger }: 
                                                         <p className="text-sm text-muted-foreground">Level {kid.level}</p>
                                                     </div>
                                                     <div className="text-sm text-muted-foreground">
-                                                        NGN {kid.balance.toLocaleString()}
+                                                        {formatNaira(kid.balance)}
                                                     </div>
                                                 </div>
                                                 <Progress value={kid.progress} className="w-full mt-2" />
@@ -398,7 +403,7 @@ const AppKidsManagement = ({ onCreateKidClick, onAssignChore, refreshTrigger }: 
                                         {/* Stats Grid */}
                                         <div className="grid grid-cols-3 gap-4 mt-4 text-center text-sm">
                                             <div className="flex flex-col items-center p-2 rounded-md bg-muted">
-                                                <span className="font-semibold">NGN {kid.balance.toLocaleString()}</span>
+                                                <span className="font-semibold">{formatNaira(kid.balance)}</span>
                                                 <span className="text-xs text-muted-foreground">Balance</span>
                                             </div>
                                             <div className="flex flex-col items-center p-2 rounded-md bg-muted">
@@ -471,9 +476,7 @@ const AppKidsManagement = ({ onCreateKidClick, onAssignChore, refreshTrigger }: 
                                         </Button>
                                     </div>
                                 )}
-                            </div>
-
-                            {/* Tablet: Show 1 kid per page with pagination - iPad Air 5 optimized */}
+                            </div>                                            {/* Tablet: Show 1 kid per page with pagination - iPad Air 5 optimized */}
                             <div className="hidden md:block xl:hidden">
                                 {currentKids.slice(0, 1).map(kid => (
                                     <div key={kid.id} className="border rounded-lg p-6 mb-6">
@@ -489,7 +492,7 @@ const AppKidsManagement = ({ onCreateKidClick, onAssignChore, refreshTrigger }: 
                                                         <p className="text-base text-muted-foreground mt-1">Level {kid.level}</p>
                                                     </div>
                                                     <div className="text-base text-muted-foreground font-medium">
-                                                        NGN {kid.balance.toLocaleString()}
+                                                        {formatNaira(kid.balance)}
                                                     </div>
                                                 </div>
                                                 <Progress value={kid.progress} className="w-full mt-3 h-2" />
@@ -499,7 +502,7 @@ const AppKidsManagement = ({ onCreateKidClick, onAssignChore, refreshTrigger }: 
                                         {/* Stats Grid - Tablet optimized */}
                                         <div className="grid grid-cols-3 gap-6 mt-6 text-center">
                                             <div className="flex flex-col items-center p-4 rounded-lg bg-muted">
-                                                <span className="font-bold text-lg">NGN {kid.balance.toLocaleString()}</span>
+                                                <span className="font-bold text-lg">{formatNaira(kid.balance)}</span>
                                                 <span className="text-sm text-muted-foreground mt-1">Balance</span>
                                             </div>
                                             <div className="flex flex-col items-center p-4 rounded-lg bg-muted">
@@ -592,7 +595,7 @@ const AppKidsManagement = ({ onCreateKidClick, onAssignChore, refreshTrigger }: 
                                                         <p className="text-sm text-muted-foreground">Level {kid.level}</p>
                                                     </div>
                                                     <div className="text-sm text-muted-foreground">
-                                                        NGN {kid.balance.toLocaleString()}
+                                                        {formatNaira(kid.balance)}
                                                     </div>
                                                 </div>
                                                 <Progress value={kid.progress} className="w-full mt-2" />
@@ -602,7 +605,7 @@ const AppKidsManagement = ({ onCreateKidClick, onAssignChore, refreshTrigger }: 
                                         {/* Stats Grid */}
                                         <div className="grid grid-cols-3 gap-4 mt-4 text-center text-sm">
                                             <div className="flex flex-col items-center p-2 rounded-md bg-muted">
-                                                <span className="font-semibold">NGN {kid.balance.toLocaleString()}</span>
+                                                <span className="font-semibold">{formatNaira(kid.balance)}</span>
                                                 <span className="text-xs text-muted-foreground">Balance</span>
                                             </div>
                                             <div className="flex flex-col items-center p-2 rounded-md bg-muted">
