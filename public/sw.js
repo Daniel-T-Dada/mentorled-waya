@@ -1,6 +1,6 @@
 // Simple service worker for PWA
 
-const CACHE_NAME = 'waya-cache-v5';
+const CACHE_NAME = 'waya-cache-v6';
 
 // Add list of files to cache here - EXCLUDE authentication-related paths
 const urlsToCache = [
@@ -34,12 +34,25 @@ const NEVER_CACHE_PATHS = [
     '/signin',
     '/signup',
     '/api/',
-    '/dashboard'
+    '/dashboard',
+    '/api/users/login',
+    '/api/users/register',
+    '/api/users/password-reset',
+    '/api/users/email-verify'
 ];
 
 // Helper function to check if a URL should never be cached
 function shouldNeverCache(url) {
     return NEVER_CACHE_PATHS.some(path => url.includes(path));
+}
+
+// Helper function to check if request is authentication-related
+function isAuthRequest(url) {
+    return url.includes('/api/auth') ||
+        url.includes('/api/users/login') ||
+        url.includes('/api/users/register') ||
+        url.includes('/signin') ||
+        url.includes('/signup');
 }
 
 // Install a service worker
@@ -57,9 +70,14 @@ self.addEventListener('install', event => {
 
 // Cache and return requests
 self.addEventListener('fetch', event => {
-    // Skip caching for authentication-related requests
-    if (shouldNeverCache(event.request.url)) {
-        event.respondWith(fetch(event.request));
+    // Skip caching for authentication-related requests with explicit bypassing
+    if (shouldNeverCache(event.request.url) || isAuthRequest(event.request.url)) {
+        event.respondWith(
+            fetch(event.request, {
+                cache: 'no-store',
+                credentials: event.request.credentials
+            })
+        );
         return;
     }
 
@@ -78,7 +96,7 @@ self.addEventListener('fetch', event => {
                         }
 
                         // Don't cache authentication-related responses
-                        if (shouldNeverCache(event.request.url)) {
+                        if (shouldNeverCache(event.request.url) || isAuthRequest(event.request.url)) {
                             return response;
                         }
 

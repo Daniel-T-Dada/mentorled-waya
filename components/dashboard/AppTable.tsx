@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import {
     Table,
     TableBody,
@@ -18,6 +19,7 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
+import { enhanceTransactionDescriptions, formatTransactionForDisplay } from '@/lib/utils/transactionUtils';
 import { ClipboardList } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -28,10 +30,6 @@ interface ActivityRow {
     amount: number;
     status: "completed" | "pending" | "cancelled" | "paid" | "processing";
     date: string;
-}
-
-interface AppTableProps {
-    parentId?: string;
 }
 
 const LoadingState = () => (
@@ -75,7 +73,8 @@ const InfoState = () => (
     </div>
 );
 
-const AppTable = ({ parentId }: AppTableProps) => {
+const AppTable = () => {
+    const { data: session } = useSession();
     const [activities, setActivities] = useState<ActivityRow[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [needsRetry, setNeedsRetry] = useState(false);
@@ -83,7 +82,7 @@ const AppTable = ({ parentId }: AppTableProps) => {
     const itemsPerPage = 5;
 
     const fetchActivities = useCallback(async () => {
-        if (!parentId) {
+        if (!session?.user?.accessToken) {
             setIsLoading(false);
             return;
         }
@@ -92,26 +91,41 @@ const AppTable = ({ parentId }: AppTableProps) => {
         setNeedsRetry(false);
 
         try {
-            const url = getApiUrl(API_ENDPOINTS.ACTIVITIES);
-            const response = await fetch(url);
+            // Fetch recent activities using the correct endpoint
+            const url = getApiUrl(API_ENDPOINTS.TRANSACTIONS_RECENT);
+            const response = await fetch(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.user.accessToken}`,
+                },
+            });
 
             if (!response.ok) {
-                throw new Error('Failed to fetch activities');
+                throw new Error('Failed to fetch recent activities');
             }
 
-            const data = await response.json();
-            if (!Array.isArray(data)) {
-                throw new Error('Invalid data format');
-            }
+            const transactions = await response.json();
+            console.log('Recent transactions:', transactions);
 
-            setActivities(data);
+            // Enhance transaction descriptions with actual chore titles
+            const enhancedTransactions = await enhanceTransactionDescriptions(
+                transactions,
+                session.user.accessToken
+            );
+
+            // Transform for display (transactions are already ordered from most recent to least recent)
+            const transformedActivities: ActivityRow[] = enhancedTransactions.map((transaction) =>
+                formatTransactionForDisplay(transaction)
+            );
+
+            setActivities(transformedActivities);
         } catch (error) {
             console.error('Error fetching activities:', error);
             setNeedsRetry(true);
         } finally {
             setIsLoading(false);
         }
-    }, [parentId]);
+    }, [session?.user?.accessToken]);
 
     useEffect(() => {
         fetchActivities();

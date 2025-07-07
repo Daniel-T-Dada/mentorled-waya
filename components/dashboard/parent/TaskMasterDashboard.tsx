@@ -50,7 +50,11 @@ const TaskMasterDashboard = ({ onCreateChoreClick, onAssignChore, refreshTrigger
 
                 </div>
                 <div className="lg:col-span-1 min-h-[550px] self-start">
-                    <AppKidsManagement onAssignChore={handleAssignChore} />                </div>
+                    <AppKidsManagement
+                        onAssignChore={handleAssignChore}
+                        refreshTrigger={refreshTrigger}
+                    />
+                </div>
             </div>
         </>
     )

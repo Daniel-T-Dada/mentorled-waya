@@ -1,20 +1,9 @@
-import { Task } from '@/lib/utils/taskTransforms';
-
-// Kid interface matching the one in useKidTasksData.ts
-export interface Kid {
-    id: string;
-    name: string;
-    username: string;
-    avatar?: string | null;
-    age?: number;
-    created_at?: string;
-    parentId?: string;
-}
+import { Kid, Chore } from '@/lib/services/mockDataService';
 
 export interface TasksData {
-    pending: Task[];
-    completed: Task[];
-    overdue: Task[];
+    pending: Chore[];
+    completed: Chore[];
+    overdue: Chore[];
 }
 
 export interface KidTasksManagementProps {
@@ -36,7 +25,7 @@ export interface TaskTabsProps {
 }
 
 export interface TaskCardProps {
-    task: Task;
+    task: Chore;
     status?: 'pending' | 'completed' | 'overdue';
 }
 

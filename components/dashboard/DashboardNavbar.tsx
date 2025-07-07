@@ -2,6 +2,7 @@
 import React from 'react'
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getAvatarUrl, getAvatarDebugInfo } from "@/lib/utils/avatarUtils"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -40,28 +41,18 @@ const DashboardNavbar = () => {
         return user.name.charAt(0).toUpperCase();
     };
 
-    // Helper function to get display name
-    const getDisplayName = () => {
-        if (!user?.name) return "User";
-
-        // Check if this is a kid session and extract first name
-        if (user.isChild && user.name) {
-            const firstName = user.name.split(' ')[0];
-            return firstName;
-        }
-
-        // For parents, show full name
-        return user.name;
-    };
-
     // Debug: Log user avatar for troubleshooting
     React.useEffect(() => {
         if (user && !isLoading) {
+            const debugInfo = getAvatarDebugInfo(user.avatar);
+            console.log("DashboardNavbar - Avatar debug info:", debugInfo);
             console.log("DashboardNavbar - User data:", {
                 name: user.name,
                 email: user.email,
-                avatar: user.avatar,
-                role: user.role
+                role: user.role,
+                id: user.id,
+                isChild: user.isChild,
+                emailVerified: user.emailVerified
             });
         }
     }, [user, isLoading]);
@@ -84,7 +75,7 @@ const DashboardNavbar = () => {
                             </>
                         ) : (
                             <>
-                                <h1 className="text-xl md:text-2xl font-semibold">Hello {getDisplayName()}</h1>
+                                <h1 className="text-xl md:text-2xl font-semibold">Hello {user?.name || "User"}</h1>
                                 <p className="text-muted-foreground text-xs md:text-sm">Building Smart Money Habits, One Chore at a Time.</p>
                             </>
                         )}
@@ -179,14 +170,11 @@ const DashboardNavbar = () => {
                                     <>
                                         {(user?.avatar && !avatarError) ? (
                                             <AvatarImage
-                                                src={user.avatar}
+                                                src={getAvatarUrl(user.avatar)}
                                                 alt={user.name || "User avatar"}
                                                 onError={() => {
-                                                    console.error("DashboardNavbar - Failed to load avatar image:", {
-                                                        avatarUrl: user.avatar,
-                                                        userName: user.name,
-                                                        userEmail: user.email
-                                                    });
+                                                    const debugInfo = getAvatarDebugInfo(user.avatar);
+                                                    console.error("DashboardNavbar - Failed to load avatar image:", debugInfo);
                                                     setAvatarError(true);
                                                 }}
                                                 loading="lazy"
