@@ -1,0 +1,562 @@
+GET https://waya-mentorled.onrender.com/api/familywallet/allowances/?page=1 - 200
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": "ddd75abb-ba33-45ae-854c-fb67dd1b4619",
+      "parent_id": "bbfe0df3-3f78-4f4d-90fb-752c385cb8b4",
+      "child_id": "c21b9a19-73c0-497d-b102-9719e25bfc24",
+      "amount": "3000.00",
+      "frequency": "weekly",
+      "status": "active",
+      "created_at": "2025-07-03T16:30:19.782412Z",
+      "last_paid_at": null,
+      "next_payment_date": null
+    }
+  ]
+}
+
+POST https://waya-mentorled.onrender.com/api/familywallet/allowances/ - Error: response status is 500
+TypeError at /api/familywallet/allowances/
+django.db.models.query.QuerySet.create() got multiple values for keyword argument 'parent'
+
+Request Method: POST
+Request URL: https://waya-mentorled.onrender.com/api/familywallet/allowances/
+Django Version: 5.2
+Python Executable: /opt/render/project/src/.venv/bin/python
+Python Version: 3.13.4
+Python Path: ['/opt/render/project/src', '/opt/render/project/src', '/opt/render/project/src/.venv/bin', '/usr/local/lib/python313.zip', '/usr/local/lib/python3.13', '/usr/local/lib/python3.13/lib-dynload', '/opt/render/project/src/.venv/lib/python3.13/site-packages']
+Server time: Fri, 04 Jul 2025 11:14:57 +0000
+Installed Applications:
+['django.contrib.admin',]
+
+
+GET https://waya-mentorled.onrender.com/api/familywallet/allowances/ {id}/ - 200
+{
+  "id": "ddd75abb-ba33-45ae-854c-fb67dd1b4619",
+  "parent_id": "bbfe0df3-3f78-4f4d-90fb-752c385cb8b4",
+  "child_id": "c21b9a19-73c0-497d-b102-9719e25bfc24",
+  "amount": "3000.00",
+  "frequency": "weekly",
+  "status": "active",
+  "created_at": "2025-07-03T16:30:19.782412Z",
+  "last_paid_at": null,
+  "next_payment_date": null
+}
+
+PUT https://waya-mentorled.onrender.com/api/familywallet/allowances/{id}/ - Error: response status is 500
+PATCH https://waya-mentorled.onrender.com/api/familywallet/allowances/{id}/ - Error: response status is 500
+DELETE https://waya-mentorled.onrender.com/api/familywallet/allowances/{id}/ - 204
+
+//CHILD WALLET
+GET https://waya-mentorled.onrender.com/api/familywallet/child-wallets/?page=1 - 200
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": "02a195a3-b4ab-4621-8927-ac0eb908e675",
+      "child_name": "Toluwani Dada",
+      "balance": "400.00",
+      "total_earned": "100.00",
+      "total_spent": "200.00",
+      "savings_rate": "0.00"
+    },
+    {
+      "id": "64f2d5e0-aec0-4359-bf65-f79859b4dc2d",
+      "child_name": "Akorede Oguntolu",
+      "balance": "1500.00",
+      "total_earned": "150.00",
+      "total_spent": "300.00",
+      "savings_rate": "0.00"
+    }
+  ]
+}
+
+
+
+GET https://waya-mentorled.onrender.com/api/familywallet/child-wallets/analysis/ - 200
+{
+  "family_wallet_balance": 500700,
+  "total_rewards_sent": 5800,
+  "total_rewards_pending": 0,
+  "activities": [
+    {
+      "name": "Akorede Oguntolu",
+      "activity": "For a job well done",
+      "amount": 3000,
+      "status": "paid",
+      "date": "2025-07-01"
+    },
+    {
+      "name": "Akorede Oguntolu",
+      "activity": "Testing chore 4",
+      "amount": 2000,
+      "status": "paid",
+      "date": "2025-07-03"
+    },
+    {
+      "name": "N/A",
+      "activity": "from swagger.",
+      "amount": 1500,
+      "status": "cancelled",
+      "date": "2025-07-04"
+    },
+    {
+      "name": "Akorede Oguntolu",
+      "activity": "Reward for chore 5b7cca22-4ab6-440e-a708-d2bb85d7be2f",
+      "amount": 800,
+      "status": "paid",
+      "date": "2025-07-04"
+    }
+  ],
+  "savings_breakdown": [
+    {
+      "child_name": "Toluwani Dada",
+      "reward_saved": 400,
+      "reward_spent": 200,
+      "total_earned": 100,
+      "savings_rate": 0
+    },
+    {
+      "child_name": "Akorede Oguntolu",
+      "reward_saved": 1500,
+      "reward_spent": 300,
+      "total_earned": 150,
+      "savings_rate": 0
+    }
+  ]
+}
+
+
+
+
+
+GET https://waya-mentorled.onrender.com/api/familywallet/transactions/?page=1 - 200
+{
+  "count": 3,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": "16d6e7d7-158a-43f4-a4ae-c2a17cb5dc2c",
+      "family_wallet_id": "55539bed-8df0-421e-9c21-98be51778565",
+      "child_id": "c21b9a19-73c0-497d-b102-9719e25bfc24",
+      "type": "allowance_payment",
+      "amount": "3000.00",
+      "status": "pending",
+      "description": "For a job well done",
+      "created_at": "2025-07-01T14:01:11.844228Z",
+      "completed_at": null
+    },
+    {
+      "id": "d3a130f1-b3eb-4ec3-89fe-a64e18182d89",
+      "family_wallet_id": "55539bed-8df0-421e-9c21-98be51778565",
+      "child_id": "c21b9a19-73c0-497d-b102-9719e25bfc24",
+      "type": "chore_reward",
+      "amount": "2000.00",
+      "status": "paid",
+      "description": "Testing chore 4",
+      "created_at": "2025-07-03T16:58:36.033674Z",
+      "completed_at": null
+    },
+    {
+      "id": "fba6adc4-1222-4d0b-9ec5-10287de201eb",
+      "family_wallet_id": "55539bed-8df0-421e-9c21-98be51778565",
+      "type": "allowance_payment",
+      "amount": "1500.00",
+      "status": "paid",
+      "description": "from swagger.",
+      "created_at": "2025-07-04T10:06:23.369532Z",
+      "completed_at": null
+    }
+  ]
+}
+
+POST https://waya-mentorled.onrender.com/api/familywallet/transactions/ - Error: response status is 500 Though there was nothing in the request body for this so I do not know if the I was right but the error is consistent with the other error 500
+Error response {IntegrityError at /api/familywallet/transactions/
+null value in column "amount" of relation "familywallet_transaction" violates not-null constraint
+DETAIL:  Failing row contains (8ab068df-9839-4905-abc2-92e25caa831a, chore_reward, null, , pending, 2025-07-04 10:52:03.846483+00, null, null, null, null).
+
+
+Request Method: POST
+Request URL: https://waya-mentorled.onrender.com/api/familywallet/transactions/
+Django Version: 5.2
+Python Executable: /opt/render/project/src/.venv/bin/python
+Python Version: 3.13.4
+Python Path: ['/opt/render/project/src', '/opt/render/project/src', '/opt/render/project/src/.venv/bin', '/usr/local/lib/python313.zip', '/usr/local/lib/python3.13', '/usr/local/lib/python3.13/lib-dynload', '/opt/render/project/src/.venv/lib/python3.13/site-packages']
+Server time: Fri, 04 Jul 2025 10:52:05 +0000
+Installed Applications:
+['django.contrib.admin',}
+
+GET https://waya-mentorled.onrender.com/api/familywallet/transactions/{id}/ - 200
+{
+  "id": "fba6adc4-1222-4d0b-9ec5-10287de201eb",
+  "family_wallet_id": "55539bed-8df0-421e-9c21-98be51778565",
+  "type": "allowance_payment",
+  "amount": "1500.00",
+  "status": "paid",
+  "description": "from swagger.",
+  "created_at": "2025-07-04T10:06:23.369532Z",
+  "completed_at": null
+}
+
+
+POST https://waya-mentorled.onrender.com/api/familywallet/transactions/{id}/cancel/ - 200
+{
+  "message": "Transaction cancelled successfully",
+  "transaction": {
+    "id": "fba6adc4-1222-4d0b-9ec5-10287de201eb",
+    "family_wallet_id": "55539bed-8df0-421e-9c21-98be51778565",
+    "type": "allowance_payment",
+    "amount": "1500.00",
+    "status": "cancelled",
+    "description": "from swagger.",
+    "created_at": "2025-07-04T10:06:23.369532Z",
+    "completed_at": null
+  }
+}
+
+POST https://waya-mentorled.onrender.com/api/familywallet/transactions/{id}/complete/ - 200
+{
+  "message": "Transaction completed successfully",
+  "transaction": {
+    "id": "fba6adc4-1222-4d0b-9ec5-10287de201eb",
+    "family_wallet_id": "55539bed-8df0-421e-9c21-98be51778565",
+    "type": "allowance_payment",
+    "amount": "1500.00",
+    "status": "paid",
+    "description": "from swagger.",
+    "created_at": "2025-07-04T10:06:23.369532Z",
+    "completed_at": "2025-07-04T10:58:40.370105Z"
+  }
+}
+
+POST https://waya-mentorled.onrender.com/api/familywallet/transactions/complete_multiple/ - Error: response status is 400. there is no transactions ID hence the error
+
+GET https://waya-mentorled.onrender.com/api/familywallet/transactions/recent_activities/ - 200
+[
+  {
+    "id": "d3a130f1-b3eb-4ec3-89fe-a64e18182d89",
+    "family_wallet_id": "55539bed-8df0-421e-9c21-98be51778565",
+    "child_id": "c21b9a19-73c0-497d-b102-9719e25bfc24",
+    "type": "chore_reward",
+    "amount": "2000.00",
+    "status": "paid",
+    "description": "Testing chore 4",
+    "created_at": "2025-07-03T16:58:36.033674Z",
+    "completed_at": null
+  },
+  {
+    "id": "16d6e7d7-158a-43f4-a4ae-c2a17cb5dc2c",
+    "family_wallet_id": "55539bed-8df0-421e-9c21-98be51778565",
+    "child_id": "c21b9a19-73c0-497d-b102-9719e25bfc24",
+    "type": "allowance_payment",
+    "amount": "3000.00",
+    "status": "pending",
+    "description": "For a job well done",
+    "created_at": "2025-07-01T14:01:11.844228Z",
+    "completed_at": null
+  }
+]
+
+GET https://waya-mentorled.onrender.com/api/familywallet/wallet/?page=1 - 200
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": "55539bed-8df0-421e-9c21-98be51778565",
+      "parent_id": "bbfe0df3-3f78-4f4d-90fb-752c385cb8b4",
+      "balance": "500000.00",
+      "currency": "Naira",
+      "updated_at": "2025-07-01T14:00:09.989610Z"
+    }
+  ]
+}
+
+POST https://waya-mentorled.onrender.com/api/familywallet/wallet/add_funds/ - 200
+{
+  "message": "Funds added successfully",
+  "new_balance": 501500,
+  "transaction_id": "fba6adc4-1222-4d0b-9ec5-10287de201eb"
+}
+
+GET https://waya-mentorled.onrender.com/api/familywallet/wallet/dashboard_stats/ - 200
+{
+  "family_wallet_balance": "501500.00",
+  "total_rewards_sent": "5000.00",
+  "total_rewards_pending": "0.00",
+  "children_count": 2,
+  "total_children_balance": "1900.00"
+}
+
+GET https://waya-mentorled.onrender.com/api/familywallet/wallet/earnings_chart_data/ - 200
+{
+  "2025-07-03": {
+    "Akorede Oguntolu": 2000
+  }
+}
+
+POST https://waya-mentorled.onrender.com/api/familywallet/wallet/set_pin/ - 200
+{
+  "message": "PIN set successfully"
+}
+
+POST https://waya-mentorled.onrender.com/api/familywallet/wallet/make_payment/ - 200
+{
+  "message": "Payment successful",
+  "transaction_id": "d74a8a6e-b3f2-4100-961c-61a1df5d2feb",
+  "amount": 800
+}
+
+GET https://waya-mentorled.onrender.com/api/familywallet/wallet/savings_breakdown/ - 200
+[
+  {
+    "child_name": "Toluwani Dada",
+    "reward_saved": 400,
+    "reward_spent": 200,
+    "total_earned": 100,
+    "savings_rate": 0
+  },
+  {
+    "child_name": "Akorede Oguntolu",
+    "reward_saved": 1500,
+    "reward_spent": 300,
+    "total_earned": 150,
+    "savings_rate": 0
+  }
+]
+
+POST https://waya-mentorled.onrender.com/api/familywallet/wallet/transfer/ - 200
+{
+  "message": "Transfer successful.",
+  "transaction_id": "d696ab41-aa76-4fd8-91c9-eb8e4e86a06c",
+  "new_balance": "491100.00"
+}
+
+//Insight Tracker
+GET https://waya-mentorled.onrender.com/api/insighttracker/chores/insights/
+{
+  "total_chores_assigned": 8,
+  "total_completed_chores": 3,
+  "total_pending_chores": 5,
+  "child_activities": [
+    {
+      "child_name": "toluwani",
+      "activities": [
+        {
+          "chore_title": "Testing Chore 1",
+          "reward": 10000,
+          "status": "completed"
+        },
+        {
+          "chore_title": "Just do something",
+          "reward": 909,
+          "status": "pending"
+        }
+      ],
+      "total_earned": 10000
+    },
+    {
+      "child_name": "precious",
+      "activities": [
+        {
+          "chore_title": "Testing chore 2",
+          "reward": 200,
+          "status": "pending"
+        }
+      ],
+      "total_earned": 0
+    },
+    {
+      "child_name": "ibk",
+      "activities": [
+        {
+          "chore_title": "Testing Chore 3",
+          "reward": 4567,
+          "status": "pending"
+        }
+      ],
+      "total_earned": 0
+    },
+    {
+      "child_name": "maverick",
+      "activities": [
+        {
+          "chore_title": "Testing Chore 4",
+          "reward": 5000,
+          "status": "completed"
+        },
+        {
+          "chore_title": "Creating for the Kid Akorede",
+          "reward": 1500,
+          "status": "pending"
+        },
+        {
+          "chore_title": "For Curl Testing",
+          "reward": 45,
+          "status": "completed"
+        },
+        {
+          "chore_title": "From Swagger Task",
+          "reward": 800,
+          "status": "pending"
+        }
+      ],
+      "total_earned": 5045
+    }
+  ]
+}
+
+
+//TaskMaster 
+GET https://waya-mentorled.onrender.com/api/taskmaster/children/chores/?page=1
+{
+  "count": 0,
+  "next": null,
+  "previous": null,
+  "results": []
+}
+PUT https://waya-mentorled.onrender.com/api/taskmaster/children/chores/{id}/status/ - 403
+{
+  "detail": "You do not have permission to perform this action."
+}
+
+PATCH https://waya-mentorled.onrender.com/api/taskmaster/children/chores/{id}/status/ - 403
+{
+  "detail": "You do not have permission to perform this action."
+}
+
+GET https://waya-mentorled.onrender.com/api/taskmaster/chores/?page=2 - 200
+{
+  "count": 9,
+  "next": "https://waya-mentorled.onrender.com/api/taskmaster/chores/?page=3",
+  "previous": "https://waya-mentorled.onrender.com/api/taskmaster/chores/",
+  "results": [
+    {
+      "id": "25b5808e-4a75-4df4-9ae9-bab276faf673",
+      "title": "Testing Chore 4",
+      "description": "Akorede wash the car before going to school",
+      "assignedTo": "c21b9a19-73c0-497d-b102-9719e25bfc24",
+      "assignedToName": "Akorede Oguntolu",
+      "assignedToUsername": "maverick",
+      "status": "completed",
+      "amount": "5000.00",
+      "createdAt": "2025-07-02T08:18:30.323193Z",
+      "completedAt": "2025-07-02T17:52:35.907332Z",
+      "parentId": "bbfe0df3-3f78-4f4d-90fb-752c385cb8b4",
+      "category": "Household"
+    },
+    {
+      "id": "a1637d65-34c3-4023-84c2-86b5f3bffa58",
+      "title": "Just do something",
+      "description": "to be edited",
+      "assignedTo": "0d5d1fd9-1a50-4372-a6ce-6d1beeec434a",
+      "assignedToName": "Toluwani Dada",
+      "assignedToUsername": "toluwani",
+      "status": "pending",
+      "amount": "909.00",
+      "createdAt": "2025-07-02T11:59:56.218853Z",
+      "completedAt": null,
+      "parentId": "bbfe0df3-3f78-4f4d-90fb-752c385cb8b4",
+      "category": "Household"
+    },
+    {
+      "id": "3126d087-fcb1-4c5f-9037-84b4739cef4b",
+      "title": "Creating for the Kid Akorede",
+      "description": "Wanna see if I will see it on the kids dashboard",
+      "assignedTo": "c21b9a19-73c0-497d-b102-9719e25bfc24",
+      "assignedToName": "Akorede Oguntolu",
+      "assignedToUsername": "maverick",
+      "status": "pending",
+      "amount": "1500.00",
+      "createdAt": "2025-07-02T15:07:49.128546Z",
+      "completedAt": null,
+      "parentId": "bbfe0df3-3f78-4f4d-90fb-752c385cb8b4",
+      "category": "Household"
+    }
+  ]
+}
+
+GET https://waya-mentorled.onrender.com/api/taskmaster/chores/{id} - 200
+{
+  "id": "25b5808e-4a75-4df4-9ae9-bab276faf673",
+  "title": "Testing Chore 4",
+  "description": "Akorede wash the car before going to school",
+  "assignedTo": "c21b9a19-73c0-497d-b102-9719e25bfc24",
+  "assignedToName": "Akorede Oguntolu",
+  "assignedToUsername": "maverick",
+  "status": "completed",
+  "amount": "5000.00",
+  "createdAt": "2025-07-02T08:18:30.323193Z",
+  "completedAt": "2025-07-02T17:52:35.907332Z",
+  "parentId": "bbfe0df3-3f78-4f4d-90fb-752c385cb8b4",
+  "category": "Household"
+}
+
+PUT https://waya-mentorled.onrender.com/api/taskmaster/chores/{id} - 200
+{
+  "id": "25b5808e-4a75-4df4-9ae9-bab276faf673",
+  "title": "Update the task",
+  "description": "Doing that from swagger",
+  "reward": "100.00",
+  "due_date": "2025-07-05",
+  "status": "completed",
+  "created_at": "2025-07-02T08:18:30.323193Z",
+  "completed_at": "2025-07-02T17:52:35.907332Z"
+}
+
+PATCH https://waya-mentorled.onrender.com/api/taskmaster/chores/{id} - 200
+{
+  "id": "25b5808e-4a75-4df4-9ae9-bab276faf673",
+  "title": "Patch the task",
+  "description": "Doings from swagger",
+  "reward": "150.00",
+  "due_date": "2025-07-05",
+  "status": "completed",
+  "created_at": "2025-07-02T08:18:30.323193Z",
+  "completed_at": "2025-07-02T17:52:35.907332Z"
+}
+
+
+DELETE https://waya-mentorled.onrender.com/api/taskmaster/chores/{id} - 204
+DELETE https://waya-mentorled.onrender.com/api/taskmaster/chores/{id}delete - 204
+
+PUT https://waya-mentorled.onrender.com/api/taskmaster/chores/{id}/status - 200
+{
+  "status": "completed"
+}
+
+PATCH https://waya-mentorled.onrender.com/api/taskmaster/chores/{id}/status - 200
+{
+  "status": "pending"
+}
+
+POST https://waya-mentorled.onrender.com/api/taskmaster/chores/create/ - 200
+{
+  "id": "d93ea351-2d2f-4010-b842-73cd93a9d760",
+  "title": "From Swagger Task 2",
+  "description": "Created from swagger",
+  "assignedTo": "c21b9a19-73c0-497d-b102-9719e25bfc24",
+  "assignedToName": "Akorede Oguntolu",
+  "assignedToUsername": "maverick",
+  "status": "pending",
+  "amount": "500.00",
+  "createdAt": "2025-07-04T11:44:17.714871Z",
+  "completedAt": null,
+  "parentId": "bbfe0df3-3f78-4f4d-90fb-752c385cb8b4",
+  "category": "Household"
+}
+
+GET https://waya-mentorled.onrender.com/api/taskmaster/chores/summary/
+{
+  "pending": 7,
+  "completed": 2,
+  "missed": 0,
+  "total": 9
+}

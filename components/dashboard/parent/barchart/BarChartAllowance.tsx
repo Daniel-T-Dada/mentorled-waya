@@ -16,19 +16,6 @@ interface ChartDataPoint {
     allowanceSpent: number;
 }
 
-interface ApiAllowance {
-    id: string;
-    kidId: string;
-    parentId: string;
-    amount: number;
-    frequency: string;
-    status: string;
-    createdAt: string;
-    updatedAt: string;
-    lastPaidAt: string | null;
-    nextPaymentDate: string | null;
-}
-
 const chartConfig = {
     allowanceGiven: { label: "Allowance Given", color: "#7DE2D1" },
     allowanceSpent: { label: "Allowance Spent", color: "#7D238E" },
@@ -85,7 +72,7 @@ const InfoState = () => (
     </Card>
 );
 
-const AppBarChart = () => {
+const BarChartAllowance = () => {
     const [range, setRange] = useState("7");
     const [allowanceData, setAllowanceData] = useState<ChartDataPoint[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -93,7 +80,10 @@ const AppBarChart = () => {
     const [screenSize, setScreenSize] = useState('sm');
     const { data: session } = useSession();
 
-
+    console.log('BarChartAllowance component rendered');
+    console.log('Session status:', session?.user?.accessToken ? 'has token' : 'no token');
+    console.log('Loading state:', isLoading);
+    console.log('Allowance data length:', allowanceData.length);
 
     // Custom hook for lg breakpoint detection to sort out the barchart overshooting its parent container.
     useEffect(() => {
@@ -141,115 +131,184 @@ const AppBarChart = () => {
 
     const chartMargin = getChartMargin();
 
-
-
     useEffect(() => {
+        console.log('BarChartAllowance useEffect triggered');
+        console.log('Session:', session);
+        console.log('Range:', range);
+
         const fetchAllowanceData = async () => {
-            if (!session?.user?.id) {
+            if (!session?.user?.accessToken) {
+                console.log('No access token available in BarChartAllowance');
                 setIsLoading(false);
                 return;
             }
 
+            console.log('Starting to fetch allowance data...');
             setIsLoading(true);
             setNeedsRetry(false);
 
             try {
-                const res = await fetch(`${getApiUrl(API_ENDPOINTS.ALLOWANCES)}?parentId=${session.user.id}`);
-                if (!res.ok) {
+                console.log('Fetching from endpoints:');
+                console.log('Transactions:', getApiUrl(API_ENDPOINTS.TRANSACTIONS));
+                console.log('Children Wallets:', getApiUrl(API_ENDPOINTS.CHILDREN_WALLETS));
+                console.log('Allowances:', getApiUrl(API_ENDPOINTS.ALLOWANCES));
+
+                // Fetch transactions, child wallets, and allowances data
+                const [transactionsRes, childWalletsRes, allowancesRes] = await Promise.all([
+                    fetch(getApiUrl(API_ENDPOINTS.TRANSACTIONS), {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.user.accessToken}`,
+                        },
+                    }),
+                    fetch(getApiUrl(API_ENDPOINTS.CHILDREN_WALLETS), {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.user.accessToken}`,
+                        },
+                    }),
+                    fetch(getApiUrl(API_ENDPOINTS.ALLOWANCES), {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.user.accessToken}`,
+                        },
+                    })
+                ]);
+
+                if (!transactionsRes.ok || !childWalletsRes.ok || !allowancesRes.ok) {
+                    console.error('API response not ok:', {
+                        transactions: { status: transactionsRes.status, statusText: transactionsRes.statusText },
+                        childWallets: { status: childWalletsRes.status, statusText: childWalletsRes.statusText },
+                        allowances: { status: allowancesRes.status, statusText: allowancesRes.statusText }
+                    });
                     throw new Error('Failed to fetch allowance data');
                 }
-                const data = await res.json();
-                console.log('Raw allowance data (BarChart):', data);
 
-                // Handle both paginated responses and direct arrays
-                let allowanceArray;
-                if (Array.isArray(data)) {
-                    allowanceArray = data;
-                } else if (data && typeof data === 'object' && Array.isArray(data.results)) {
-                    allowanceArray = data.results;
-                } else {
-                    console.error('Unexpected data format:', data);
-                    throw new Error('Invalid data format: Expected array or paginated response');
-                }
+                const transactionsData = await transactionsRes.json();
+                const childWalletsData = await childWalletsRes.json();
+                const allowancesData = await allowancesRes.json();
 
-                if (allowanceArray.length > 0) {
+                console.log('Transactions data (BarChartAllowance):', transactionsData);
+                console.log('Child wallets data (BarChartAllowance):', childWalletsData);
+                console.log('Allowances data (BarChartAllowance):', allowancesData);
 
+                // Try to get allowance data from transactions first, then from allowances endpoint
+                const transactions = Array.isArray(transactionsData) ? transactionsData : transactionsData.results || [];
+                console.log('All transactions:', transactions);
+                console.log('Transaction types found:', [...new Set(transactions.map((tx: any) => tx.type))]);
 
-                    // Transform the data into the required format
-                    const transformedData = allowanceArray.reduce((acc: ChartDataPoint[], allowance: ApiAllowance) => {
-                        const date = new Date(allowance.createdAt).toLocaleDateString('en-US', {
-                            month: 'long',
-                            day: 'numeric'
-                        }).replace(',', '');
+                // Try multiple possible transaction types for allowances
+                const possibleAllowanceTypes = ['allowance_payment', 'allowance', 'payment', 'topup'];
+                let allowancePayments = transactions.filter((tx: any) => tx.type === 'allowance_payment');
 
-                        const existingEntry = acc.find(entry => entry.date === date);
-
-                        if (existingEntry) {
-                            existingEntry.allowanceGiven += allowance.amount;
-                            if (allowance.status === 'completed') {
-                                existingEntry.allowanceSpent += allowance.amount;
-                            }
-                        } else {
-                            acc.push({
-                                date,
-                                allowanceGiven: allowance.amount,
-                                allowanceSpent: allowance.status === 'completed' ? allowance.amount : 0
-                            });
+                // If no allowance_payment transactions, try other types
+                if (allowancePayments.length === 0) {
+                    for (const type of possibleAllowanceTypes) {
+                        const payments = transactions.filter((tx: any) => tx.type === type);
+                        if (payments.length > 0) {
+                            console.log(`Found ${payments.length} transactions of type '${type}', using these as allowance payments`);
+                            allowancePayments = payments;
+                            break;
                         }
-
-                        return acc;
-                    }, []);
-
-                    // Sort by date
-                    transformedData.sort((a: ChartDataPoint, b: ChartDataPoint) => {
-                        const [monthA, dayA] = a.date.split(' ');
-                        const [monthB, dayB] = b.date.split(' ');
-                        const currentYear = new Date().getFullYear();
-                        const dateA = new Date(`${monthA} ${dayA}, ${currentYear}`);
-                        const dateB = new Date(`${monthB} ${dayB}, ${currentYear}`);
-                        return dateA.getTime() - dateB.getTime();
-                    });
-
-                    setAllowanceData(transformedData);
-                } else {
-                    throw new Error('Invalid data format');
+                    }
                 }
+
+                // If still no allowance payments from transactions, try the allowances endpoint
+                if (allowancePayments.length === 0) {
+                    const allowances = Array.isArray(allowancesData) ? allowancesData : allowancesData.results || [];
+                    console.log('No allowance transactions found, checking allowances endpoint:', allowances);
+
+                    // Convert allowances to transaction-like format
+                    allowancePayments = allowances.map((allowance: any) => ({
+                        ...allowance,
+                        type: 'allowance',
+                        amount: allowance.amount || allowance.total_amount || 0,
+                        created_at: allowance.created_at || allowance.date_created || new Date().toISOString()
+                    }));
+                }
+
+                console.log('Final allowance payments:', allowancePayments);
+
+                // Extract spending data from child wallets
+                const childWallets = Array.isArray(childWalletsData) ? childWalletsData : childWalletsData.results || [];
+                console.log('Child wallets:', childWallets);
+                const totalSpent = childWallets.reduce((sum: number, wallet: any) => sum + parseFloat(wallet.total_spent || 0), 0);
+                console.log('Total spent across all children:', totalSpent);
+
+                // Group allowance payments by date
+                const allowanceByDate = allowancePayments.reduce((acc: any, payment: any) => {
+                    const date = new Date(payment.created_at).toLocaleDateString('en-US', {
+                        month: 'long',
+                        day: 'numeric'
+                    }).replace(',', '');
+
+                    if (!acc[date]) {
+                        acc[date] = { given: 0, spent: 0 };
+                    }
+
+                    acc[date].given += parseFloat(payment.amount);
+                    return acc;
+                }, {});
+
+                console.log('Allowance grouped by date:', allowanceByDate);
+
+                // Create data for all days in the range
+                const today = new Date();
+                const chartData: ChartDataPoint[] = [];
+                const daysToShow = parseInt(range);
+
+                for (let i = daysToShow - 1; i >= 0; i--) {
+                    const targetDate = new Date(today);
+                    targetDate.setDate(today.getDate() - i);
+
+                    const dateKey = targetDate.toLocaleDateString('en-US', {
+                        month: 'long',
+                        day: 'numeric'
+                    }).replace(',', '');
+
+                    const dayData = allowanceByDate[dateKey] || { given: 0, spent: 0 };
+
+                    chartData.push({
+                        date: dateKey,
+                        allowanceGiven: dayData.given,
+                        allowanceSpent: dayData.spent
+                    });
+                }
+
+                // Distribute total spent across dates proportionally (only for days with allowances)
+                const totalGiven = chartData.reduce((sum, item) => sum + item.allowanceGiven, 0);
+                if (totalGiven > 0) {
+                    chartData.forEach(item => {
+                        if (item.allowanceGiven > 0) {
+                            item.allowanceSpent = Math.round((item.allowanceGiven / totalGiven) * totalSpent);
+                        } else {
+                            item.allowanceSpent = 0; // No spending on days with no allowances
+                        }
+                    });
+                }
+
+                console.log('Final chart data for BarChartAllowance:', chartData);
+                setAllowanceData(chartData);
             } catch (err) {
                 console.error("Error fetching allowance data:", err);
+                console.error('Error details:', {
+                    message: err instanceof Error ? err.message : 'Unknown error',
+                    stack: err instanceof Error ? err.stack : undefined
+                });
                 setNeedsRetry(true);
             } finally {
+                console.log('Allowance fetch completed, setting loading to false');
                 setIsLoading(false);
             }
         };
 
         fetchAllowanceData();
-    }, [session?.user?.id, range]);
+    }, [session?.user?.accessToken, range]);
 
-    // Filter data based on range
-    const filteredAllowanceData = allowanceData.filter(item => {
-        try {
-            // convert the date string givin me issues to an object with ti
-            const [month, day] = item.date.split(' ');
-            const currentYear = new Date().getFullYear();
-            const date = new Date(`${month} ${day}, ${currentYear}`);
+    // Since we generate data for the exact range selected, we can use all the data
+    const dataToDisplay = allowanceData;
 
-            const days = parseInt(range);
-            const today = new Date();
-            const comparisonDate = new Date(today);
-            comparisonDate.setDate(today.getDate() - days);
-
-            date.setHours(0, 0, 0, 0);
-            comparisonDate.setHours(0, 0, 0, 0);
-
-            return date >= comparisonDate;
-        } catch (error) {
-            console.error('Error parsing date:', item.date, error);
-            return true; // Include items with invalid dates to ensure we show something, maybe this time the bar will show in the UI.........
-        }
-    });
-
-    // If filtered data is empty, use all data
-    const dataToDisplay = filteredAllowanceData.length > 0 ? filteredAllowanceData : allowanceData;
+    console.log(`[BarChartAllowance] Data for ${range} days (${dataToDisplay.length} items):`, dataToDisplay);
 
     if (isLoading) {
         return <LoadingState />;
@@ -331,4 +390,4 @@ const AppBarChart = () => {
     );
 };
 
-export default AppBarChart;
+export default BarChartAllowance;

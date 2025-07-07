@@ -2,6 +2,14 @@
  * Transformation utilities for allowance data between frontend and backend formats
  */
 
+// Paginated response interface
+export interface PaginatedAllowanceResponse {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: BackendAllowance[];
+}
+
 // Frontend allowance interface
 export interface FrontendAllowance {
     id: string;
@@ -15,17 +23,17 @@ export interface FrontendAllowance {
     nextPaymentDate?: string;
 }
 
-// Backend allowance interface (based on FamilyAllowanceSerializer)
+// Backend allowance interface (based on actual API response)
 export interface BackendAllowance {
     id: string;
-    childId: string; // Maps to child.id
-    parentId: string; // Maps to parent.id (read-only)
+    parent_id: string; // Snake case field name
+    child_id: string; // Snake case field name
     amount: string; // Decimal field comes as string from API
     frequency: string;
     status: string;
-    created_at: string; // Note: backend uses created_at, not createdAt
-    last_paid_at?: string;
-    next_payment_date?: string;
+    created_at: string; // Snake case field name
+    last_paid_at?: string | null; // Snake case field name
+    next_payment_date?: string | null; // Snake case field name
 }
 
 /**
@@ -35,8 +43,8 @@ export const transformAllowanceToBackend = (frontendAllowance: Partial<FrontendA
     const backendAllowance: Partial<BackendAllowance> = {};
 
     if (frontendAllowance.id !== undefined) backendAllowance.id = frontendAllowance.id;
-    if (frontendAllowance.childId !== undefined) backendAllowance.childId = frontendAllowance.childId;
-    if (frontendAllowance.parentId !== undefined) backendAllowance.parentId = frontendAllowance.parentId;
+    if (frontendAllowance.childId !== undefined) backendAllowance.child_id = frontendAllowance.childId;
+    if (frontendAllowance.parentId !== undefined) backendAllowance.parent_id = frontendAllowance.parentId;
     if (frontendAllowance.amount !== undefined) backendAllowance.amount = frontendAllowance.amount.toString();
     if (frontendAllowance.frequency !== undefined) backendAllowance.frequency = frontendAllowance.frequency;
     if (frontendAllowance.status !== undefined) backendAllowance.status = frontendAllowance.status;
@@ -53,14 +61,14 @@ export const transformAllowanceToBackend = (frontendAllowance: Partial<FrontendA
 export const transformAllowanceFromBackend = (backendAllowance: BackendAllowance): FrontendAllowance => {
     return {
         id: backendAllowance.id,
-        childId: backendAllowance.childId,
-        parentId: backendAllowance.parentId,
+        childId: backendAllowance.child_id,
+        parentId: backendAllowance.parent_id,
         amount: parseFloat(backendAllowance.amount),
         frequency: backendAllowance.frequency,
         status: backendAllowance.status,
         createdAt: backendAllowance.created_at,
-        lastPaidAt: backendAllowance.last_paid_at,
-        nextPaymentDate: backendAllowance.next_payment_date,
+        lastPaidAt: backendAllowance.last_paid_at || undefined,
+        nextPaymentDate: backendAllowance.next_payment_date || undefined,
     };
 };
 
@@ -81,7 +89,7 @@ export const createAllowancePayload = (data: {
     status?: string;
 }) => {
     return {
-        childId: data.childId,
+        child_id: data.childId, // Use snake_case for backend
         amount: data.amount,
         frequency: data.frequency,
         status: data.status || 'pending',

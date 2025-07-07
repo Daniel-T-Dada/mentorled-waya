@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Play, FileText, Trophy } from "lucide-react";
+import { MockApiService } from "@/lib/services/mockApiService";
+import { mockDataService } from "@/lib/services/mockDataService";
 
 interface FinancialConcept {
     id: string;
@@ -62,85 +64,29 @@ const KidStartLevel = () => {
                 setLoading(true);
                 setError(null);
 
-                // Use placeholder data instead of mock API
-                const placeholderFinancialConcepts: FinancialConcept[] = [
-                    {
-                        id: 'concept-1',
-                        title: 'What is Money?',
-                        description: 'Learn about the basics of money and its uses',
-                        icon: '💰',
-                        color: 'green',
-                        level: 1,
-                        isCompleted: true
-                    },
-                    {
-                        id: 'concept-2',
-                        title: 'Saving Money',
-                        description: 'Understand how and why to save money',
-                        icon: '🏦',
-                        color: 'blue',
-                        level: 2,
-                        isCompleted: false
-                    },
-                    {
-                        id: 'concept-3',
-                        title: 'Smart Spending',
-                        description: 'Learn how to spend money wisely',
-                        icon: '🛒',
-                        color: 'purple',
-                        level: 3,
-                        isCompleted: false
-                    }
-                ];
+                // Try to fetch from API first
+                try {
+                    const [conceptsData, quizData, rewardData] = await Promise.all([
+                        MockApiService.fetchFinancialConcepts(),
+                        MockApiService.fetchFinancialQuiz(),
+                        MockApiService.fetchEarnReward()
+                    ]);
 
-                const placeholderFinancialQuiz: FinancialQuiz[] = [
-                    {
-                        id: 'quiz-1',
-                        title: 'Money Basics Quiz',
-                        description: 'Test your knowledge about money basics',
-                        icon: '🧠',
-                        color: 'orange',
-                        level: 1,
-                        isCompleted: false,
-                        questions: [
-                            {
-                                id: 'q1',
-                                question: 'What is the best way to save money?',
-                                options: ['Spend it all', 'Put it in a piggy bank', 'Give it away', 'Lose it'],
-                                correctAnswer: 1
-                            }
-                        ]
-                    }
-                ];
+                    setFinancialConcepts(conceptsData);
+                    setFinancialQuiz(quizData);
+                    setEarnReward(rewardData);
+                } catch (apiError) {
+                    console.log('API fetch failed, falling back to direct mock data service:', apiError);
 
-                const placeholderEarnReward: EarnReward[] = [
-                    {
-                        id: 'reward-1',
-                        title: 'Complete Daily Tasks',
-                        description: 'Earn points by completing your daily financial tasks',
-                        icon: '🎁',
-                        color: 'gold',
-                        level: 1,
-                        isCompleted: false,
-                        rewards: [
-                            {
-                                type: 'points',
-                                amount: 25,
-                                name: 'Learning Points',
-                                description: 'Points for completing lessons'
-                            },
-                            {
-                                type: 'badge',
-                                name: 'Quick Learner',
-                                description: 'Badge for fast learning'
-                            }
-                        ]
-                    }
-                ];
+                    // Fallback to direct mock data service
+                    const conceptsData = mockDataService.getFinancialConcepts();
+                    const quizData = mockDataService.getFinancialQuiz();
+                    const rewardData = mockDataService.getEarnReward();
 
-                setFinancialConcepts(placeholderFinancialConcepts);
-                setFinancialQuiz(placeholderFinancialQuiz);
-                setEarnReward(placeholderEarnReward);
+                    setFinancialConcepts(conceptsData);
+                    setFinancialQuiz(quizData);
+                    setEarnReward(rewardData);
+                }
             } catch (err) {
                 console.error('Error fetching financial education data:', err);
                 setError('Failed to load financial education data');
@@ -163,7 +109,7 @@ const KidStartLevel = () => {
             default:
                 return <Play className="w-8 h-8" />;
         }
-    }; const getIconBgColor = (color: string) => {
+    };    const getIconBgColor = (color: string) => {
         switch (color) {
             case 'purple':
                 return 'bg-primary/10';
@@ -221,20 +167,20 @@ const KidStartLevel = () => {
     }
 
     if (error) {
-        return (<main>
-            <div className="mb-6 flex items-center justify-between">
-                <div className="">
-                    <h2 className="text-xl font-semibold text-card-foreground">Financial Education</h2>
-                    <p className="text-muted-foreground">Learn, quiz, and earn rewards through financial education</p>
+        return (            <main>
+                <div className="mb-6 flex items-center justify-between">
+                    <div className="">
+                        <h2 className="text-xl font-semibold text-card-foreground">Financial Education</h2>
+                        <p className="text-muted-foreground">Learn, quiz, and earn rewards through financial education</p>
+                    </div>
                 </div>
-            </div>
 
-            <Card>
-                <CardContent className="flex items-center justify-center py-8">
-                    <p className="text-destructive">{error}</p>
-                </CardContent>
-            </Card>
-        </main>
+                <Card>
+                    <CardContent className="flex items-center justify-center py-8">
+                        <p className="text-destructive">{error}</p>
+                    </CardContent>
+                </Card>
+            </main>
         );
     }
 
@@ -287,8 +233,8 @@ const KidStartLevel = () => {
                                     <div className={getIconColor(reward.color)}>
                                         {getIcon(reward.icon)}
                                     </div>
-                                </div>
-
+                                </div>                                
+                                
                                 <div className="space-y-2">
                                     <h3 className="text-lg font-semibold text-card-foreground">{reward.title}</h3>
                                     <p className="text-sm text-muted-foreground">{reward.description}</p>

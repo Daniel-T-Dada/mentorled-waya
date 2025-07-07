@@ -221,14 +221,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                                 headers: {
                                     'accept': 'application/json',
                                     'Content-Type': 'application/json',
-                                    'X-CSRFTOKEN': credentials.csrfToken?.toString() || ''
+                                    'X-CSRFTOKEN': credentials.csrfToken?.toString() || '',
+                                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                                    'Pragma': 'no-cache'
                                 },
                                 credentials: 'include',
+                                cache: 'no-store', // Prevent caching
                                 body: JSON.stringify({
                                     email: validatedData.email,
                                     password: validatedData.password
                                 }),
                             });
+
+                            // Check if response is actually JSON before parsing
+                            const contentType = response.headers.get('content-type');
+                            if (!contentType || !contentType.includes('application/json')) {
+                                console.error('Non-JSON response received:', response.status, response.statusText);
+                                const responseText = await response.text();
+                                console.error('Response text:', responseText.substring(0, 200) + '...');
+                                return {
+                                    id: 'login-error',
+                                    error: parseLoginErrorEnhanced('Server error - please try again'),
+                                    role: 'parent'
+                                };
+                            }
 
                             const data = await response.json();
 
@@ -363,7 +379,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     // Return user object with kid context
                     return {
                         id: kidLoginResponse.parentId, // Use parent ID for session
-                        name: childName, // Use fetched child name instead of username
+                        name: kidLoginResponse.childUsername,
                         email: `${kidLoginResponse.childUsername}@kid.local`, // Dummy email for session
                         role: "kid",
                         emailVerified: new Date(),
@@ -462,14 +478,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 // Default to parent for OAuth users
                 session.user.role = (token.role as string) || "parent";
                 session.user.email = (token.email as string) || "";
-
-                // For kids, use childName if available, otherwise fallback to name
-                if (token.isChild && token.childName) {
-                    session.user.name = token.childName as string;
-                } else {
-                    session.user.name = token.name as string | undefined;
-                }
-
+                session.user.name = token.name as string | undefined;
                 session.user.emailVerified = token.emailVerified ? new Date(token.emailVerified as string) : null;
                 session.user.avatar = token.avatar as string | null;
                 session.user.accessToken = token.accessToken as string | undefined;
@@ -496,7 +505,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     avatar: session.user.avatar,
                     role: session.user.role,
                     isChild: session.user.isChild,
-                    childId: session.user.childId
+                    childId: session.user.childId,
+                    accessToken: session.user.accessToken ? 'Present' : 'Missing'
                 });
             }
             return session;
@@ -515,7 +525,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     email: user.email,
                     avatar: user.avatar,
                     role: user.role,
-                    isChild: user.isChild
+                    isChild: user.isChild,
+                    accessToken: user.accessToken ? 'Present' : 'Missing'
                 });
 
                 // Store the complete user object in the token
@@ -532,21 +543,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     // Kid-specific fields
                     childId: user.childId,
                     childUsername: user.childUsername,
-                    childName: user.childName, // Include childName in the user object
                     isChild: user.isChild
                 };
 
                 // Also store individual fields for backward compatibility
                 token.role = user.role;
                 token.email = user.email;
-
-                // For kids, prioritize childName over name
-                if (user.isChild && user.childName) {
-                    token.name = user.childName;
-                } else {
-                    token.name = user.name;
-                }
-
+                token.name = user.name;
                 token.emailVerified = user.emailVerified;
                 token.avatar = user.avatar;
                 token.accessToken = user.accessToken;
@@ -557,6 +560,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.childUsername = user.childUsername;
                 token.childName = user.childName;
                 token.isChild = user.isChild;
+
+                console.log("JWT callback - token after setting user data:", {
+                    accessToken: token.accessToken ? 'Present' : 'Missing',
+                    refreshToken: token.refreshToken ? 'Present' : 'Missing'
+                });
             }
 
             // Handle OAuth providers - capture profile image on first login

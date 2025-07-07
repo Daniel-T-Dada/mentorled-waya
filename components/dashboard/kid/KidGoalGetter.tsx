@@ -50,7 +50,7 @@ const KidGoalGetter = ({ kidId: propKidId }: KidGoalGetterProps) => {
             </div>
 
             {/* Goals List and Achievements */}
-            <KidGoalsList />
+            <KidGoalsList kidId={kidId} />
         </main>
     );
 };

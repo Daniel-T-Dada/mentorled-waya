@@ -118,7 +118,7 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
   const handleResendEmail = async () => {
     try {
       setStatus("loading");
-      const response = await fetch(getApiUrl(API_ENDPOINTS.RESEND_VERIFICATION), {
+      const response = await fetch(getApiUrl(API_ENDPOINTS.RESEND_VERIFICATION_EMAIL), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
