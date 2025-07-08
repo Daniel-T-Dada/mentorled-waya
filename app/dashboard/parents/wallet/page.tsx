@@ -5,6 +5,7 @@
 
 import FamilyWalletDashboard from "@/components/dashboard/parent/FamilyWalletDashboard"
 import { MakePayment } from "@/components/modals/MakePayment";
+import { AddFunds } from "@/components/modals/AddFunds";
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -41,6 +42,7 @@ interface Notification {
 const FamilyWalletPage = () => {
     const { data: session } = useSession();
     const [isMakePaymentOpen, setIsMakePaymentOpen] = useState(false);
+    const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -125,13 +127,26 @@ const FamilyWalletPage = () => {
 
     return (
         <div>
-            <FamilyWalletDashboard onAddAllowanceClick={() => setIsMakePaymentOpen(true)} />
+            <FamilyWalletDashboard
+                onAddAllowanceClick={() => setIsMakePaymentOpen(true)}
+                onAddFundsClick={() => setIsAddFundsOpen(true)}
+            />
             <MakePayment
                 isOpen={isMakePaymentOpen}
                 onClose={() => setIsMakePaymentOpen(false)}
                 onSuccess={() => {
-                    fetchWalletData(); fetchTransactions();
-                }} />
+                    fetchWalletData();
+                    fetchTransactions();
+                }}
+            />
+            <AddFunds
+                isOpen={isAddFundsOpen}
+                onClose={() => setIsAddFundsOpen(false)}
+                onSuccess={() => {
+                    fetchWalletData();
+                    fetchTransactions();
+                }}
+            />
         </div>
     )
 }
