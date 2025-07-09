@@ -1,7 +1,7 @@
 'use client'
 
 import KidStatCards from '@/components/dashboard/kid/KidStatCards';
-import KidBarChart from '@/components/dashboard/kid/KidBarChart';
+import KidBarChartLazy from '@/components/lazy/charts/KidBarChartLazy';
 import KidPieChart from '@/components/dashboard/kid/KidPieChart';
 import RecentActivities from '@/components/dashboard/kid/RecentActivities';
 import { useSession } from 'next-auth/react';
@@ -26,7 +26,7 @@ const EarningMeterPage = () => {
                     <KidStatCards kidId={kidId} section="earning-meter" />
                 </div>
                 <div className="lg:col-span-2">
-                    <KidBarChart kidId={kidId} />
+                    <KidBarChartLazy kidId={kidId} />
                 </div>                <div className="lg:col-span-1 self-start">
                     <KidPieChart kidId={kidId} />
                 </div>

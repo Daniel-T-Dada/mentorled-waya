@@ -153,6 +153,8 @@ const AppSidebar = () => {
                                     alt="Waya Logo"
                                     width={state === 'collapsed' ? 60 : 120}
                                     height={state === 'collapsed' ? 60 : 120}
+                                    priority
+                                    sizes={state === 'collapsed' ? "60px" : "120px"}
                                     className="transition-all duration-300"
                                 />
                             </Link>
@@ -230,31 +232,34 @@ const AppSidebar = () => {
                                 size="lg"
                                 className="hover:bg-transparent flex-1"
                             >
-                                <Avatar className="h-8 w-8 md:h-10 md:w-10">
-                                    {isLoading ? (
-                                        <Skeleton className="h-full w-full rounded-full" />
-                                    ) : (
-                                        <>
-                                            {user?.avatar ? (
-                                                <AvatarImage
-                                                    src={getAvatarUrl(user.avatar)}
-                                                    alt={user.name || "User avatar"}
-                                                    onError={(e) => {
-                                                        const target = e.target as HTMLImageElement;
-                                                        target.style.display = 'none';
-                                                        const debugInfo = getAvatarDebugInfo(user.avatar);
-                                                        console.error("AppSidebar - Failed to load avatar image:", debugInfo);
-                                                        console.error("Image load error:", e);
-                                                    }}
-                                                    referrerPolicy="no-referrer"
-                                                />
-                                            ) : null}
-                                            <AvatarFallback>{getAvatarFallback()}</AvatarFallback>
-                                        </>
-                                    )}
-                                </Avatar>
+                                <div className="h-8 w-8 md:h-10 md:w-10 rounded-full overflow-hidden flex-shrink-0">
+                                    <Avatar className="h-full w-full">
+                                        {isLoading ? (
+                                            <Skeleton className="h-full w-full rounded-full" />
+                                        ) : (
+                                            <>
+                                                {user?.avatar ? (
+                                                    <AvatarImage
+                                                        src={getAvatarUrl(user.avatar)}
+                                                        alt={user.name || "User avatar"}
+                                                        onError={(e) => {
+                                                            const target = e.target as HTMLImageElement;
+                                                            target.style.display = 'none';
+                                                            const debugInfo = getAvatarDebugInfo(user.avatar);
+                                                            console.error("AppSidebar - Failed to load avatar image:", debugInfo);
+                                                            console.error("Image load error:", e);
+                                                        }}
+                                                        referrerPolicy="no-referrer"
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                ) : null}
+                                                <AvatarFallback className="h-full w-full flex items-center justify-center">{getAvatarFallback()}</AvatarFallback>
+                                            </>
+                                        )}
+                                    </Avatar>
+                                </div>
                                 {state !== 'collapsed' && (
-                                    <div className="grid flex-1 text-left text-sm leading-tight">
+                                    <div className="grid flex-1 text-left text-sm leading-tight min-h-[40px] justify-center">
                                         {isLoading ? (
                                             <>
                                                 <Skeleton className="h-4 w-24" />
@@ -262,8 +267,8 @@ const AppSidebar = () => {
                                             </>
                                         ) : (
                                             <>
-                                                <span className="truncate font-medium">{user?.name || "User"}</span>
-                                                <span className="truncate text-xs text-muted-foreground">
+                                                <span className="truncate font-medium leading-tight">{user?.name || "User"}</span>
+                                                <span className="truncate text-xs text-muted-foreground leading-tight">
                                                     {user?.email || "No email"}
                                                 </span>
                                             </>

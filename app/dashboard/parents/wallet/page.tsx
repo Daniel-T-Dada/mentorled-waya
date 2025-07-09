@@ -3,12 +3,12 @@
 
 
 
-import FamilyWalletDashboard from "@/components/dashboard/parent/FamilyWalletDashboard"
-import { MakePayment } from "@/components/modals/MakePayment";
-import { AddFunds } from "@/components/modals/AddFunds";
+import { FamilyWalletLazy } from "@/components/lazy/pages/FamilyWalletLazy";
+import { MakePaymentLazy as MakePayment } from "@/components/lazy/modals/MakePaymentLazy";
+import { AddFundsLazy as AddFunds } from "@/components/lazy/modals/AddFundsLazy";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 
@@ -51,8 +51,8 @@ const FamilyWalletPage = () => {
     const totalBalance = Array.isArray(wallets)
         ? wallets.reduce((sum, wallet) => sum + (typeof wallet.balance === 'number' ? wallet.balance : 0), 0)
         : 0;
-    // Fetch wallet data
-    const fetchWalletData = async () => {
+    // Fetch wallet data - memoized to prevent unnecessary re-renders
+    const fetchWalletData = useCallback(async () => {
         if (!session?.user?.accessToken) return;
 
         try {
@@ -70,10 +70,10 @@ const FamilyWalletPage = () => {
             toast.error('Failed to load wallet data');
             setWallets([]);
         }
-    };
+    }, [session?.user?.accessToken]);
 
-    // Fetch transactions
-    const fetchTransactions = async () => {
+    // Fetch transactions - memoized to prevent unnecessary re-renders
+    const fetchTransactions = useCallback(async () => {
         if (!session?.user?.accessToken) return;
 
         try {
@@ -92,10 +92,10 @@ const FamilyWalletPage = () => {
             toast.error('Failed to load transactions');
             setTransactions([]);
         }
-    };
+    }, [session?.user?.accessToken]);
 
-    // Fetch notifications
-    const fetchNotifications = async () => {
+    // Fetch notifications - memoized to prevent unnecessary re-renders
+    const fetchNotifications = useCallback(async () => {
         if (!session?.user?.accessToken) return;
 
         try {
@@ -113,7 +113,7 @@ const FamilyWalletPage = () => {
             toast.error('Failed to load notifications');
             setNotifications([]);
         }
-    };
+    }, [session?.user?.accessToken]);
 
 
     useEffect(() => {
@@ -122,12 +122,12 @@ const FamilyWalletPage = () => {
             fetchTransactions();
             fetchNotifications();
         }
-    }, [session]);
+    }, [session, fetchWalletData, fetchTransactions, fetchNotifications]);
 
 
     return (
         <div>
-            <FamilyWalletDashboard
+            <FamilyWalletLazy
                 onAddAllowanceClick={() => setIsMakePaymentOpen(true)}
                 onAddFundsClick={() => setIsAddFundsOpen(true)}
             />

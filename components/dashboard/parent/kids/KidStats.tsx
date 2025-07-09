@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import type { KidStatsProps } from './types';
 
-export const KidStats = ({ completedChores, pendingChores, balance }: KidStatsProps) => {
+export const KidStats = memo<KidStatsProps>(({ completedChores, pendingChores, balance }) => {
     return (
         <div className="grid grid-cols-3 gap-4 text-center">
             <div>
@@ -17,4 +18,6 @@ export const KidStats = ({ completedChores, pendingChores, balance }: KidStatsPr
             </div>
         </div>
     );
-};
+});
+
+KidStats.displayName = 'KidStats';

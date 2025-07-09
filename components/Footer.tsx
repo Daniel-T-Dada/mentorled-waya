@@ -14,9 +14,10 @@ const Footer = () => {
                         <Link href="/" className="font-bold text-2xl text-primary flex items-center space-x-2 pt-12 mb-4">
                             <Image
                                 src="/Logo/White.svg"
-                                alt="Logo"
+                                alt="Waya Logo"
                                 width={100}
                                 height={80}
+                                sizes="100px"
                             />
                         </Link>
 

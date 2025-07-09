@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Skeleton } from "../ui/skeleton";
 import { usePathname } from "next/navigation";
@@ -62,7 +62,7 @@ interface AppStatCardProps {
     refreshTrigger?: number; // Trigger to refresh data
 }
 
-const AppStatCard = ({ kidId, refreshTrigger }: AppStatCardProps = {}) => {
+const AppStatCard = memo<AppStatCardProps>(({ kidId, refreshTrigger }: AppStatCardProps = {}) => {
     const [chores, setChores] = useState<Task[]>([]);
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [choreSummary, setChoreSummary] = useState<ChoreSummary | null>(null);
@@ -421,25 +421,25 @@ const AppStatCard = ({ kidId, refreshTrigger }: AppStatCardProps = {}) => {
         <>
             {isLoading ? (
                 Array.from({ length: 3 }).map((_, index) => (
-                    <Card key={index}>
+                    <Card key={index} className="min-h-[120px]">
                         <CardHeader className="pb-2">
                             <Skeleton className="h-4 w-1/2" />
                         </CardHeader>
                         <CardContent>
-                            <Skeleton className="h-6 w-1/4" />
+                            <Skeleton className="h-8 w-1/4" />
                         </CardContent>
                     </Card>
                 ))
             ) : (
                 stats.map((stat, index) => (
-                    <Card key={index}>
+                    <Card key={index} className="min-h-[120px]">
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                            <CardTitle className="text-sm font-medium text-muted-foreground leading-tight">
                                 {stat.title}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold flex items-center gap-2">
+                            <div className="text-2xl font-bold flex items-center gap-2 leading-tight">
                                 {stat.value}
                                 {stat.percentageChange !== undefined && stat.trend && (
                                     <Badge
@@ -460,6 +460,8 @@ const AppStatCard = ({ kidId, refreshTrigger }: AppStatCardProps = {}) => {
             )}
         </>
     );
-};
+});
+
+AppStatCard.displayName = 'AppStatCard';
 
 export default AppStatCard;

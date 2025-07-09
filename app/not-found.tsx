@@ -1,5 +1,6 @@
 import { FadeInOld } from "@/components/animations/fade-in"
 import { Button } from "@/components/ui/button"
+import { Wave1 } from "@/components/ui/inline-svgs"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -138,9 +139,11 @@ export default function NotFound() {
                         <div className="relative w-full max-w-md">
                             <Image
                                 src="/assets/saving-money.svg"
-                                alt="Page not found"
+                                alt="Page not found illustration"
                                 width={400}
                                 height={400}
+                                priority
+                                sizes="(max-width: 1024px) 100vw, 400px"
                                 className="w-full h-auto dark:brightness-80 dark:contrast-80"
                             />
                         </div>
@@ -236,13 +239,7 @@ export default function NotFound() {
             {/* Decorative Wave Elements */}
             <div className="absolute bottom-0 left-0 w-full -z-10 opacity-30">
                 <div className="w-full h-auto">
-                    <Image
-                        src="/assets/wave-1.svg"
-                        width={3400}
-                        height={10}
-                        alt="Decorative wave pattern"
-                        className="w-full h-auto -rotate-[2deg]"
-                    />
+                    <Wave1 className="w-full h-auto -rotate-[2deg]" />
                 </div>
             </div>
         </div>

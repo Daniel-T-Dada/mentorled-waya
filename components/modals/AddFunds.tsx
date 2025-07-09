@@ -63,7 +63,7 @@ export function AddFunds({ isOpen, onClose, onSuccess }: AddFundsProps) {
     const [description, setDescription] = useState("Add funds to parent wallet");
     const [isLoading, setIsLoading] = useState(false);
     const [isFlutterwaveLoaded, setIsFlutterwaveLoaded] = useState(false);
-    const [paymentAttempted, setPaymentAttempted] = useState(false);
+    // const [paymentAttempted, setPaymentAttempted] = useState(false);
 
     // Load Flutterwave script
     useEffect(() => {
@@ -148,14 +148,14 @@ export function AddFunds({ isOpen, onClose, onSuccess }: AddFundsProps) {
                 } else if (response.status === "cancelled") {
                     console.log("Payment cancelled by user");
                     setIsLoading(false);
-                    setPaymentAttempted(false);
+                    // setPaymentAttempted();
                     toast.info("Payment cancelled", {
                         description: "You cancelled the payment process."
                     });
                 } else {
                     console.log("Payment failed:", response.status);
                     setIsLoading(false);
-                    setPaymentAttempted(false);
+                    // setPaymentAttempted();
                     toast.error("Payment failed", {
                         description: "Your payment was not successful. Please try again."
                     });
@@ -166,7 +166,7 @@ export function AddFunds({ isOpen, onClose, onSuccess }: AddFundsProps) {
                 // Reset loading state but don't show cancellation message
                 // The user may have just closed the modal without attempting payment
                 setIsLoading(false);
-                setPaymentAttempted(false);
+                // setPaymentAttempted();
             }
         };
 
@@ -177,7 +177,7 @@ export function AddFunds({ isOpen, onClose, onSuccess }: AddFundsProps) {
             console.log("Flutterwave loaded:", isFlutterwaveLoaded);
             console.log("Window.FlutterwaveCheckout exists:", typeof window.FlutterwaveCheckout);
 
-            setPaymentAttempted(true);
+            // setPaymentAttempted();
 
             // Add a small delay to ensure proper initialization
             setTimeout(() => {
@@ -186,7 +186,7 @@ export function AddFunds({ isOpen, onClose, onSuccess }: AddFundsProps) {
                 } catch (innerError) {
                     console.error("Inner error calling FlutterwaveCheckout:", innerError);
                     setIsLoading(false);
-                    setPaymentAttempted(false);
+                    // setPaymentAttempted();
                     toast.error("Payment initialization failed", {
                         description: "Failed to initialize payment system. Please try again."
                     });
@@ -196,7 +196,7 @@ export function AddFunds({ isOpen, onClose, onSuccess }: AddFundsProps) {
         } catch (error) {
             console.error("Error opening Flutterwave modal:", error);
             setIsLoading(false);
-            setPaymentAttempted(false);
+            // setPaymentAttempted();
             toast.error("Payment system error", {
                 description: "Unable to open payment modal. Please try again."
             });
@@ -254,14 +254,14 @@ export function AddFunds({ isOpen, onClose, onSuccess }: AddFundsProps) {
             });
         } finally {
             setIsLoading(false);
-            setPaymentAttempted(false);
+            // setPaymentAttempted();
         }
     };
 
     // Manual confirmation function for testing
     const handleManualConfirmation = () => {
         setIsLoading(true);
-        setPaymentAttempted(true);
+        // setPaymentAttempted();
 
         // Create a customer ID without dots (replace with underscores)
         const customerId = (session?.user?.email || "user").replace(/\./g, '_').replace(/@/g, '_at_');

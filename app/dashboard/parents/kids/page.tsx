@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react';
-import { KidsManagement } from '@/components/dashboard/parent/kids';
-import { CreateKidAccount } from '@/components/modals/CreateKidAccount';
+import { KidsManagementLazy } from '@/components/lazy/pages/KidsManagementLazy';
+import { CreateKidAccountLazy } from '@/components/lazy/modals/CreateKidAccountLazy';
 import { toast } from 'sonner';
 
 const KidsManagementPage = () => {
@@ -19,10 +19,10 @@ const KidsManagementPage = () => {
 
     return (
         <>
-            <KidsManagement onAddKid={handleAddKid} />
+            <KidsManagementLazy onAddKid={handleAddKid} />
 
             {/* Create Kid Account Modal */}
-            <CreateKidAccount
+            <CreateKidAccountLazy
                 isOpen={isCreateKidModalOpen}
                 onClose={() => setIsCreateKidModalOpen(false)}
                 onSuccess={handleCreateKidSuccess}

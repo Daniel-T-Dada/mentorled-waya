@@ -5,6 +5,8 @@ import AppChoreManagement from "../AppChoreManagement"
 import AppKidsManagement from "../AppKidsManagement"
 import AppPieChart from "../AppPieChart"
 import AppStatCard from "../AppStatCard"
+import { Button } from "@/components/ui/button"
+import { memo } from "react"
 // import DebugBarChart from "../DebugBarChart"
 
 interface ParentDashboardProps {
@@ -12,10 +14,8 @@ interface ParentDashboardProps {
     refreshTrigger?: number;
 }
 
-import { Button } from "@/components/ui/button"
 
-
-const ParentDashboardOverview = ({ onCreateKidClick, refreshTrigger }: ParentDashboardProps = {}) => {
+const ParentDashboardOverview = memo<ParentDashboardProps>(({ onCreateKidClick, refreshTrigger }: ParentDashboardProps = {}) => {
 
     return (
         <main className="">
@@ -67,5 +67,8 @@ const ParentDashboardOverview = ({ onCreateKidClick, refreshTrigger }: ParentDas
             </div>
         </main>
     )
-}
+});
+
+ParentDashboardOverview.displayName = 'ParentDashboardOverview';
+
 export default ParentDashboardOverview

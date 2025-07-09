@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,7 +52,7 @@ export default function AllowanceList({ onRefresh }: AllowanceListProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
-    const fetchAllowances = async () => {
+    const fetchAllowances = useCallback(async () => {
         if (!session?.user?.accessToken) {
             setIsLoading(false);
             return;
@@ -70,11 +70,11 @@ export default function AllowanceList({ onRefresh }: AllowanceListProps) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [session?.user?.accessToken]);
 
     useEffect(() => {
         fetchAllowances();
-    }, [session?.user?.accessToken]);
+    }, [fetchAllowances]);
 
     const handleDelete = async (allowanceId: string) => {
         if (!session?.user?.accessToken) return;
