@@ -4,6 +4,7 @@ import { StaggerChildren } from "@/components/animations/stagger-children"
 import { ScrollFadeIn, ScrollFadeInUp } from "@/components/animations/animate";
 import { FeatureCard } from "@/components/feature-card"
 import { Button } from "@/components/ui/button"
+import { Wave1, Wave2 } from "@/components/ui/inline-svgs"
 import Image from "next/image"
 import Link from "next/link";
 
@@ -22,9 +23,11 @@ const Home = async () => {
                 <ScaleIn className="relative w-full max-w-md" delay={0.2}>
                   <Image
                     src="/assets/saving-money.svg"
-                    alt="Logo"
+                    alt="Children saving money illustration"
                     width={500}
                     height={495}
+                    priority
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 500px"
                     className="mx-auto mb-4 top-[100px] md:top-[100px] lg:top-[0px] xl:top-[0px] w-full h-auto dark:brightness-80 dark:contrast-80"
                   />
                 </ScaleIn>
@@ -62,24 +65,10 @@ const Home = async () => {
             {/* The wavey lines */}
             <div >
               <div className="w-full h-auto absolute sm:-top-30 -top-80 lg:-top-60 left-0 -z-10 animate-float -rotate-[4.62deg]">
-                <Image
-                  src="/assets/wave-1.svg"
-                  width={3400}
-                  height={10}
-                  alt="Decorative wave pattern"
-                  className="w-full h-auto"
-
-                />
+                <Wave1 className="w-full h-auto" />
               </div>
               <div className="wave-svg w-full h-auto absolute -top-80 sm:-top-20 lg:-top-50 left-0 -z-50 opacity-70 animate-float-delayed">
-                <Image
-                  src="/assets/wave-2.svg"
-                  width={3400}
-                  height={10}
-                  alt="Decorative wave pattern overlay"
-                  className="w-full h-auto"
-
-                />
+                <Wave2 className="w-full h-auto" />
               </div>
             </div>
           </section>
@@ -112,7 +101,8 @@ const Home = async () => {
                     src="/assets/family-learning.svg"
                     width={400}
                     height={300}
-                    alt="Children learning about money"
+                    alt="Children learning about money with family"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 400px"
                     className="w-full h-auto dark:brightness-80 dark:contrast-80"
                   />
                 </ScaleIn>
@@ -148,12 +138,12 @@ const Home = async () => {
               <FeatureCard
                 title="Gamified Learning"
                 description="Kids unlock badges, complete challenges, and master money concepts through interactive games and quizzes."
-                imageSrc="/assets/game-analytics.png"
+                imageSrc="/assets/game-analytics.webp"
               />
               <FeatureCard
                 title="Visual Wallets"
                 description="Let kids track their savings and spending goals visually, helping them build smart habits early."
-                imageSrc="/assets/e-wallet.png"
+                imageSrc="/assets/e-wallet.webp"
               />
             </StaggerChildren>
 
@@ -161,7 +151,7 @@ const Home = async () => {
               <FeatureCard
                 title="Financial Literacy Quizzes"
                 description="Fun, bite-sized quizzes make complex money concepts easy and relatable for kids."
-                imageSrc="/assets/financial-quiz.png"
+                imageSrc="/assets/financial-quiz.webp"
               />
               <FeatureCard
                 title="Family Dashboard"
@@ -209,9 +199,10 @@ const Home = async () => {
                   <ScrollFadeIn delay={0.2}>
                     <Image
                       src="/assets/sign-up.svg"
-                      alt="Sign up"
+                      alt="Sign up illustration"
                       width={400}
                       height={400}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 400px"
                       className="w-full h-auto dark:brightness-80 dark:contrast-80"
                     />
                   </ScrollFadeIn>
@@ -234,9 +225,10 @@ const Home = async () => {
                   <ScrollFadeIn delay={0.2}>
                     <Image
                       src="/assets/mobile-testing.svg"
-                      alt="Mobile app"
+                      alt="Mobile app interface for chores and allowances"
                       width={400}
                       height={400}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 400px"
                       className="w-full h-auto dark:brightness-80 dark:contrast-80"
                     />
                   </ScrollFadeIn>
@@ -258,9 +250,10 @@ const Home = async () => {
                   <ScrollFadeIn delay={0.2}>
                     <Image
                       src="/assets/analytics-dashboard.svg"
-                      alt="Analytics dashboard"
+                      alt="Analytics dashboard showing progress tracking"
                       width={400}
                       height={400}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 400px"
                       className="w-full h-auto dark:brightness-80 dark:contrast-80"
                     />
                   </ScrollFadeIn>

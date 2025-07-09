@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useMemo, useCallback } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { ChildrenService, ApiError } from '@/lib/services/childrenService';
 
@@ -75,15 +75,21 @@ export function KidProvider({ children }: KidProviderProps) {
 
     // Determine if this is a kid session
     const isKidSession = session?.user?.isChild === true;
-    const currentKid: Kid | null = isKidSession && session?.user ? {
-        id: session.user.childId || '',
-        username: session.user.childUsername || '',
-        name: session.user.childName && session.user.childName.trim() ? session.user.childName.trim() : undefined, // Use backend name if available
-        avatar: session.user.avatar,
-    } : null;
 
-    // Load kids list for parent users
-    const refreshKids = async () => {
+    // Memoize currentKid to prevent unnecessary re-renders
+    const currentKid: Kid | null = useMemo(() => {
+        if (!isKidSession || !session?.user) return null;
+
+        return {
+            id: session.user.childId || '',
+            username: session.user.childUsername || '',
+            name: session.user.childName && session.user.childName.trim() ? session.user.childName.trim() : undefined,
+            avatar: session.user.avatar,
+        };
+    }, [isKidSession, session?.user?.childId, session?.user?.childUsername, session?.user?.childName, session?.user?.avatar]);
+
+    // Load kids list for parent users - memoized to prevent unnecessary re-renders
+    const refreshKids = useCallback(async () => {
         if (!session?.user?.accessToken || session.user.role !== 'parent') {
             return;
         }
@@ -166,7 +172,7 @@ export function KidProvider({ children }: KidProviderProps) {
         } finally {
             setIsLoadingKids(false);
         }
-    };
+    }, [session?.user?.accessToken, session?.user?.role]);
     // Load kids when session is available and user is parent
     useEffect(() => {
         console.log('KidContext - useEffect triggered:', {
@@ -187,10 +193,10 @@ export function KidProvider({ children }: KidProviderProps) {
         } else {
             console.log('KidContext - No action taken, conditions not met');
         }
-    }, [session, status]);
+    }, [refreshKids, status, session?.user?.role, isKidSession]);
 
-    // New method to fetch child profile after login
-    const fetchChildProfile = async (childId: string, parentToken: string): Promise<Kid | null> => {
+    // New method to fetch child profile after login - memoized
+    const fetchChildProfile = useCallback(async (childId: string, parentToken: string): Promise<Kid | null> => {
         try {
             const profile = await ChildrenService.getChildDetail(childId, parentToken);
             console.log('KidContext - Fetched child profile:', profile);
@@ -205,41 +211,41 @@ export function KidProvider({ children }: KidProviderProps) {
             };
 
             // Update the kid in local state if it exists
-            updateKid(childId, { name: kid.name });
+            setKids(prev => prev.map(k =>
+                k.id === childId ? { ...k, name: kid.name } : k
+            ));
 
             return kid;
         } catch (error) {
             console.error('KidContext - Failed to fetch child profile:', error);
             return null;
         }
-    };
+    }, []);
 
-    // Helper functions
-    const addKid = (kid: Kid) => {
+    // Helper functions - memoized to prevent unnecessary re-renders
+    const addKid = useCallback((kid: Kid) => {
         setKids(prev => [...prev, kid]);
-    };
+    }, []);
 
-    const removeKid = (kidId: string) => {
+    const removeKid = useCallback((kidId: string) => {
         setKids(prev => prev.filter(k => k.id !== kidId));
-        if (activeKid?.id === kidId) {
-            setActiveKid(null);
-        }
-    }; const updateKid = (kidId: string, updates: Partial<Kid>) => {
+        setActiveKid(prev => prev?.id === kidId ? null : prev);
+    }, []);
+
+    const updateKid = useCallback((kidId: string, updates: Partial<Kid>) => {
         setKids(prev => prev.map(k =>
             k.id === kidId ? { ...k, ...updates } : k
         ));
-        if (activeKid?.id === kidId) {
-            setActiveKid(prev => prev ? { ...prev, ...updates } : null);
-        }
-    };
+        setActiveKid(prev => prev?.id === kidId ? { ...prev, ...updates } : prev);
+    }, []);
 
-    // Name management methods
-    const setKidName = (kidId: string, name: string) => {
+    // Name management methods - memoized
+    const setKidName = useCallback((kidId: string, name: string) => {
         // Update kid in state with the name (no longer storing locally since backend provides it)
         updateKid(kidId, { name });
-    };
+    }, [updateKid]);
 
-    const getKidDisplayNameHelper = (kid: Kid): string => {
+    const getKidDisplayNameHelper = useCallback((kid: Kid): string => {
         const displayName = getKidDisplayName(kid);
         console.log('KidContext - Getting display name for kid:', {
             kidId: kid.id,
@@ -248,9 +254,10 @@ export function KidProvider({ children }: KidProviderProps) {
             displayName
         });
         return displayName;
-    };
+    }, []);
 
-    const value: KidContextType = {
+    // Memoize the context value to prevent unnecessary re-renders
+    const value: KidContextType = useMemo(() => ({
         kids,
         isLoadingKids,
         refreshKids,
@@ -263,8 +270,21 @@ export function KidProvider({ children }: KidProviderProps) {
         updateKid,
         setKidName,
         getKidDisplayName: getKidDisplayNameHelper,
-        fetchChildProfile, // Add the new method
-    };
+        fetchChildProfile,
+    }), [
+        kids,
+        isLoadingKids,
+        refreshKids,
+        activeKid,
+        isKidSession,
+        currentKid,
+        addKid,
+        removeKid,
+        updateKid,
+        setKidName,
+        getKidDisplayNameHelper,
+        fetchChildProfile,
+    ]);
 
     return (
         <KidContext.Provider value={value}>
@@ -282,18 +302,56 @@ export function useKid() {
     return context;
 }
 
-// Helper hooks for common patterns
+// Helper hooks for common patterns - optimized with useMemo
 export function useKidsList() {
     const { kids, isLoadingKids, refreshKids } = useKid();
-    return { kids, isLoadingKids, refreshKids };
+    return useMemo(() => ({
+        kids,
+        isLoadingKids,
+        refreshKids
+    }), [kids, isLoadingKids, refreshKids]);
 }
 
 export function useActiveKid() {
     const { activeKid, setActiveKid } = useKid();
-    return { activeKid, setActiveKid };
+    return useMemo(() => ({
+        activeKid,
+        setActiveKid
+    }), [activeKid, setActiveKid]);
 }
 
 export function useKidSession() {
     const { isKidSession, currentKid } = useKid();
-    return { isKidSession, currentKid };
+    return useMemo(() => ({
+        isKidSession,
+        currentKid
+    }), [isKidSession, currentKid]);
+}
+
+// Additional optimized selector hooks
+export function useKidActions() {
+    const { addKid, removeKid, updateKid, setKidName } = useKid();
+    return useMemo(() => ({
+        addKid,
+        removeKid,
+        updateKid,
+        setKidName,
+    }), [addKid, removeKid, updateKid, setKidName]);
+}
+
+export function useKidByIdSelector(kidId: string) {
+    const { kids } = useKid();
+    return useMemo(() =>
+        kids.find(kid => kid.id === kidId) || null,
+        [kids, kidId]
+    );
+}
+
+export function useKidsCount() {
+    const { kids, isLoadingKids } = useKid();
+    return useMemo(() => ({
+        count: kids.length,
+        hasKids: kids.length > 0,
+        isLoadingKids,
+    }), [kids.length, isLoadingKids]);
 }

@@ -67,7 +67,7 @@ const DashboardNavbar = () => {
                         orientation="vertical"
                         className="ml-2 data-[orientation=vertical]:h-4 hidden sm:block"
                     />
-                    <div className="hidden sm:block">
+                    <div className="hidden sm:flex sm:flex-col sm:justify-center min-h-[52px]">
                         {isLoading ? (
                             <>
                                 <Skeleton className="h-7 w-48 mb-1" />
@@ -75,8 +75,8 @@ const DashboardNavbar = () => {
                             </>
                         ) : (
                             <>
-                                <h1 className="text-xl md:text-2xl font-semibold">Hello {user?.name || "User"}</h1>
-                                <p className="text-muted-foreground text-xs md:text-sm">Building Smart Money Habits, One Chore at a Time.</p>
+                                <h1 className="text-xl md:text-2xl font-semibold leading-tight">Hello {user?.name || "User"}</h1>
+                                <p className="text-muted-foreground text-xs md:text-sm leading-tight">Building Smart Money Habits, One Chore at a Time.</p>
                             </>
                         )}
                     </div>
@@ -91,15 +91,15 @@ const DashboardNavbar = () => {
                         <input
                             type="text"
                             placeholder="Filter"
-                            className="pl-9 pr-4 py-2 text-sm rounded-md bg-muted/50 w-48 lg:w-64 border-0 focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="pl-9 pr-4 py-2 text-sm rounded-md bg-muted/50 w-48 lg:w-64 h-10 border-0 focus:outline-none focus:ring-2 focus:ring-primary"
                             value={filter}
                             onChange={e => setFilter(e.target.value)}
                         />
                     </div>
 
                     {/* Notification - Visible on all screens */}
-                    <button className="relative">
-                        <BellIcon className="w-6 h-6 text-foreground" />
+                    <button className="relative h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full hover:bg-muted/50 transition-colors">
+                        <BellIcon className="w-5 h-5 md:w-6 md:h-6 text-foreground" />
                         <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center">
                             3
                         </span>
@@ -163,28 +163,31 @@ const DashboardNavbar = () => {
                     {/* User Menu */}
                     <DropdownMenu>
                         <DropdownMenuTrigger>
-                            <Avatar className="h-8 w-8 md:h-10 md:w-10">
-                                {isLoading ? (
-                                    <Skeleton className="h-full w-full rounded-full" />
-                                ) : (
-                                    <>
-                                        {(user?.avatar && !avatarError) ? (
-                                            <AvatarImage
-                                                src={getAvatarUrl(user.avatar)}
-                                                alt={user.name || "User avatar"}
-                                                onError={() => {
-                                                    const debugInfo = getAvatarDebugInfo(user.avatar);
-                                                    console.error("DashboardNavbar - Failed to load avatar image:", debugInfo);
-                                                    setAvatarError(true);
-                                                }}
-                                                loading="lazy"
-                                                referrerPolicy="no-referrer"
-                                            />
-                                        ) : null}
-                                        <AvatarFallback>{getAvatarFallback()}</AvatarFallback>
-                                    </>
-                                )}
-                            </Avatar>
+                            <div className="h-8 w-8 md:h-10 md:w-10 rounded-full overflow-hidden">
+                                <Avatar className="h-full w-full">
+                                    {isLoading ? (
+                                        <Skeleton className="h-full w-full rounded-full" />
+                                    ) : (
+                                        <>
+                                            {(user?.avatar && !avatarError) ? (
+                                                <AvatarImage
+                                                    src={getAvatarUrl(user.avatar)}
+                                                    alt={user.name || "User avatar"}
+                                                    onError={() => {
+                                                        const debugInfo = getAvatarDebugInfo(user.avatar);
+                                                        console.error("DashboardNavbar - Failed to load avatar image:", debugInfo);
+                                                        setAvatarError(true);
+                                                    }}
+                                                    loading="lazy"
+                                                    referrerPolicy="no-referrer"
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : null}
+                                            <AvatarFallback className="h-full w-full flex items-center justify-center">{getAvatarFallback()}</AvatarFallback>
+                                        </>
+                                    )}
+                                </Avatar>
+                            </div>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent sideOffset={10} align="end">
                             <DropdownMenuLabel>My Account</DropdownMenuLabel>

@@ -1,6 +1,6 @@
 'use client'
 
-import KidDashboardOverview from "@/components/dashboard/kid/KidDashboardOverview"
+import { KidDashboardLazy } from "@/components/lazy/pages/KidDashboardLazy";
 import { useState } from "react"
 
 const KidsPage = () => {
@@ -8,7 +8,7 @@ const KidsPage = () => {
 
     return (
         <div className="">
-            <KidDashboardOverview refreshTrigger={refreshTrigger} />
+            <KidDashboardLazy refreshTrigger={refreshTrigger} />
         </div>
     )
 }

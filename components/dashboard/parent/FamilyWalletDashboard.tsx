@@ -1,10 +1,10 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import AppPieChart from "../AppPieChart"
+import AppPieChartLazy from "../../lazy/charts/AppPieChartLazy"
 import AppStatCard from "../AppStatCard"
 import { Plus, Wallet } from "lucide-react"
-import BarChartEarners from "./barchart/BarChartEarners"
+import BarChartEarnersLazy from "../../lazy/charts/BarChartEarnersLazy"
 import AppTable from "../AppTable"
 // import AllowanceList from "../AllowanceList"
 
@@ -43,11 +43,11 @@ const FamilyWalletDashboard = ({ onAddAllowanceClick, onAddFundsClick, refreshTr
                 <AppStatCard refreshTrigger={refreshTrigger} />
 
                 <div className="md:col-span-2">
-                    <BarChartEarners />
+                    <BarChartEarnersLazy />
                 </div>
 
                 <div className="lg:col-span-1 self-start">
-                    <AppPieChart refreshTrigger={refreshTrigger} />
+                    <AppPieChartLazy refreshTrigger={refreshTrigger} />
                 </div>
 
                 <div className="lg:col-span-3">

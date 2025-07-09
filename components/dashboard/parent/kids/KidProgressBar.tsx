@@ -1,7 +1,8 @@
 import { Progress } from "@/components/ui/progress";
+import { memo } from "react";
 import type { KidProgressBarProps } from './types';
 
-export const KidProgressBar = ({ progress }: KidProgressBarProps) => {
+export const KidProgressBar = memo<KidProgressBarProps>(({ progress }) => {
     return (
         <div className="space-y-2">
             <div className="flex justify-between text-sm">
@@ -11,4 +12,6 @@ export const KidProgressBar = ({ progress }: KidProgressBarProps) => {
             <Progress value={progress} className="w-full" />
         </div>
     );
-};
+});
+
+KidProgressBar.displayName = 'KidProgressBar';

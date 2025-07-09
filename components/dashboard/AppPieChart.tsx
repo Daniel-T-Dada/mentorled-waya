@@ -265,7 +265,7 @@ const AppPieChart = ({ refreshTrigger }: AppPieChartProps = {}) => {
         };
 
         fetchData();
-    }, [session?.user?.id, pathname, range, isWallet, refreshTrigger, status]);
+    }, [session, pathname, range, isWallet, refreshTrigger, status]);
 
     const totalValue = chartData.reduce((acc, curr) => acc + curr.value, 0);
     const currentConfig = isWallet ? chartConfigs.savings : chartConfigs.chores;
