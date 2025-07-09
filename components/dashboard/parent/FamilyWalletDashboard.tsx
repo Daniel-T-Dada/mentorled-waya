@@ -1,41 +1,53 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import AppPieChart from "../AppPieChart"
+import AppPieChartLazy from "../../lazy/charts/AppPieChartLazy"
 import AppStatCard from "../AppStatCard"
-import { Plus } from "lucide-react"
-import BarChartEarners from "./barchart/BarChartEarners"
+import { Plus, Wallet } from "lucide-react"
+import BarChartEarnersLazy from "../../lazy/charts/BarChartEarnersLazy"
 import AppTable from "../AppTable"
 // import AllowanceList from "../AllowanceList"
 
 interface FamilyWalletDashboardProps {
     onAddAllowanceClick?: () => void;
+    onAddFundsClick?: () => void;
     refreshTrigger?: number;
 }
 
-const FamilyWalletDashboard = ({ onAddAllowanceClick, refreshTrigger }: FamilyWalletDashboardProps = {}) => {
+const FamilyWalletDashboard = ({ onAddAllowanceClick, onAddFundsClick, refreshTrigger }: FamilyWalletDashboardProps = {}) => {
     return (
         <main>
             <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Overview</h2>
 
-                <Button
-                    className="bg-primary hover:bg-primary/90"
-                    onClick={onAddAllowanceClick}
-                >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Make Payment
-                </Button>
+                <div className="flex gap-3">
+                    <Button
+                        variant="outline"
+                        className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                        onClick={onAddFundsClick}
+                    >
+                        <Wallet className="h-4 w-4 mr-2" />
+                        Add Funds
+                    </Button>
+
+                    <Button
+                        className="bg-primary hover:bg-primary/90"
+                        onClick={onAddAllowanceClick}
+                    >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Make Payment
+                    </Button>
+                </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 <AppStatCard refreshTrigger={refreshTrigger} />
 
                 <div className="md:col-span-2">
-                    <BarChartEarners />
+                    <BarChartEarnersLazy />
                 </div>
 
                 <div className="lg:col-span-1 self-start">
-                    <AppPieChart refreshTrigger={refreshTrigger} />
+                    <AppPieChartLazy refreshTrigger={refreshTrigger} />
                 </div>
 
                 <div className="lg:col-span-3">

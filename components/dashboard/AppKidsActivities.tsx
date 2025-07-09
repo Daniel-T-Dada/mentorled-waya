@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import { Skeleton } from "../ui/skeleton";
@@ -50,7 +50,7 @@ const InfoState = () => (
     </div>
 );
 
-const AppKidsActivities = ({ kidId }: AppKidsActivitiesProps = {}) => {
+const AppKidsActivities = memo<AppKidsActivitiesProps>(({ kidId }: AppKidsActivitiesProps = {}) => {
     const [kids, setKids] = useState<Kid[]>([]);
     const [activities, setActivities] = useState<Task[]>([]);
     const [activeKidTab, setActiveKidTab] = useState("all");
@@ -103,7 +103,7 @@ const AppKidsActivities = ({ kidId }: AppKidsActivitiesProps = {}) => {
         } finally {
             setIsLoading(false);
         }
-    }, [session?.user?.id]);
+    }, [session?.user?.id, session?.user?.accessToken, session]);
 
     useEffect(() => {
         fetchData();
@@ -296,6 +296,8 @@ const AppKidsActivities = ({ kidId }: AppKidsActivitiesProps = {}) => {
             </CardContent>
         </Card>
     );
-};
+});
+
+AppKidsActivities.displayName = 'AppKidsActivities';
 
 export default AppKidsActivities; 

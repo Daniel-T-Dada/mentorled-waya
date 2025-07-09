@@ -31,9 +31,11 @@ const Navbar = () => {
                     <Link href="/" className="font-bold text-2xl text-primary flex items-center space-x-2">
                         <Image
                             src={theme === 'dark' ? "/Logo/White.svg" : "/Logo/Purple.svg"}
-                            alt="Logo"
+                            alt="Waya Logo"
                             width={80}
                             height={80}
+                            priority
+                            sizes="80px"
                         />
                     </Link>
 

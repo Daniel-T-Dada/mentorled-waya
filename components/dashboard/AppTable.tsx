@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { useSession } from 'next-auth/react';
 import {
     Table,
@@ -73,7 +73,7 @@ const InfoState = () => (
     </div>
 );
 
-const AppTable = () => {
+const AppTable = memo(() => {
     const { data: session } = useSession();
     const [activities, setActivities] = useState<ActivityRow[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -158,7 +158,7 @@ const AppTable = () => {
 
     if (isLoading) {
         return (
-            <div className="w-full border rounded-lg bg-card text-card-foreground shadow-sm p-8">
+            <div className="w-full border rounded-lg bg-card text-card-foreground shadow-sm p-8 min-h-[500px]">
                 <div className="flex items-center justify-between mb-10">
                     <h3 className="text-lg font-semibold">Recent Activities</h3>
                 </div>
@@ -169,7 +169,7 @@ const AppTable = () => {
 
     if (needsRetry || activities.length === 0) {
         return (
-            <div className="w-full border rounded-lg bg-card text-card-foreground shadow-sm p-8">
+            <div className="w-full border rounded-lg bg-card text-card-foreground shadow-sm p-8 min-h-[500px]">
                 <div className="flex items-center justify-between mb-10">
                     <h3 className="text-lg font-semibold">Recent Activities</h3>
                 </div>
@@ -179,7 +179,7 @@ const AppTable = () => {
     }
 
     return (
-        <div className="w-full border rounded-lg bg-card text-card-foreground shadow-sm p-8">
+        <div className="w-full border rounded-lg bg-card text-card-foreground shadow-sm p-8 min-h-[500px]">
             <div className="flex items-center justify-between mb-10">
                 <h3 className="text-lg font-semibold">Recent Activities</h3>
             </div>
@@ -272,6 +272,8 @@ const AppTable = () => {
             )}
         </div>
     );
-};
+});
+
+AppTable.displayName = 'AppTable';
 
 export default AppTable; 

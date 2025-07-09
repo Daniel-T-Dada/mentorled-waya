@@ -6,9 +6,10 @@ import Link from "next/link";
 import { useKid } from "@/contexts/KidContext";
 import { KidProgressBar } from "./KidProgressBar";
 import { KidStats } from "./KidStats";
+import { memo } from "react";
 import type { KidCardProps } from './types';
 
-export const KidCard = ({ kid, completedChores, pendingChores, progress }: KidCardProps) => {
+export const KidCard = memo<KidCardProps>(({ kid, completedChores, pendingChores, progress }) => {
     const { getKidDisplayName } = useKid();
     const displayName = getKidDisplayName(kid);
 
@@ -46,4 +47,6 @@ export const KidCard = ({ kid, completedChores, pendingChores, progress }: KidCa
             </CardContent>
         </Card>
     );
-};
+});
+
+KidCard.displayName = 'KidCard';

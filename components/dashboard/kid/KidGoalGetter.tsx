@@ -1,9 +1,11 @@
 'use client'
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
 import KidStatCards from "./KidStatCards";
 import KidGoalsList from "./KidGoalsList";
+import { CreateGoalLazy as CreateGoal } from "@/components/lazy/modals/CreateGoalLazy";
 
 interface KidGoalGetterProps {
     kidId?: string;
@@ -11,6 +13,7 @@ interface KidGoalGetterProps {
 
 const KidGoalGetter = ({ kidId: propKidId }: KidGoalGetterProps) => {
     const { data: session } = useSession();
+    const [isCreateGoalOpen, setIsCreateGoalOpen] = useState(false);
 
     const sessionKidId = session?.user?.id;
     const validKidIds = ['kid-001', 'kid-002', 'kid-003', 'kid-004'];
@@ -25,8 +28,12 @@ const KidGoalGetter = ({ kidId: propKidId }: KidGoalGetterProps) => {
     }
 
     const handleCreateGoal = () => {
-        // TODO: Implement create goal functionality
-        console.log('Create new goal clicked');
+        setIsCreateGoalOpen(true);
+    };
+
+    const handleCreateGoalSuccess = () => {
+        // Goal created successfully - the modal will close itself
+        // The KidGoalsList component should automatically refresh
     };
 
     return (
@@ -51,6 +58,14 @@ const KidGoalGetter = ({ kidId: propKidId }: KidGoalGetterProps) => {
 
             {/* Goals List and Achievements */}
             <KidGoalsList kidId={kidId} />
+
+            {/* Create Goal Modal */}
+            <CreateGoal
+                isOpen={isCreateGoalOpen}
+                onClose={() => setIsCreateGoalOpen(false)}
+                onSuccess={handleCreateGoalSuccess}
+                kidId={kidId}
+            />
         </main>
     );
 };

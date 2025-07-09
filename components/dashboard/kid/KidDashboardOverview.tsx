@@ -7,13 +7,14 @@ import AppChoreManagement from "../AppChoreManagement"
 import KidDailyStreaks from "./KidDailyStreaks"
 import { useSession } from "next-auth/react"
 import { useKid } from "@/contexts/KidContext"
+import { memo } from "react"
 
 interface KidDashboardOverviewProps {
     kidId?: string;
     refreshTrigger?: number;
 }
 
-const KidDashboardOverview = ({ kidId: propKidId, refreshTrigger }: KidDashboardOverviewProps) => {
+const KidDashboardOverview = memo<KidDashboardOverviewProps>(({ kidId: propKidId, refreshTrigger }) => {
     const { data: session } = useSession();
     const { currentKid, isKidSession } = useKid();
 
@@ -72,5 +73,8 @@ const KidDashboardOverview = ({ kidId: propKidId, refreshTrigger }: KidDashboard
             </div>
         </main>
     )
-}
+});
+
+KidDashboardOverview.displayName = 'KidDashboardOverview';
+
 export default KidDashboardOverview

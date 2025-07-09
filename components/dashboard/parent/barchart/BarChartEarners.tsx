@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { type ChartConfig, ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
@@ -119,7 +119,7 @@ const BarChartEarners = () => {
 
     const chartMargin = getChartMargin();
 
-    const fetchEarnerData = async () => {
+    const fetchEarnerData = useCallback(async () => {
         if (!session?.user?.accessToken) {
             console.log('No access token available');
             setLoading(false);
@@ -236,14 +236,14 @@ const BarChartEarners = () => {
             console.log('Fetch completed, setting loading to false');
             setLoading(false);
         }
-    };
+    }, [session?.user?.accessToken, range]);
 
     useEffect(() => {
         console.log('BarChartEarners useEffect triggered');
         console.log('Session:', session);
         console.log('Range:', range);
         fetchEarnerData();
-    }, [session?.user?.accessToken, range]);
+    }, [fetchEarnerData, session, range]);
 
     const handleRetry = () => {
         setNeedsRetry(false);

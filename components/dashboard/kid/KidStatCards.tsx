@@ -7,14 +7,14 @@ import { Trophy, Zap, Target } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { MockApiService } from "@/lib/services/mockApiService";
 import { mockDataService } from "@/lib/services/mockDataService";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 
 interface KidStatCardsProps {
     kidId?: string;
     section?: 'overview' | 'chore' | 'money-maze' | 'goal-getter' | 'earning-meter';
 }
 
-const KidStatCards = ({ kidId: propKidId, section = 'overview' }: KidStatCardsProps) => {
+const KidStatCards = memo<KidStatCardsProps>(({ kidId: propKidId, section = 'overview' }) => {
     const { data: session } = useSession();
     const [kid, setKid] = useState<any>(null);
     const [kidChores, setKidChores] = useState<any[]>([]);
@@ -266,6 +266,8 @@ const KidStatCards = ({ kidId: propKidId, section = 'overview' }: KidStatCardsPr
             {getStatCards()}
         </div>
     );
-};
+});
+
+KidStatCards.displayName = 'KidStatCards';
 
 export default KidStatCards;

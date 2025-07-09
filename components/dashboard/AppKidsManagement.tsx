@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Users, PlusCircle, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ScrollArea } from "../ui/scroll-area";
 import { Skeleton } from "../ui/skeleton";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useKid } from "@/contexts/KidContext";
@@ -106,7 +106,7 @@ const LoadingState = () => (
     </div>
 );
 
-const AppKidsManagement = ({ onCreateKidClick, onAssignChore, refreshTrigger }: AppKidsManagementProps) => {
+const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAssignChore, refreshTrigger }) => {
     const { kids, isLoadingKids, getKidDisplayName } = useKid();
     const [currentPage, setCurrentPage] = useState(0);
     const [chores, setChores] = useState<Chore[]>([]);
@@ -638,6 +638,8 @@ const AppKidsManagement = ({ onCreateKidClick, onAssignChore, refreshTrigger }: 
                 </ScrollArea>
             </CardContent>
         </Card>);
-};
+});
+
+AppKidsManagement.displayName = 'AppKidsManagement';
 
 export default AppKidsManagement;

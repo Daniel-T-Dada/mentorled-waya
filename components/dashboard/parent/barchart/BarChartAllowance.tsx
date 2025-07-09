@@ -303,7 +303,7 @@ const BarChartAllowance = () => {
         };
 
         fetchAllowanceData();
-    }, [session?.user?.accessToken, range]);
+    }, [session, range]);
 
     // Since we generate data for the exact range selected, we can use all the data
     const dataToDisplay = allowanceData;
