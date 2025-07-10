@@ -4,7 +4,7 @@ import React from "react";
 import { BarChart, ChartSpline, Clipboard, Goal, HandCoins, Home, List, LogOut, Settings, User, UsersRound, Wallet } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator, useSidebar } from "../ui/sidebar"
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes"
@@ -19,7 +19,6 @@ import { useRoleAccess } from "@/hooks/use-role-access";
 
 const AppSidebar = () => {
     const pathname = usePathname();
-    const router = useRouter();
     const { theme } = useTheme();
     const { state } = useSidebar();
     const { user, isLoading } = useUser();
@@ -132,7 +131,7 @@ const AppSidebar = () => {
     } : isParent ? {
         text: "Kids Management",
         icon: UsersRound,
-        action: () => router.push('/dashboard/parents/kids')
+        // action: () => router.push('/dashboard/parents/kids') //Uncomment when design is ready
     } : null;
 
     const showSpecialButton = buttonConfig !== null;

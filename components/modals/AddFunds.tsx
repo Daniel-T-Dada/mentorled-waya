@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { Wallet, CreditCard, Banknote, CheckCircle, AlertCircle } from "lucide-react";
 import { formatNaira } from "@/lib/utils/currency";
+import { useRealtimeWallet } from "@/hooks/useRealtime";
+import { eventManager } from "@/lib/realtime";
 
 // Flutterwave types
 interface FlutterwavePaymentData {
@@ -59,6 +61,7 @@ interface AddFundsResponse {
 
 export function AddFunds({ isOpen, onClose, onSuccess }: AddFundsProps) {
     const { data: session } = useSession();
+    const { emitWalletUpdate } = useRealtimeWallet();
     const [amount, setAmount] = useState("");
     const [description, setDescription] = useState("Add funds to parent wallet");
     const [isLoading, setIsLoading] = useState(false);
@@ -232,6 +235,33 @@ export function AddFunds({ isOpen, onClose, onSuccess }: AddFundsProps) {
 
             const data: AddFundsResponse = await response.json();
             console.log("Backend success response:", data);
+
+            // Emit real-time wallet update event
+            emitWalletUpdate({
+                action: "ADD_FUNDS",
+                amount: paymentData.amount,
+                newBalance: data.new_balance,
+                transactionId: data.transaction_id,
+            });
+
+            // Emit transaction update event for transaction history
+            eventManager.emit({
+                type: "TRANSACTION_UPDATE",
+                payload: {
+                    action: "CREATE",
+                    transaction: {
+                        id: data.transaction_id,
+                        name: "Family Wallet",
+                        activity: "Wallet Top-up",
+                        amount: paymentData.amount,
+                        status: "completed",
+                        date: new Date().toISOString(),
+                        description: `Added ${formatNaira(paymentData.amount)} to family wallet`
+                    },
+                    transactionId: data.transaction_id
+                },
+                timestamp: Date.now()
+            });
 
             toast.success("Payment successful!", {
                 description: `${formatNaira(paymentData.amount)} has been added to your wallet. New balance: ${formatNaira(data.new_balance)}`,
@@ -424,28 +454,26 @@ export function AddFunds({ isOpen, onClose, onSuccess }: AddFundsProps) {
                             Cancel
                         </Button>
 
-                        {/* Development only: Manual confirmation button */}
-                        {process.env.NODE_ENV === 'development' && (
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                onClick={handleManualConfirmation}
-                                disabled={isLoading || !amount || parseFloat(amount) <= 0}
-                                className="bg-yellow-600 hover:bg-yellow-700 text-white w-full sm:w-auto order-3 sm:order-2"
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                                        Testing...
-                                    </>
-                                ) : (
-                                    <>
-                                        <CheckCircle className="w-4 h-4 mr-2" />
-                                        Skip Payment (Test)
-                                    </>
-                                )}
-                            </Button>
-                        )}
+                        {/* Skip Payment button for testing (available in all environments) */}
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={handleManualConfirmation}
+                            disabled={isLoading || !amount || parseFloat(amount) <= 0}
+                            className="bg-yellow-600 hover:bg-yellow-700 text-white w-full sm:w-auto order-3 sm:order-2"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                                    Testing...
+                                </>
+                            ) : (
+                                <>
+                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                    Skip Payment (Test)
+                                </>
+                            )}
+                        </Button>
 
                         <Button
                             type="submit"

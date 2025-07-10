@@ -30,7 +30,7 @@ const ParentDashboardOverview = memo<ParentDashboardProps>(({ onCreateKidClick, 
                 </Button>
 
             </div>            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                <AppStatCard refreshTrigger={refreshTrigger} />
+                <AppStatCard />
                 {/* <DebugBarChart/> */}
 
                 <div className="lg:col-span-2 ">

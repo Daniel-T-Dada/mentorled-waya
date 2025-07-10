@@ -15,6 +15,8 @@ import { CheckIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
+import { useRealtimeWallet } from "@/hooks/useRealtime";
+import { eventManager } from "@/lib/realtime";
 
 interface MakePaymentProps {
     isOpen: boolean;
@@ -49,6 +51,7 @@ interface Chore {
 
 export function MakePayment({ isOpen, onClose, onSuccess }: MakePaymentProps) {
     const { data: session } = useSession();
+    const { emitWalletUpdate } = useRealtimeWallet();
     const [step, setStep] = useState<"form" | "success">("form");
     const [kids, setKids] = useState<Kid[]>([]);
     const [chores, setChores] = useState<Chore[]>([]);
@@ -281,6 +284,35 @@ export function MakePayment({ isOpen, onClose, onSuccess }: MakePaymentProps) {
 
             const result = await response.json();
             console.log('Payment successful:', result);
+
+            // Emit real-time wallet update event
+            emitWalletUpdate({
+                action: "MAKE_PAYMENT",
+                amount: amount,
+                kidId: formData.kidId,
+                kidNewBalance: result.child_new_balance,
+                parentNewBalance: result.parent_new_balance,
+                transactionId: result.transaction_id
+            });
+
+            // Emit transaction update event for transaction history
+            eventManager.emit({
+                type: "TRANSACTION_UPDATE",
+                payload: {
+                    action: "CREATE",
+                    transaction: {
+                        id: result.transaction_id,
+                        name: formData.kidName,
+                        activity: "Payment Transfer",
+                        amount: amount,
+                        status: "completed",
+                        date: new Date().toISOString(),
+                        description: `Payment of NGN ${amount.toLocaleString()} sent to ${formData.kidName}`
+                    },
+                    transactionId: result.transaction_id
+                },
+                timestamp: Date.now()
+            });
 
             setStep("success");
             toast.success('Payment successful', {

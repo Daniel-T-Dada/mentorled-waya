@@ -16,20 +16,17 @@ const FamilyWalletDashboard = dynamic(
 interface FamilyWalletLazyProps {
     onAddAllowanceClick?: () => void;
     onAddFundsClick?: () => void;
-    refreshTrigger?: number;
 }
 
 export const FamilyWalletLazy = ({
     onAddAllowanceClick,
-    onAddFundsClick,
-    refreshTrigger
+    onAddFundsClick
 }: FamilyWalletLazyProps) => {
     return (
         <Suspense fallback={<FamilyWalletSkeleton />}>
             <FamilyWalletDashboard
                 onAddAllowanceClick={onAddAllowanceClick}
                 onAddFundsClick={onAddFundsClick}
-                refreshTrigger={refreshTrigger}
             />
         </Suspense>
     );
