@@ -11,10 +11,9 @@ import AppTable from "../AppTable"
 interface FamilyWalletDashboardProps {
     onAddAllowanceClick?: () => void;
     onAddFundsClick?: () => void;
-    refreshTrigger?: number;
 }
 
-const FamilyWalletDashboard = ({ onAddAllowanceClick, onAddFundsClick, refreshTrigger }: FamilyWalletDashboardProps = {}) => {
+const FamilyWalletDashboard = ({ onAddAllowanceClick, onAddFundsClick }: FamilyWalletDashboardProps = {}) => {
     return (
         <main>
             <div className="mb-6 flex items-center justify-between">
@@ -40,14 +39,14 @@ const FamilyWalletDashboard = ({ onAddAllowanceClick, onAddFundsClick, refreshTr
                 </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                <AppStatCard refreshTrigger={refreshTrigger} />
+                <AppStatCard />
 
                 <div className="md:col-span-2">
                     <BarChartEarnersLazy />
                 </div>
 
                 <div className="lg:col-span-1 self-start">
-                    <AppPieChartLazy refreshTrigger={refreshTrigger} />
+                    <AppPieChartLazy />
                 </div>
 
                 <div className="lg:col-span-3">

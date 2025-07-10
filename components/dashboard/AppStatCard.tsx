@@ -9,6 +9,8 @@ import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { Badge } from "../ui/badge";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { Task, transformTasksFromBackend, BackendTask } from '@/lib/utils/taskTransforms';
+import { WalletUpdatePayload, WayaEvent } from "@/lib/realtime/types";
+import { eventManager } from "@/lib/realtime";
 
 // Type for paginated API responses
 interface PaginatedResponse<T> {
@@ -59,10 +61,9 @@ interface StatItem {
 
 interface AppStatCardProps {
     kidId?: string; // Optional prop for kid-specific stats
-    refreshTrigger?: number; // Trigger to refresh data
 }
 
-const AppStatCard = memo<AppStatCardProps>(({ kidId, refreshTrigger }: AppStatCardProps = {}) => {
+const AppStatCard = memo<AppStatCardProps>(({ kidId }: AppStatCardProps = {}) => {
     const [chores, setChores] = useState<Task[]>([]);
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [choreSummary, setChoreSummary] = useState<ChoreSummary | null>(null);
@@ -288,7 +289,50 @@ const AppStatCard = memo<AppStatCardProps>(({ kidId, refreshTrigger }: AppStatCa
         };
 
         fetchData();
-    }, [session?.user?.id, session?.user?.accessToken, refreshTrigger, pathname, isWalletPage]);
+    }, [session?.user?.id, session?.user?.accessToken, pathname, isWalletPage]);
+
+    // Set up real-time wallet updates subscription
+    useEffect(() => {
+        if (!session?.user?.id) return;
+
+        const handleWalletUpdate = (event: WayaEvent<WalletUpdatePayload>) => {
+            console.log('Received wallet update event:', event);
+            const { payload } = event;
+
+            // Update wallet stats if we have them
+            if (walletStats && payload.newBalance !== undefined) {
+                setWalletStats(prev => prev ? {
+                    ...prev,
+                    family_wallet_balance: payload.newBalance!.toString(),
+                    total_children_balance: payload.kidNewBalance?.toString() || prev.total_children_balance
+                } : null);
+            }
+
+            // Update individual wallets if we have them
+            if (wallets.length > 0 && payload.kidId) {
+                setWallets(prev => prev.map(wallet =>
+                    wallet.child.id === payload.kidId
+                        ? { ...wallet, balance: payload.kidNewBalance || wallet.balance }
+                        : wallet
+                ));
+            }
+
+            // For parent balance updates
+            if (payload.parentNewBalance !== undefined && walletStats) {
+                setWalletStats(prev => prev ? {
+                    ...prev,
+                    family_wallet_balance: payload.parentNewBalance!.toString()
+                } : null);
+            }
+        };
+
+        const unsubscribe = eventManager.subscribe('WALLET_UPDATE', handleWalletUpdate);
+
+        // Cleanup subscription on unmount
+        return () => {
+            unsubscribe();
+        };
+    }, [session?.user?.id, walletStats, wallets]);
 
     const formatCurrency = (amount: number) => {
         return amount.toLocaleString('en-NG', {

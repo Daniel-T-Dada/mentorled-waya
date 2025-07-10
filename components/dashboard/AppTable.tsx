@@ -22,6 +22,8 @@ import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { enhanceTransactionDescriptions, formatTransactionForDisplay } from '@/lib/utils/transactionUtils';
 import { ClipboardList } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
+import { eventManager } from "@/lib/realtime";
+import { WalletUpdatePayload, TransactionUpdatePayload, WayaEvent } from "@/lib/realtime/types";
 
 interface ActivityRow {
     id: string;
@@ -130,6 +132,72 @@ const AppTable = memo(() => {
     useEffect(() => {
         fetchActivities();
     }, [fetchActivities]);
+
+    // Set up real-time transaction updates subscription
+    useEffect(() => {
+        if (!session?.user?.accessToken) return;
+
+        const handleWalletUpdate = async (event: WayaEvent<WalletUpdatePayload>) => {
+            console.log('AppTable: Received wallet update event:', event);
+            const { payload } = event;
+
+            // When a wallet transaction occurs (ADD_FUNDS or MAKE_PAYMENT), create a transaction record
+            if (payload.action === "ADD_FUNDS" || payload.action === "MAKE_PAYMENT") {
+                try {
+                    // Create a new transaction record for real-time display
+                    const newTransaction = {
+                        id: payload.transactionId || `temp-${Date.now()}`,
+                        name: payload.action === "ADD_FUNDS" ? "Family Wallet" : "Payment to Child",
+                        activity: payload.action === "ADD_FUNDS" ? "Wallet Top-up" : "Payment Transfer",
+                        amount: payload.amount || 0,
+                        status: "completed" as const,
+                        date: new Date().toISOString()
+                    };
+
+                    // Add the new transaction to the top of the list
+                    setActivities(prev => [newTransaction, ...prev]);
+                } catch (error) {
+                    console.error('Error creating real-time transaction:', error);
+                }
+            }
+        };
+
+        const handleTransactionUpdate = (event: WayaEvent<TransactionUpdatePayload>) => {
+            console.log('AppTable: Received transaction update event:', event);
+            const { payload } = event;
+
+            setActivities(prev => {
+                switch (payload.action) {
+                    case "CREATE":
+                        if (payload.transaction) {
+                            const formattedTransaction = formatTransactionForDisplay(payload.transaction);
+                            return [formattedTransaction, ...prev];
+                        }
+                        break;
+                    case "UPDATE":
+                        if (payload.transaction && payload.transactionId) {
+                            return prev.map(activity =>
+                                activity.id === payload.transactionId
+                                    ? { ...activity, ...formatTransactionForDisplay(payload.transaction) }
+                                    : activity
+                            );
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                return prev;
+            });
+        };
+
+        const unsubscribeWallet = eventManager.subscribe('WALLET_UPDATE', handleWalletUpdate);
+        const unsubscribeTransaction = eventManager.subscribe('TRANSACTION_UPDATE', handleTransactionUpdate);
+
+        return () => {
+            unsubscribeWallet();
+            unsubscribeTransaction();
+        };
+    }, [session?.user?.accessToken]);
 
     const indexOfLastActivity = currentPage * itemsPerPage;
     const indexOfFirstActivity = indexOfLastActivity - itemsPerPage;
