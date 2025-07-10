@@ -5,13 +5,16 @@ import { Button } from "@/components/ui/button";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { useRouter, useSearchParams } from "next/navigation";
 
+// Update VerifyEmailFormProps to accept 'verified'
 interface VerifyEmailFormProps {
   email?: string;
   token?: string;
   uidb64?: string;
+  onStatusChange?: (status: string) => void;
+  verified?: boolean;
 }
 
-export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) {
+export function VerifyEmailForm({ email, token, uidb64, onStatusChange, verified }: VerifyEmailFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<"loading" | "success" | "error" | "waiting">("loading");
@@ -20,16 +23,26 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
   // Allow for the parameters to come from URL search params if not provided as props
   const emailParam = email || searchParams.get('email') || '';
   const tokenParam = token || searchParams.get('token') || '';
-  const uidb64Param = uidb64 || searchParams.get('uidb64') || ''; useEffect(() => {
+  const uidb64Param = uidb64 || searchParams.get('uidb64') || '';
+
+  useEffect(() => {
+    if (verified) {
+      setStatus("success");
+      if (onStatusChange) onStatusChange("success");
+      return;
+    }
     const verifyToken = async () => {
       console.log('VerifyEmailForm mounted with:', { email: emailParam, token: tokenParam, uidb64: uidb64Param });
 
       try {
-        // If we don't have token and uidb64, this means user came from signup redirect
-        // Show waiting state for them to check email
-        if (!tokenParam || !uidb64Param) {
-          console.log('Missing token or uidb64, showing waiting state for user to check email');
+        if (emailParam && !tokenParam && !uidb64Param) {
           setStatus("waiting");
+          if (onStatusChange) onStatusChange("waiting");
+          return;
+        }
+        if (!tokenParam || !uidb64Param) {
+          setStatus("waiting");
+          if (onStatusChange) onStatusChange("waiting");
           return;
         }
 
@@ -45,9 +58,9 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
 
         console.log('Email verification completed successfully!');
         setStatus("success");
-        return; console.log('Email verification completed successfully!');
-        setStatus("success");
-        return;
+        if (onStatusChange) onStatusChange("success");
+        return; 
+        
 
         /* 
         // COMMENTED OUT: Backend API code (kept for when backend is fixed)
@@ -106,14 +119,14 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
         
         throw new Error(errorMessage);
         */      } catch (error) {
-        console.error('Email verification error:', error);
         setStatus("error");
+        if (onStatusChange) onStatusChange("error");
         setError(error instanceof Error ? error.message : "Failed to verify email");
       }
     };
 
     verifyToken();
-  }, [emailParam, tokenParam, uidb64Param]);
+  }, [emailParam, tokenParam, uidb64Param, onStatusChange, verified]);
 
   const handleResendEmail = async () => {
     try {
@@ -141,6 +154,21 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
   };
   // Mask email for privacy - handle case when email is missing
   const maskedEmail = emailParam ? emailParam.replace(/(.{2})(.*)(@.*)/, "$1***$3") : "your email";
+
+  if (verified) {
+    return (
+      <div className="flex flex-col items-center justify-center space-y-4">
+        <div className="rounded-full bg-green-100 p-3">
+          <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold">Email Verified!</h2>
+        <p className="text-center text-gray-600">Your email has been successfully verified. You can now log in to your account.</p>
+        <Button onClick={() => { if (onStatusChange) onStatusChange("success"); window.location.href = "/auth/signin"; }} className="w-full">Go to Login</Button>
+      </div>
+    );
+  }
 
   if (status === "loading") {
     return (
@@ -256,4 +284,4 @@ export function VerifyEmailForm({ email, token, uidb64 }: VerifyEmailFormProps) 
   return null;
 }
 
-export default VerifyEmailForm; 
+export default VerifyEmailForm;
