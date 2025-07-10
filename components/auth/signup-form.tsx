@@ -20,6 +20,7 @@ import Link from "next/link"
 import { Checkbox } from "../ui/checkbox"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { parseSignupErrorEnhanced } from "@/lib/utils/auth-errors"
+import { sendVerificationEmail } from '@/lib/utils/sendVerificationEmail';
 
 type SignUpFormValues = z.infer<typeof SignUpSchema>;
 
@@ -100,6 +101,18 @@ const SignUpForm = () => {
             // Get verification data from the response
             const userData = result?.data || result || {};
             const email = ('email' in userData ? userData.email : undefined) || values.email;
+            const fullName = values.fullName;
+            // Check for verification token and uidb64
+
+
+            // Simulate verification email for user experience
+            const verification_link = `${window.location.origin}/auth/verify-email?email=${encodeURIComponent(email)}&verified=1`;
+            try {
+                await sendVerificationEmail({ email, fullName, verification_link });
+                console.log('Simulated verification email sent via EmailJS:', { email, fullName, verification_link });
+            } catch (emailError) {
+                console.error('Failed to send simulated verification email via EmailJS:', emailError);
+            }
 
             // Check if we have a success message from the backend
             const successMessage = ('message' in userData ? userData.message : undefined) || "Account created successfully! Please verify your email.";
