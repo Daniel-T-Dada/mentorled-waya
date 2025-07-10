@@ -16,6 +16,8 @@ import { useSession } from "next-auth/react";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { transformTasksFromBackend, BackendTask } from '@/lib/utils/taskTransforms';
 import { formatNaira } from '@/lib/utils/currency';
+import { eventManager } from "@/lib/realtime";
+import { WalletUpdatePayload, WayaEvent } from "@/lib/realtime/types";
 
 // Type for paginated API responses
 interface PaginatedResponse<T> {
@@ -256,6 +258,37 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
         fetchAllChores();
     }, [session?.user?.id, session?.user?.accessToken, refreshTrigger]);
 
+    // Set up real-time wallet updates subscription
+    useEffect(() => {
+        if (!session?.user?.id) return;
+
+        const handleWalletUpdate = (event: WayaEvent<WalletUpdatePayload>) => {
+            console.log('AppKidsManagement: Received wallet update event:', event);
+            const { payload } = event;
+
+            // Update child wallet balances in real-time
+            if (payload.action === "MAKE_PAYMENT" && payload.kidId && payload.kidNewBalance !== undefined) {
+                // Find the kid by ID and update their wallet balance
+                const kid = kids.find(k => k.id === payload.kidId);
+                if (kid) {
+                    setChildWallets(prev => ({
+                        ...prev,
+                        [kid.username]: {
+                            ...prev[kid.username],
+                            balance: payload.kidNewBalance || 0
+                        }
+                    }));
+                }
+            }
+        };
+
+        const unsubscribe = eventManager.subscribe('WALLET_UPDATE', handleWalletUpdate);
+
+        return () => {
+            unsubscribe();
+        };
+    }, [session?.user?.id, kids]);
+
     // Debug logging
     console.log('AppKidsManagement - Debug:', {
         kids: kids,
@@ -377,7 +410,8 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                     ) : processedKids.length === 0 ? (
                         <EmptyState onCreateKidClick={onCreateKidClick} />
                     ) : (
-                        <div className="space-y-4 pr-4">                                            {/* Desktop: Show 2 kids per page with pagination */}
+                        <div className="space-y-4 pr-4">
+                            {/* Desktop: Show 2 kids per page with pagination */}
                             <div className="hidden xl:block">
                                 {currentKids.map(kid => (
                                     <div key={kid.id} className="border rounded-md p-4 mb-6">
@@ -419,7 +453,9 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                                         {/* Action Buttons - Only show on TaskMaster page */}
                                         {isTaskMasterPage && (
                                             <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                                                <Link href={`/dashboard/parents/kids/${kid.id}`} className="flex-1">
+                                                <Link href="#"
+                                                    // <Link href={`/dashboard/parents/kids/${kid.id}`} // Uncomment when design is ready
+                                                    className="flex-1">
                                                     <Button variant="outline" className="w-full"><Users className="mr-2 h-4 w-4" /> View Profile</Button>
                                                 </Link>
                                                 <Button

@@ -11,6 +11,8 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
+import { eventManager } from "@/lib/realtime";
+import { WalletUpdatePayload, TransactionUpdatePayload, WayaEvent } from "@/lib/realtime/types";
 
 
 interface Transaction {
@@ -124,6 +126,39 @@ const FamilyWalletPage = () => {
         }
     }, [session, fetchWalletData, fetchTransactions, fetchNotifications]);
 
+    // Set up real-time transaction and wallet updates subscription
+    useEffect(() => {
+        if (!session?.user?.id) return;
+
+        const handleWalletUpdate = (event: WayaEvent<WalletUpdatePayload>) => {
+            console.log('FamilyWalletPage: Received wallet update event:', event);
+            // Refresh wallet data when wallet updates occur
+            fetchWalletData();
+        };
+
+        const handleTransactionUpdate = (event: WayaEvent<TransactionUpdatePayload>) => {
+            console.log('FamilyWalletPage: Received transaction update event:', event);
+            const { payload } = event;
+
+            if (payload.action === "CREATE" && payload.transaction) {
+                // Add new transaction to the top of the list
+                setTransactions(prev => [payload.transaction, ...prev]);
+            } else {
+                // For other actions, refresh transactions
+                fetchTransactions();
+            }
+        };
+
+        // Subscribe to both wallet and transaction events
+        const unsubscribeWallet = eventManager.subscribe('WALLET_UPDATE', handleWalletUpdate);
+        const unsubscribeTransaction = eventManager.subscribe('TRANSACTION_UPDATE', handleTransactionUpdate);
+
+        return () => {
+            unsubscribeWallet();
+            unsubscribeTransaction();
+        };
+    }, [session?.user?.id, fetchWalletData, fetchTransactions]);
+
 
     return (
         <div>
@@ -135,16 +170,16 @@ const FamilyWalletPage = () => {
                 isOpen={isMakePaymentOpen}
                 onClose={() => setIsMakePaymentOpen(false)}
                 onSuccess={() => {
-                    fetchWalletData();
-                    fetchTransactions();
+                    // Real-time updates will handle data refresh automatically
+                    console.log('Payment completed - real-time updates will handle refresh');
                 }}
             />
             <AddFunds
                 isOpen={isAddFundsOpen}
                 onClose={() => setIsAddFundsOpen(false)}
                 onSuccess={() => {
-                    fetchWalletData();
-                    fetchTransactions();
+                    // Real-time updates will handle data refresh automatically
+                    console.log('Funds added - real-time updates will handle refresh');
                 }}
             />
         </div>
