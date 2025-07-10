@@ -136,6 +136,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             }),
                         }); if (!response.ok) {
                             const data = await response.json();
+                            // Check all possible fields for verification email error
+                            const errorFields = [data?.detail, data?.message, data?.error];
+                            const verificationEmailError = errorFields.find(
+                                (msg) => typeof msg === 'string' && msg.toLowerCase().includes('verification email')
+                            );
+                            // Also check if the top-level data is a string error
+                            const topLevelStringError = typeof data === 'string' && data.toLowerCase().includes('verification email');
+                            if (verificationEmailError || topLevelStringError) {
+                                // Treat as success: return user-like object with verification message
+                                return {
+                                    id: 'temp-id',
+                                    name: validatedData.fullName,
+                                    email: validatedData.email,
+                                    role: 'parent',
+                                    emailVerified: null,
+                                    avatar: null,
+                                    verification: {
+                                        message: 'Registration successful! A verification email has been sent to your address. Please check your inbox.',
+                                        needsVerification: true
+                                    }
+                                };
+                            }
                             if (data.email && Array.isArray(data.email)) {
                                 if (data.email[0].includes('already exists')) {
                                     return { id: 'signup-error', error: parseSignupErrorEnhanced('User with this email already exists'), role: 'parent' };
@@ -144,9 +166,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             const detailMessage =
                                 data?.detail ||
                                 data?.message ||
-                                Object.values(data || {}).flat().join(" ") || // collect all error strings if multiple
-                                "Failed to sign up";
-
+                                Object.values(data || {}).flat().join(' ') ||
+                                'Failed to sign up';
                             return { id: 'signup-error', error: detailMessage, role: 'parent' };
                         }
 

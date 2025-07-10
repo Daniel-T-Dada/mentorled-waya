@@ -10,6 +10,7 @@ export default function VerifyEmailPage() {
     const email = searchParams.get('email') || ''
     const token = searchParams.get('token') || ''
     const uidb64 = searchParams.get('uidb64') || ''
+    const verified = searchParams.get('verified') === '1'
     const { data: session } = useSession()
     const [verificationData, setVerificationData] = useState<{
         email: string;
@@ -17,9 +18,10 @@ export default function VerifyEmailPage() {
         uidb64: string;
     } | null>(null)
     const [showHeader, setShowHeader] = useState(true)
+    const [status, setStatus] = useState<string>("")
 
     console.log('VerifyEmailPage received URL parameters:', { email, token, uidb64 })
-    
+
     // Handle verification data from query params first (highest priority)
     useEffect(() => {
         // If we have token and uidb64, prioritize them (user clicked email link)
@@ -53,18 +55,25 @@ export default function VerifyEmailPage() {
                 })
                 return
             }
-        }        
+        }
         // Keep existing verification data or set to null if no data is available
     }, [email, token, uidb64, session])
 
-    // Hide header when user clicked email link (has token and uidb64)
+    // Hide header when user clicked email link (has token and uidb64) or when verified=1
     useEffect(() => {
-        if ((token && uidb64) || (verificationData?.token && verificationData?.uidb64)) {
+        if (verified || (token && uidb64) || (verificationData?.token && verificationData?.uidb64)) {
             setShowHeader(false)
         } else {
             setShowHeader(true)
         }
-    }, [token, uidb64, verificationData])
+    }, [token, uidb64, verificationData, verified])
+
+    // Set status to 'success' if verified=1 in URL
+    useEffect(() => {
+        if (verified) {
+            setStatus('success')
+        }
+    }, [verified])
 
     const hasVerificationParams = !!(email || token || uidb64 || verificationData)
 
@@ -86,7 +95,7 @@ export default function VerifyEmailPage() {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4">
             <div className="w-full max-w-md space-y-8">
-                {showHeader && (
+                {showHeader && !verified && status !== "success" && (
                     <div className="text-center">
                         <h1 className="text-2xl font-bold">Verify Your Email</h1>
                         <p className="mt-2 text-gray-600">
@@ -98,6 +107,8 @@ export default function VerifyEmailPage() {
                     email={verificationData?.email || email}
                     token={verificationData?.token || token}
                     uidb64={verificationData?.uidb64 || uidb64}
+                    onStatusChange={setStatus}
+                    verified={verified}
                 />
             </div>
         </div>
