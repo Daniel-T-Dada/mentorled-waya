@@ -4,16 +4,16 @@ import KidStatCards from '@/components/dashboard/kid/KidStatCards';
 import KidBarChartLazy from '@/components/lazy/charts/KidBarChartLazy';
 import KidPieChart from '@/components/dashboard/kid/KidPieChart';
 import RecentActivities from '@/components/dashboard/kid/RecentActivities';
-import { useSession } from 'next-auth/react';
+// import { useSession } from 'next-auth/react';
 
 const EarningMeterPage = () => {
-    const { data: session } = useSession();
-    const sessionKidId = session?.user?.id;
-    const validKidIds = ['kid-001', 'kid-002', 'kid-003', 'kid-004'];
-    let kidId = 'kid-001';
-    if (sessionKidId && validKidIds.includes(sessionKidId)) {
-        kidId = sessionKidId;
-    }
+    // const { data: session } = useSession();
+    // const sessionKidId = session?.user?.id;
+    // const validKidIds = ['kid-001', 'kid-002', 'kid-003', 'kid-004'];
+    // let kidId = 'kid-001';
+    // if (sessionKidId && validKidIds.includes(sessionKidId)) {
+    //     kidId = sessionKidId;
+    // }
 
     return (
         <main>
@@ -23,12 +23,13 @@ const EarningMeterPage = () => {
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 <div className="lg:col-span-3">
-                    <KidStatCards kidId={kidId} section="earning-meter" />
+                    <KidStatCards section="earning-meter" />
                 </div>
                 <div className="lg:col-span-2">
-                    <KidBarChartLazy kidId={kidId} />
-                </div>                <div className="lg:col-span-1 self-start">
-                    <KidPieChart kidId={kidId} />
+                    <KidBarChartLazy/>
+                </div>                
+                <div className="lg:col-span-1 self-start">
+                    <KidPieChart />
                 </div>
             </div>
             <div className="mt-8">

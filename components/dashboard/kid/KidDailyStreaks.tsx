@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Flame, Gift, CheckCircle } from "lucide-react"
-import { MockApiService } from '@/lib/services/mockApiService'
+// ...existing code...
 
 interface DayStatus {
     day: string
@@ -28,91 +28,49 @@ const KidDailyStreaks = ({ kidId = 'kid-001' }: KidDailyStreaksProps) => {
     const [weeklyProgress, setWeeklyProgress] = useState<DayStatus[]>([])
     const [rewards, setRewards] = useState<RewardItem[]>([])
     const [isLoading, setIsLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+    // Removed unused error state
 
-    // Always use the prop kidId or fallback to 'kid-001' to ensure we use valid mock data
-    const validKidId = kidId || 'kid-001';
-
-    // Fetch data on component mount
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setIsLoading(true)
-                setError(null)
-
-                console.log('Fetching data for kidId:', validKidId); // Debug log
-
-                // Fetch daily streaks data
-                const dailyStreaksData = await MockApiService.fetchDailyStreaksByKidId(validKidId)
-                console.log('Daily streaks data received:', dailyStreaksData); // Debug log
-                setWeeklyProgress(dailyStreaksData.weeklyProgress || [])
-
-                // Fetch rewards data
-                const rewardsData = await MockApiService.fetchRewardsByKidId(validKidId)
-                console.log('Rewards data received:', rewardsData); // Debug log
-                setRewards(rewardsData || [])
-
-            } catch (err) {
-                console.error('Error fetching kid daily streaks data:', err)
-                setError(`Failed to load data: ${err instanceof Error ? err.message : 'Unknown error'}`)
-
-                // Fallback to default data if API fails
-                console.log('Using fallback data due to error')
-                setWeeklyProgress([
-                    { day: 'Mon', completed: true },
-                    { day: 'Tue', completed: true },
-                    { day: 'Wed', completed: true },
-                    { day: 'Thu', completed: false },
-                    { day: 'Fri', completed: false },
-                    { day: 'Sat', completed: false },
-                    { day: 'Sun', completed: false },
-                ])
-                setRewards([
-                    {
-                        id: '1',
-                        title: 'Clean your room',
-                        description: 'Make your bed, organize your wardrobe, clothes and toys',
-                        isRedeemed: false
-                    },
-                    {
-                        id: '2',
-                        title: 'Take out the trash',
-                        description: 'Empty all the trash can in the house.',
-                        isRedeemed: false
-                    },
-                    {
-                        id: '3',
-                        title: 'Wash the dishes',
-                        description: 'Wash all the dishes in the kitchen and put them away.',
-                        isRedeemed: false
-                    }
-                ])
-            } finally {
-                setIsLoading(false)
+        // Hardcoded placeholder data for weekly progress and rewards
+        setWeeklyProgress([
+            { day: 'Mon', completed: true },
+            { day: 'Tue', completed: true },
+            { day: 'Wed', completed: true },
+            { day: 'Thu', completed: false },
+            { day: 'Fri', completed: false },
+            { day: 'Sat', completed: false },
+            { day: 'Sun', completed: false },
+        ]);
+        setRewards([
+            {
+                id: '1',
+                title: 'Clean your room',
+                description: 'Make your bed, organize your wardrobe, clothes and toys',
+                isRedeemed: false
+            },
+            {
+                id: '2',
+                title: 'Take out the trash',
+                description: 'Empty all the trash can in the house.',
+                isRedeemed: false
+            },
+            {
+                id: '3',
+                title: 'Wash the dishes',
+                description: 'Wash all the dishes in the kitchen and put them away.',
+                isRedeemed: false
             }
-        }
+        ]);
+        setIsLoading(false);
+    }, [kidId]);
 
-        fetchData()
-    }, [validKidId])
-
-    const handleRedeem = async (rewardId: string) => {
-        try {
-            await MockApiService.updateRewardRedemption(validKidId, rewardId, true)
-            setRewards(prev => prev.map(reward =>
-                reward.id === rewardId
-                    ? { ...reward, isRedeemed: true }
-                    : reward
-            ))
-        } catch (err) {
-            console.error('Error redeeming reward:', err)
-            // Fallback to local state update if API fails
-            setRewards(prev => prev.map(reward =>
-                reward.id === rewardId
-                    ? { ...reward, isRedeemed: true }
-                    : reward
-            ))
-        }
-    }
+    const handleRedeem = (rewardId: string) => {
+        setRewards(prev => prev.map(reward =>
+            reward.id === rewardId
+                ? { ...reward, isRedeemed: true }
+                : reward
+        ));
+    };
 
     const completedDaysCount = weeklyProgress.filter(day => day.completed).length;
 
@@ -173,23 +131,7 @@ const KidDailyStreaks = ({ kidId = 'kid-001' }: KidDailyStreaksProps) => {
                 </Card>
             </div>
         )
-    } if (error) {
-        return (
-            <div className="space-y-4 sm:space-y-6">
-                <Card className="h-fit">
-                    <CardContent className="p-4 sm:p-6">
-                        <div className="flex flex-col items-center justify-center text-center space-y-2 sm:space-y-3">
-                            <div className="text-xs sm:text-sm text-destructive leading-relaxed max-w-sm">
-                                {error}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                                Please try refreshing the page
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        )
+        // ...existing code...
     } return (
         <div className="space-y-4 sm:space-y-6">
             {/* Daily Streaks Section */}

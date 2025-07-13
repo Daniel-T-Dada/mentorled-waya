@@ -60,10 +60,15 @@ interface StatItem {
 }
 
 interface AppStatCardProps {
-    kidId?: string; // Optional prop for kid-specific stats
+    kidId?: string;
+    insightStats?: {
+        total_chores_assigned: number;
+        total_completed_chores: number;
+        total_pending_chores: number;
+    } | null;
 }
 
-const AppStatCard = memo<AppStatCardProps>(({ kidId }: AppStatCardProps = {}) => {
+const AppStatCard = memo<AppStatCardProps>(({ kidId, insightStats }: AppStatCardProps = {}) => {
     const [chores, setChores] = useState<Task[]>([]);
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [choreSummary, setChoreSummary] = useState<ChoreSummary | null>(null);
@@ -394,10 +399,10 @@ const AppStatCard = memo<AppStatCardProps>(({ kidId }: AppStatCardProps = {}) =>
             ];
         }
 
-        // For other pages, use the existing logic with manual calculations
-        const totalChores = filteredChores.length;
-        const completedChores = filteredChores.filter(chore => chore.status === "completed").length;
-        const pendingChores = filteredChores.filter(chore => chore.status === "pending").length;
+        // // For other pages, use the existing logic with manual calculations
+        // const totalChores = filteredChores.length;
+        // const completedChores = filteredChores.filter(chore => chore.status === "completed").length;
+        // const pendingChores = filteredChores.filter(chore => chore.status === "pending").length;
 
         // Use wallet dashboard stats for wallet pages
         if (isWalletPage && walletStats) {
@@ -419,19 +424,19 @@ const AppStatCard = memo<AppStatCardProps>(({ kidId }: AppStatCardProps = {}) =>
         }
 
         // For insights pages
-        if (pathname.includes('/insights')) {
+        if (pathname.includes('/insights') && insightStats) {
             return [
                 {
                     title: 'Total Number of Chores Assigned',
-                    value: `${totalChores} Chores`,
+                    value: `${insightStats.total_chores_assigned} Chores`,
                 },
                 {
                     title: 'Total Number of Completed Chores',
-                    value: `${completedChores} Chores`,
+                    value: `${insightStats.total_completed_chores} Chores`,
                 },
                 {
                     title: 'Total Number of Pending Chores',
-                    value: `${pendingChores} Chores`,
+                    value: `${insightStats.total_pending_chores} Chores`,
                 },
             ];
         } else {
