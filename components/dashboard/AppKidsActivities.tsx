@@ -1,23 +1,16 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback, memo } from "react";
+import { useState, useMemo, memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import { Skeleton } from "../ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { useSession } from "next-auth/react";
-import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { ClipboardList } from 'lucide-react';
-import { Task, transformTasksFromBackend, BackendTask } from '@/lib/utils/taskTransforms';
-
-interface Kid {
-    id: string;
-    name: string;
-    avatar?: string | null;
-}
+import { Task } from '@/lib/utils/taskTransforms';
 
 interface AppKidsActivitiesProps {
     kidId?: string;
+    childActivities?: any[]; // Accept childActivities prop
 }
 
 const LoadingState = () => (
@@ -50,70 +43,33 @@ const InfoState = () => (
     </div>
 );
 
-const AppKidsActivities = memo<AppKidsActivitiesProps>(({ kidId }: AppKidsActivitiesProps = {}) => {
-    const [kids, setKids] = useState<Kid[]>([]);
-    const [activities, setActivities] = useState<Task[]>([]);
+const AppKidsActivities = memo<AppKidsActivitiesProps>(({ kidId, childActivities = [] }: AppKidsActivitiesProps = {}) => {
     const [activeKidTab, setActiveKidTab] = useState("all");
-    const [isLoading, setIsLoading] = useState(true);
-    const [needsRetry, setNeedsRetry] = useState(false);
-    const { data: session } = useSession();
+    const isLoading = !childActivities || childActivities.length === 0;
 
-    const fetchData = useCallback(async () => {
-        if (!session?.user?.id) {
-            setIsLoading(false);
-            return;
-        }
+    // Extract kids from childActivities
+    // Helper to capitalize first letter
+    const capitalize = (str: string) => str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
 
-        setIsLoading(true);
-        setNeedsRetry(false);
-        try {
-            const [kidsResponse, activitiesResponse] = await Promise.all([
-                fetch(getApiUrl(API_ENDPOINTS.LIST_CHILDREN), {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session.user.accessToken}`,
-                    },
-                }),
-                fetch(getApiUrl(API_ENDPOINTS.LIST_TASKS), {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session.user.accessToken}`,
-                    },
-                })
-            ]);
+    const kids = childActivities.map(child => ({
+        id: child.child_name,
+        name: capitalize(child.child_name),
+        avatar: null // If avatar is available in API, use it
+    }));
 
-            if (!kidsResponse.ok || !activitiesResponse.ok) {
-                throw new Error('Failed to fetch data');
-            }
-
-            const kidsData = await kidsResponse.json();
-            const activitiesData: BackendTask[] = await activitiesResponse.json();
-
-            if (!Array.isArray(kidsData) || !Array.isArray(activitiesData)) {
-                throw new Error('Invalid data format');
-            }
-
-            setKids(kidsData);
-            // Transform backend task data to frontend format
-            const transformedActivities = transformTasksFromBackend(activitiesData);
-            setActivities(transformedActivities);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            setNeedsRetry(true);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [session?.user?.id, session?.user?.accessToken, session]);
-
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+    // Flatten activities for easier filtering
+    const activities = childActivities.flatMap(child =>
+        child.activities.map((activity: Task) => ({
+            ...activity,
+            assignedTo: child.child_name,
+            total_earned: child.total_earned || 0
+        }))
+    );
 
     const filteredActivities = useMemo(() => {
         if (kidId) {
             return activities.filter(activity => activity.assignedTo === kidId);
         }
-
         if (activeKidTab === "all") {
             return activities;
         }
@@ -154,7 +110,8 @@ const AppKidsActivities = memo<AppKidsActivitiesProps>(({ kidId }: AppKidsActivi
             currency: 'NGN',
             maximumFractionDigits: 0
         });
-    }; const getStatusBadgeStyles = (status: Task['status']) => {
+    };
+    const getStatusBadgeStyles = (status: Task['status']) => {
         switch (status) {
             case 'completed':
                 return 'bg-green-100 text-green-800';
@@ -181,12 +138,12 @@ const AppKidsActivities = memo<AppKidsActivitiesProps>(({ kidId }: AppKidsActivi
         );
     }
 
-    if (needsRetry || (activities.length === 0 && kids.length === 0)) {
+    if (activities.length === 0 && kids.length === 0) {
         return (
             <Card className="w-full">
                 <CardHeader>
                     <CardTitle>Kid&apos;s Activities</CardTitle>
-                    <CardDescription>View and manage activities for each kid.</CardDescription>
+
                 </CardHeader>
                 <CardContent>
                     <InfoState />
@@ -200,7 +157,7 @@ const AppKidsActivities = memo<AppKidsActivitiesProps>(({ kidId }: AppKidsActivi
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle>
-                        {kidId ? `${kids.find(k => k.id === kidId)?.name || 'Kid'}&apos;s Activities` : "Kid&apos;s Activities"}
+                        {kidId ? `${kids.find(k => k.id === kidId)?.name || 'Kid'}&apos;s Activities` : "Kid's Activities"}
                     </CardTitle>
                 </div>
                 <CardDescription>
@@ -226,8 +183,8 @@ const AppKidsActivities = memo<AppKidsActivitiesProps>(({ kidId }: AppKidsActivi
                                         <Card key={activity.id} className="p-4">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex flex-col">
-                                                    <h3 className="font-medium">{activity.title}</h3>
-                                                    <p className="text-sm text-muted-foreground mt-1">{activity.description}</p>
+                                                    <h3 className="font-medium">{activity.chore_title || activity.title}</h3>
+                                                    <p className="text-sm text-muted-foreground mt-1">{activity.description || 'No description provided.'}</p>
                                                 </div>
                                                 <div className="text-sm font-semibold">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeStyles(activity.status)}`}>
@@ -300,4 +257,4 @@ const AppKidsActivities = memo<AppKidsActivitiesProps>(({ kidId }: AppKidsActivi
 
 AppKidsActivities.displayName = 'AppKidsActivities';
 
-export default AppKidsActivities; 
+export default AppKidsActivities;

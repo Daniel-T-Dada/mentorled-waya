@@ -99,7 +99,7 @@ export const API_ENDPOINTS = {
     WALLET_MAKE_PAYMENT: '/api/familywallet/wallet/make_payment/',
 
     // Insight Tracker endpoints
-    INSIGHT_DASHBOARD: '/api/insighttracker/dashboard/',
+    // INSIGHT_DASHBOARD: '/api/insighttracker/dashboard/',
     INSIGHT_CHORES: '/api/insighttracker/chores/insights/',
 
     // MoneyMaze (Educational) endpoints
@@ -121,6 +121,10 @@ export const API_ENDPOINTS = {
     CHOREQUEST_CHORES: '/api/chorequest/chores/',
     CHOREQUEST_CHORE_STATUS: '/api/chorequest/chores/:choreId/status/',
     CHOREQUEST_CHORE_REDEEM: '/api/chorequest/chores/:choreId/redeem/',
+
+    // Goal Getter (Child Interface) endpoints
+    GOAL_GETTER: '/api/goalgetter/goals/',
+    CHILD_BAR_CHART: '/api/goalgetter/children/:childId/bar_chart/',
 
     // Notifications endpoints
     NOTIFICATIONS_LIST: '/api/parents/notifications/',
@@ -211,6 +215,13 @@ export const WalletEndpoints = {
 };
 
 /**
+ * Insight Tracker specific endpoint helpers
+ */
+export const InsightTrackerEndpoints = {
+    getChoresInsights: () => buildApiUrl(API_ENDPOINTS.INSIGHT_CHORES),
+};
+
+/**
  * Cache management utilities
  */
 export const CacheUtils = {
@@ -269,7 +280,7 @@ export const authFetch = async (url: string, options: RequestInit = {}) => {
             'accept': 'application/json',
             'Content-Type': 'application/json',
             'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
+            // 'Pragma': 'no-cache',
             ...options.headers,
         },
         cache: 'no-store',

@@ -4,106 +4,29 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Zap, Target } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { MockApiService } from "@/lib/services/mockApiService";
-import { mockDataService } from "@/lib/services/mockDataService";
-import { useState, useEffect, memo } from "react";
+import { memo } from "react";
 
 interface KidStatCardsProps {
     kidId?: string;
     section?: 'overview' | 'chore' | 'money-maze' | 'goal-getter' | 'earning-meter';
 }
 
-const KidStatCards = memo<KidStatCardsProps>(({ kidId: propKidId, section = 'overview' }) => {
-    const { data: session } = useSession();
-    const [kid, setKid] = useState<any>(null);
-    const [kidChores, setKidChores] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    // Get kid data - prioritize prop, then session, then fallback
-    // Ensure we use a valid kidId that exists in our mock data
-    const sessionKidId = session?.user?.id;
-    const validKidIds = ['kid-001', 'kid-002', 'kid-003', 'kid-004'];
-
-    let kidId = propKidId || "kid-001";
-
-    // If we have a session kid ID, check if it's valid, otherwise use fallback
-    if (sessionKidId && validKidIds.includes(sessionKidId)) {
-        kidId = sessionKidId;
-    } else if (sessionKidId && !propKidId) {
-        console.log(`KidStatCards - Session kidId "${sessionKidId}" not found in mock data, using fallback: kid-001`);
-    }
-
-    useEffect(() => {
-        const fetchKidData = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-
-                // Try to fetch from API first
-                try {
-                    const [kidData, choresData] = await Promise.all([
-                        MockApiService.fetchKidById(kidId),
-                        MockApiService.fetchChoresByKidId(kidId)
-                    ]);
-
-                    setKid(kidData);
-                    setKidChores(choresData);
-                } catch (apiError) {
-                    console.log('API fetch failed, falling back to direct mock data service:', apiError);
-
-                    // Fallback to direct mock data service
-                    const kidData = mockDataService.getKidById(kidId) || mockDataService.getParent().children[0];
-                    const choresData = mockDataService.getChoresByKidId(kidData.id);
-
-                    setKid(kidData);
-                    setKidChores(choresData);
-                }
-            } catch (err) {
-                console.error('Error fetching kid data:', err);
-                setError('Failed to load kid data');
-
-                // Last resort fallback
-                const fallbackKid = mockDataService.getParent().children[0];
-                setKid(fallbackKid);
-                setKidChores([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchKidData();
-    }, [kidId]);
-
-    if (loading) {
-        return (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {[1, 2, 3].map((i) => (
-                    <Card key={i} className="border-2 animate-pulse">
-                        <CardHeader className="pb-3">
-                            <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-        );
-    }
-
-    if (error || !kid) {
-        return (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="border-2 border-red-200">
-                    <CardContent className="p-6">
-                        <p className="text-red-600">Error loading data: {error || 'Kid not found'}</p>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
+const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview' }) => {
+    // Hardcoded kid and chores data
+    // ...existing code...
+    const kidChores = [
+        { id: 'c1', title: 'Sweep the living room', status: 'completed', reward: 500 },
+        { id: 'c2', title: 'Do homework', status: 'completed', reward: 700 },
+        { id: 'c3', title: 'Take out trash', status: 'pending', reward: 0 },
+        { id: 'c4', title: 'Wash dishes', status: 'completed', reward: 600 },
+        { id: 'c5', title: 'Feed the dog', status: 'completed', reward: 400 },
+    ];
+    // Hardcoded goals data
+    const goals = [
+        { id: 'g1', title: 'Buy a book', status: 'active', currentAmount: 1200 },
+        { id: 'g2', title: 'New shoes', status: 'completed', currentAmount: 3000 },
+        { id: 'g3', title: 'School bag', status: 'active', currentAmount: 800 },
+    ];
 
     // Calculate stats
     const completedChores = kidChores.filter(chore => chore.status === 'completed').length;
@@ -125,8 +48,7 @@ const KidStatCards = memo<KidStatCardsProps>(({ kidId: propKidId, section = 'ove
     // Get stats based on section
     const getStatCards = () => {
         if (section === 'goal-getter') {
-            // Mock goal data - in a real app, this would be fetched
-            const goals = mockDataService.getGoalsByKidId(kidId);
+            // Use hardcoded goals data
             const activeGoals = goals.filter(goal => goal.status === "active").length;
             const completedGoals = goals.filter(goal => goal.status === "completed").length;
             const totalSaved = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
