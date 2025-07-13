@@ -13,17 +13,17 @@ const KidDashboardOverview = dynamic(
     }
 );
 
-interface KidDashboardLazyProps {
-    kidId?: string;
-    refreshTrigger?: number;
-}
+// interface KidDashboardLazyProps {
+//     kidId?: string;
+//     refreshTrigger?: number;
+// }
 
-export const KidDashboardLazy = ({ kidId, refreshTrigger }: KidDashboardLazyProps) => {
+export const KidDashboardLazy = () => {
     return (
         <Suspense fallback={<KidDashboardSkeleton />}>
             <KidDashboardOverview
-                kidId={kidId}
-                refreshTrigger={refreshTrigger}
+                // kidId={kidId}
+                // refreshTrigger={refreshTrigger}
             />
         </Suspense>
     );

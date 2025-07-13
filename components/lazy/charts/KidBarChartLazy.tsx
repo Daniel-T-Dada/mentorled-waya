@@ -5,14 +5,14 @@ import KidBarChartSkeleton from '../skeletons/KidBarChartSkeleton';
 
 const KidBarChart = lazy(() => import('../../dashboard/kid/KidBarChart'));
 
-interface KidBarChartLazyProps {
-    kidId?: string;
-}
+// interface KidBarChartLazyProps {
+//     kidId?: string;
+// }
 
-const KidBarChartLazy = ({ kidId }: KidBarChartLazyProps) => {
+const KidBarChartLazy = () => {
     return (
         <Suspense fallback={<KidBarChartSkeleton />}>
-            <KidBarChart kidId={kidId} />
+            <KidBarChart />
         </Suspense>
     );
 };

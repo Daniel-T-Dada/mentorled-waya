@@ -104,7 +104,7 @@ export default function APIDebugger() {
         {
             category: 'Insights',
             endpoints: [
-                { name: 'Insight Dashboard', endpoint: API_ENDPOINTS.INSIGHT_DASHBOARD, method: 'GET' },
+                { name: 'Insight Dashboard', endpoint: API_ENDPOINTS.INSIGHT_CHORES, method: 'GET' },
             ]
         },
         {

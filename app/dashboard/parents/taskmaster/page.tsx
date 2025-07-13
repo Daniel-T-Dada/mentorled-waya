@@ -67,7 +67,8 @@ const TaskMasterPage = () => {
         setTimeout(fetchChores, 600);
         setSelectedKid("");
     }; return (
-        <div className="">            <TaskMasterDashboard
+        <div className="">            
+        <TaskMasterDashboard
             onCreateChoreClick={handleCreateChore}
             onAssignChore={handleAssignChore}
             refreshTrigger={refreshTrigger}
