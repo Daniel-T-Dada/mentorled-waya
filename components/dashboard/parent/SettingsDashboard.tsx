@@ -1,8 +1,6 @@
 'use client'
 
-import AppAccountSettings from "../AppAccountSettings"
-import AppNotificationSettings from "../AppNotificationSettings"
-import AppRewardSettings from "../AppRewardSettings"
+// Removed unused imports
 
 import {
     Tabs,
@@ -18,6 +16,7 @@ interface SettingsDashboardProps {
     notificationSettings?: React.ReactNode;
     rewardSettings?: React.ReactNode;
 }
+
 
 const SettingsCardSkeleton = () => {
     return (
@@ -98,9 +97,9 @@ const SettingsPageSkeleton = () => {
 }
 
 const SettingsDashboard = ({
-    accountSettings = <AppAccountSettings />,
-    notificationSettings = <AppNotificationSettings />,
-    rewardSettings = <AppRewardSettings />
+    accountSettings,
+    notificationSettings,
+    rewardSettings
 }: SettingsDashboardProps) => {
     const [loading, setLoading] = useState(true)
 
@@ -108,7 +107,7 @@ const SettingsDashboard = ({
         // Simulate loading delay
         const timer = setTimeout(() => {
             setLoading(false)
-        }, 1500)
+        }, )
 
         return () => clearTimeout(timer)
     }, [])
@@ -134,6 +133,7 @@ const SettingsDashboard = ({
 
                     <TabsContent value="account">
                         {accountSettings}
+                        
                     </TabsContent>
 
                     <TabsContent value="notification">

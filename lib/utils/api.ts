@@ -37,15 +37,16 @@ export const API_ENDPOINTS = {
     // Authentication endpoints
     SIGNUP: '/api/users/register/',
     LOGIN: '/api/users/login/',
-    TOKEN_REFRESH: '/api/auth/token/refresh/', // Standard djangorestframework-simplejwt endpoint
-    VERIFY_EMAIL: '/api/users/email-verify/',
-    PASSWORD_RESET: '/api/users/password-reset/',
-    FORGOT_PASSWORD: '/api/users/forgot-password/',
+    TOKEN_REFRESH: '/api/auth/token/refresh/',
     PASSWORD_CHANGE: '/api/users/password-change/',
-    PASSWORD_RESET_CONFIRM: '/api/users/reset-password-confirm/',
-    HEALTH_CHECK: '/api/users/',
-    RESEND_VERIFICATION_EMAIL: '/api/users/resend-email/',
+    PASSWORD_RESET: '/api/users/password-reset/',
+    PASSWORD_RESET_CONFIRM: '/api/users/password-reset-confirm/:uidb64/:token/',
+    VERIFY_EMAIL: '/api/users/email-verify/',
+    FORGOT_PASSWORD: '/api/users/forgot-password/',
+    RESET_PASSWORD_CONFIRM: '/api/users/reset-password-confirm/',
     GOOGLE_SOCIAL_LOGIN: '/api/users/social-login/google/',
+    RESEND_VERIFICATION_EMAIL: '/api/users/resend-email/',
+    HEALTH_CHECK: '/api/users/',
 
     // Children endpoints
     CREATE_CHILD: '/api/children/create/',
@@ -55,26 +56,34 @@ export const API_ENDPOINTS = {
     DELETE_CHILD: '/api/children/:childId/delete/',
     CHILD_LOGIN: '/api/children/login/',
 
-    // Task/Chore endpoints - Updated to match latest backend
+    // Task/Chore endpoints
     CREATE_TASK: '/api/taskmaster/chores/create/',
     LIST_TASKS: '/api/taskmaster/chores/',
     TASK_DETAIL: '/api/taskmaster/chores/:taskId/',
     UPDATE_TASK: '/api/taskmaster/chores/:taskId/',
+    PATCH_TASK: '/api/taskmaster/chores/:taskId/',
+    DELETE_TASK: '/api/taskmaster/chores/:taskId/delete/',
     UPDATE_TASK_STATUS: '/api/taskmaster/chores/:taskId/status/',
-    DELETE_TASK: '/api/taskmaster/chores/:taskId/',
     CHORE_SUMMARY: '/api/taskmaster/chores/summary/',
 
     // Child Task endpoints (for children to view and update their own tasks)
     CHILD_CHORES: '/api/taskmaster/children/chores/',
     CHILD_CHORE_STATUS: '/api/taskmaster/children/chores/:taskId/status/',
 
-    // Family Wallet endpoints - Updated to match latest backend structure
+    // Family Wallet endpoints
     WALLET: '/api/familywallet/wallet/',
     WALLET_DASHBOARD_STATS: '/api/familywallet/wallet/dashboard_stats/',
     WALLET_ADD_FUNDS: '/api/familywallet/wallet/add_funds/',
     WALLET_EARNINGS_CHART: '/api/familywallet/wallet/earnings_chart_data/',
     WALLET_SAVINGS_BREAKDOWN: '/api/familywallet/wallet/savings_breakdown/',
+    WALLET_SUMMARY: '/api/familywallet/wallet/wallet_summary/',
     WALLET_TRANSFER: '/api/familywallet/wallet/transfer/',
+    WALLET_REWARD_BAR_CHART: '/api/familywallet/wallet/reward_bar_chart/',
+    WALLET_REWARD_PIE_CHART: '/api/familywallet/wallet/reward_pie_chart/',
+    WALLET_SET_PIN: '/api/familywallet/wallet/set_pin/',
+    WALLET_MAKE_PAYMENT: '/api/familywallet/wallet/make_payment/',
+    
+    // Child Wallet endpoints
     CHILDREN_WALLETS: '/api/familywallet/child-wallets/',
     CHILDREN_WALLETS_ANALYSIS: '/api/familywallet/child-wallets/analysis/',
 
@@ -90,16 +99,11 @@ export const API_ENDPOINTS = {
     CREATE_ALLOWANCE: '/api/familywallet/allowances/',
     ALLOWANCES: '/api/familywallet/allowances/',
     ALLOWANCE_DETAIL: '/api/familywallet/allowances/:allowanceId/',
-
-    // Additional Family Wallet endpoints
-    WALLET_SUMMARY: '/api/familywallet/wallet/wallet_summary/',
-    WALLET_REWARD_BAR_CHART: '/api/familywallet/wallet/reward_bar_chart/',
-    WALLET_REWARD_PIE_CHART: '/api/familywallet/wallet/reward_pie_chart/',
-    WALLET_SET_PIN: '/api/familywallet/wallet/set_pin/',
-    WALLET_MAKE_PAYMENT: '/api/familywallet/wallet/make_payment/',
-
+    UPDATE_ALLOWANCE: '/api/familywallet/allowances/:allowanceId/',
+    PATCH_ALLOWANCE: '/api/familywallet/allowances/:allowanceId/',
+    DELETE_ALLOWANCE: '/api/familywallet/allowances/:allowanceId/',
+    
     // Insight Tracker endpoints
-    // INSIGHT_DASHBOARD: '/api/insighttracker/dashboard/',
     INSIGHT_CHORES: '/api/insighttracker/chores/insights/',
 
     // MoneyMaze (Educational) endpoints
@@ -124,8 +128,16 @@ export const API_ENDPOINTS = {
 
     // Goal Getter (Child Interface) endpoints
     GOAL_GETTER: '/api/goalgetter/goals/',
+    GOALGETTER_PROGRESS: '/api/goalgetter/progress/',
+    GOALGETTER_LEADERBOARD: '/api/goalgetter/leaderboard/',
+    GOALGETTER_REWARDS: '/api/goalgetter/rewards/',
     CHILD_BAR_CHART: '/api/goalgetter/children/:childId/bar_chart/',
 
+    // Leaderboard endpoints
+    LEADERBOARD: '/api/leaderboard/',
+    LEADERBOARD_CHILD: '/api/leaderboard/children/:childId/',
+    LEADERBOARD_FAMILY: '/api/leaderboard/family/',
+    
     // Notifications endpoints
     NOTIFICATIONS_LIST: '/api/parents/notifications/',
     NOTIFICATIONS_PROFILE: '/api/parents/notifications/profile/',
@@ -133,14 +145,12 @@ export const API_ENDPOINTS = {
     NOTIFICATIONS_RESET_PASSWORD: '/api/parents/notifications/reset-password/',
     NOTIFICATIONS_REWARDS: '/api/parents/notifications/rewards/',
     NOTIFICATIONS_MARK_READ: '/api/parents/notifications/:notificationId/read/',
-
-    // Settings endpoints (Note: Currently not accessible - requires URL config update)
+    // Settings endpoints (settings_waya)
     USER_PROFILE: '/api/settings_waya/profile/',
-    CHILD_PROFILE: '/api/settings_waya/children/:childId/profile/', // Note: Backend uses <int:child_id>
-    SETTINGS_RESET_PASSWORD: '/api/settings_waya/reset-password/',
+    CHILD_PROFILE: '/api/settings_waya/children/:childId/',
+    SETTINGS_RESET_PASSWORD: '/api/settings_waya/password-reset/',
     NOTIFICATION_SETTINGS: '/api/settings_waya/notification-settings/',
     REWARD_SETTINGS: '/api/settings_waya/reward-settings/',
-
 } as const;
 
 /**
@@ -220,6 +230,17 @@ export const WalletEndpoints = {
 export const InsightTrackerEndpoints = {
     getChoresInsights: () => buildApiUrl(API_ENDPOINTS.INSIGHT_CHORES),
 };
+
+/**
+ * Settings specific endpoint helpers
+ */
+export const SettingsEndpoints = {
+    getUserProfile: () => buildApiUrl(API_ENDPOINTS.USER_PROFILE),
+    getChildProfile: (childId: string) => buildApiUrl(API_ENDPOINTS.CHILD_PROFILE, { childId }),
+    resetPassword: () => buildApiUrl(API_ENDPOINTS.SETTINGS_RESET_PASSWORD),
+    getNotificationSettings: () => buildApiUrl(API_ENDPOINTS.NOTIFICATION_SETTINGS),
+    getRewardSettings: () => buildApiUrl(API_ENDPOINTS.REWARD_SETTINGS),
+}; 
 
 /**
  * Cache management utilities

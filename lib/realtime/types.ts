@@ -8,7 +8,10 @@ export type EventType =
   | "CHORE_UPDATE"
   | "TRANSACTION_UPDATE"
   | "KID_UPDATE"
-  | "ALLOWANCE_UPDATE";
+  | "ALLOWANCE_UPDATE"
+  | "PROFILE_UPDATE"
+  | "NOTIFICATION_SETTINGS_UPDATE"
+  | "REWARD_SETTINGS_UPDATE";
 
 export interface WayaEvent<T = any> {
   type: EventType;
@@ -52,6 +55,33 @@ export interface TransactionUpdatePayload {
   transactionId?: string;
 }
 
+
+// Profile event payloads
+export interface ProfileUpdatePayload {
+  full_name?: string;
+  email?: string;
+  avatar?: string;
+  username?: string;
+  familyName?: string;
+}
+
+
+// Notification settings event payloads
+export interface NotificationSettingsUpdatePayload {
+  chore_completion: boolean;
+  reward_redemption: boolean;
+  chore_reminder: boolean;
+  weekly_summary: boolean;
+}
+
+export interface RewardSettingsUpdatePayload {
+  reward_approval_required: boolean;
+  max_daily_reward: number;
+  allow_savings: boolean;
+}
+
+
+
 // Kid event payloads
 export interface KidUpdatePayload {
   action: "CREATE" | "UPDATE" | "DELETE";
@@ -76,4 +106,7 @@ export interface EventPayloadMap {
   TRANSACTION_UPDATE: TransactionUpdatePayload;
   KID_UPDATE: KidUpdatePayload;
   ALLOWANCE_UPDATE: AllowanceUpdatePayload;
+  PROFILE_UPDATE: ProfileUpdatePayload;
+  NOTIFICATION_SETTINGS_UPDATE: NotificationSettingsUpdatePayload;
+  REWARD_SETTINGS_UPDATE: RewardSettingsUpdatePayload;
 }
