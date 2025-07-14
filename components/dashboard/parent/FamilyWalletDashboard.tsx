@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import AppPieChartLazy from "../../lazy/charts/AppPieChartLazy"
 import AppStatCard from "../AppStatCard"
-import { Plus, Wallet } from "lucide-react"
+import { Key, Plus, Wallet } from "lucide-react"
 import BarChartEarnersLazy from "../../lazy/charts/BarChartEarnersLazy"
 import AppTable from "../AppTable"
 // import AllowanceList from "../AllowanceList"
@@ -11,9 +11,10 @@ import AppTable from "../AppTable"
 interface FamilyWalletDashboardProps {
     onAddAllowanceClick?: () => void;
     onAddFundsClick?: () => void;
+    onSetPinClick?: () => void;
 }
 
-const FamilyWalletDashboard = ({ onAddAllowanceClick, onAddFundsClick }: FamilyWalletDashboardProps = {}) => {
+const FamilyWalletDashboard = ({ onAddAllowanceClick, onAddFundsClick, onSetPinClick }: FamilyWalletDashboardProps = {}) => {
     return (
         <main>
             <div className="mb-6 flex items-center justify-between">
@@ -30,12 +31,23 @@ const FamilyWalletDashboard = ({ onAddAllowanceClick, onAddFundsClick }: FamilyW
                     </Button>
 
                     <Button
+                        variant="outline"
+                        className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                        onClick={typeof onSetPinClick === 'function' ? onSetPinClick : undefined}
+                    >
+                        <Key className="h-4 w-4 mr-2" />
+                        Set Wallet PIN
+                    </Button>
+
+                    <Button
                         className="bg-primary hover:bg-primary/90"
                         onClick={onAddAllowanceClick}
                     >
                         <Plus className="h-4 w-4 mr-2" />
                         Make Payment
                     </Button>
+
+
                 </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">

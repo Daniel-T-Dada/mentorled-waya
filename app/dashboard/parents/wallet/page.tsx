@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { eventManager } from "@/lib/realtime";
 import { WalletUpdatePayload, TransactionUpdatePayload, WayaEvent } from "@/lib/realtime/types";
+import { SetPin } from "@/components/modals/SetPin";
 
 
 interface Transaction {
@@ -45,6 +46,7 @@ const FamilyWalletPage = () => {
     const { data: session } = useSession();
     const [isMakePaymentOpen, setIsMakePaymentOpen] = useState(false);
     const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
+    const [isSetPinOpen, setIsSetPinOpen] = useState(false);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -165,6 +167,7 @@ const FamilyWalletPage = () => {
             <FamilyWalletLazy
                 onAddAllowanceClick={() => setIsMakePaymentOpen(true)}
                 onAddFundsClick={() => setIsAddFundsOpen(true)}
+                onSetPinClick={() => setIsSetPinOpen(true)}
             />
             <MakePayment
                 isOpen={isMakePaymentOpen}
@@ -181,6 +184,16 @@ const FamilyWalletPage = () => {
                     // Real-time updates will handle data refresh automatically
                     console.log('Funds added - real-time updates will handle refresh');
                 }}
+            />
+            {/* Render SetPin modal */}
+            <SetPin
+                isOpen={isSetPinOpen}
+                onClose={() => setIsSetPinOpen(false)}
+                session={
+                    session?.user?.accessToken
+                        ? { user: { accessToken: session.user.accessToken } }
+                        : null
+                }
             />
         </div>
     )

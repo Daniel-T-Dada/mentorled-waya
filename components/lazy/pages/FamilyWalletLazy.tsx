@@ -20,13 +20,15 @@ interface FamilyWalletLazyProps {
 
 export const FamilyWalletLazy = ({
     onAddAllowanceClick,
-    onAddFundsClick
-}: FamilyWalletLazyProps) => {
+    onAddFundsClick,
+    onSetPinClick
+}: FamilyWalletLazyProps & { onSetPinClick?: () => void }) => {
     return (
         <Suspense fallback={<FamilyWalletSkeleton />}>
             <FamilyWalletDashboard
                 onAddAllowanceClick={onAddAllowanceClick}
                 onAddFundsClick={onAddFundsClick}
+                onSetPinClick={onSetPinClick}
             />
         </Suspense>
     );
