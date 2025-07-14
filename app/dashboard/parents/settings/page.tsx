@@ -28,7 +28,6 @@ const SettingsPage = () => {
         weekly_summary: false,
     });
     const [notificationLoading, setNotificationLoading] = useState(false);
-    // Removed unused notificationSuccess
 
     // SWR for notification settings
     const NOTIFICATION_ENDPOINT = SettingsEndpoints.getNotificationSettings();
@@ -144,7 +143,7 @@ const SettingsPage = () => {
     });
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
-    // Removed unused KID_ENDPOINT
+
 
     // Kid account state
     const [kidState, setKidState] = useState({
@@ -391,8 +390,6 @@ const SettingsPage = () => {
 
 
 
-    // Integrate reward settings logic
-    // Use local variables: rewardSettings, rewardLoading, rewardSuccess, handleRewardChange, handleRewardSave
 
     // Reward settings state and logic (ensure in scope for render)
     const REWARD_ENDPOINT = getApiUrl(API_ENDPOINTS.REWARD_SETTINGS);
@@ -467,17 +464,7 @@ const SettingsPage = () => {
 
     return (
         <div>
-            {childrenList.length === 0 ? (
-                <div style={{ padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="animate-spin" style={{ marginRight: '0.5rem' }}>
-                            <circle cx="12" cy="12" r="10" stroke="#500061" strokeWidth="4" opacity="0.2" />
-                            <path d="M22 12a10 10 0 0 1-10 10" stroke="#500061" strokeWidth="4" strokeLinecap="round" />
-                        </svg>
-                        loading...
-                    </span>
-                </div>
-            ) : (
+        
                 <SettingsDashboard
                     accountSettings={
                         <AppAccountSettings
@@ -521,7 +508,6 @@ const SettingsPage = () => {
                         />
                     }
                 />
-            )}
         </div>
     );
 }
