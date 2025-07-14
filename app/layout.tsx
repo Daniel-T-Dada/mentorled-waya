@@ -44,7 +44,7 @@ export default function RootLayout({
                   </div>
                 </ClientWrapper>
               </main>
-              <Toaster />
+              <Toaster position="top-center" />
             </SidebarProvider>
           </RealtimeProvider>
         </SessionProvider>

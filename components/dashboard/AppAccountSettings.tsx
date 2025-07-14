@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import {
     Card,
     CardContent,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
@@ -13,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
+
 
 interface SettingsCardProps {
     title: string
@@ -30,7 +30,63 @@ const SettingsCard = ({ title, children }: SettingsCardProps) => {
     )
 }
 
-const AppAccountSettings = () => {
+interface AppAccountSettingsProps {
+    passwordForm: {
+        current_password: string;
+        new_password: string;
+        confirm_new_password: string;
+    };
+    passwordLoading: boolean;
+    passwordSuccess: boolean;
+    onPasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onPasswordSubmit: (e: React.FormEvent) => void;
+    formState: {
+        full_name: string;
+        email: string;
+        avatar: string | File;
+        username: string;
+    };
+    saving: boolean;
+    success: boolean;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onSubmit: (e: React.FormEvent) => void;
+
+    // Kid account props
+    kidFormState: {
+        id: string;
+        name: string;
+        username: string;
+        avatar: string | File;
+    };
+    kidSaving: boolean;
+    kidSuccess: boolean;
+    kidError: string | null;
+    onKidChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onKidSubmit: (e: React.FormEvent) => void;
+    onKidDelete: () => void;
+    childrenList: Array<{ id: string; name: string; username: string; }>;
+    selectedChildId: string;
+    onSelectChild: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+}
+
+const AppAccountSettings = ({
+    formState,
+    saving,
+    onChange,
+    onSubmit,
+    kidFormState,
+    kidSaving,
+    onKidChange,
+    onKidSubmit,
+    onKidDelete,
+    childrenList = [],
+    selectedChildId,
+    onSelectChild,
+    passwordForm,
+    passwordLoading,
+    onPasswordChange,
+    onPasswordSubmit
+}: AppAccountSettingsProps) => {
     const [showCurrentPassword, setShowCurrentPassword] = useState(false)
     const [showNewPassword, setShowNewPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -40,32 +96,34 @@ const AppAccountSettings = () => {
             {/* Profile Settings */}
             <SettingsCard title="Profile Settings">
                 <Card className="bg-background">
-
                     <CardContent>
-                        <form>
+                        <form onSubmit={onSubmit}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="flex flex-col space-y-1.5">
                                     <Label className="block text-sm font-medium mb-2">Full Name</Label>
-                                    <Input placeholder="Full Name" className="" />
+                                    <Input name="full_name" placeholder="Full Name" className="" value={formState.full_name} onChange={onChange} disabled={saving} />
                                 </div>
                                 <div className="flex flex-col space-y-1.5">
                                     <Label className="block text-sm font-medium mb-2">Email Address</Label>
-                                    <Input placeholder="Email Address" className="text-primary/60" />
+                                    <Input name="email" placeholder="Email Address" className="text-primary/60" value={formState.email} onChange={onChange} disabled={saving} />
                                 </div>
                                 <div className="flex flex-col space-y-1.5">
                                     <Label className="block text-sm font-medium mb-2">Avatar/Profile Picture</Label>
-                                    <Input type="file" className="text-primary/60" />
+                                    <Input name="avatar" type="file" className="text-primary/60" onChange={onChange} disabled={saving} />
                                 </div>
                                 <div className="flex flex-col space-y-1.5">
                                     <Label className="block text-sm font-medium mb-2">Username/Family Name</Label>
-                                    <Input placeholder="Username/Family Name" className="text-primary/60" />
+                                    <Input name="username" placeholder="Username/Family Name" className="text-primary/60" value={formState.username} onChange={onChange} disabled={saving} />
                                 </div>
+                            </div>
+                            <div className="flex justify-center gap-4 mt-6">
+                                <Button type="submit" disabled={saving}>
+                                    {saving ? "Saving..." : "Save Changes"}
+                                </Button>
+                                
                             </div>
                         </form>
                     </CardContent>
-                    <CardFooter className="flex justify-center gap-10">
-                        <Button>Save Changes</Button>
-                    </CardFooter>
                 </Card>
             </SettingsCard>
 
@@ -73,33 +131,48 @@ const AppAccountSettings = () => {
             <SettingsCard title="Kid&apos;s Account Settings">
 
                 <Card className="bg-background">
-
                     <CardContent>
-                        <form>
+                        <form onSubmit={onKidSubmit}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="flex flex-col space-y-1.5">
-                                    <Label className="block text-sm font-medium mb-2">Number of Kids</Label>
-                                    <Input placeholder="Number of kids" className="" />
+                                <div className="mb-6">
+                                    <Label className="block text-sm font-medium mb-2">Select Kid</Label>
+                                    <select
+                                        className="w-full p-2 border rounded"
+                                        value={selectedChildId}
+                                        onChange={onSelectChild}
+                                        disabled={kidSaving}
+                                    >
+                                        <option value="" disabled>Select a kid...</option>
+                                        {childrenList.map(child => (
+                                            <option key={child.id} value={child.id}>
+                                                {child.name} ({child.username})
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="flex flex-col space-y-1.5">
-                                    <Label className="block text-sm font-medium mb-2">Child&apos;s Full Name 1</Label>
-                                    <Input placeholder="Full name" className="text-primary/60" />
+                                    <Label className="block text-sm font-medium mb-2">Kid&apos;s Name</Label>
+                                    <Input name="kid_name" placeholder="Full name" className="text-primary/60" value={kidFormState.name} onChange={onKidChange} disabled={kidSaving} />
                                 </div>
                                 <div className="flex flex-col space-y-1.5">
-                                    <Label className="block text-sm font-medium mb-2">Child&apos;s Full Name 2</Label>
-                                    <Input placeholder="Full name" className="text-primary/60" />
+                                    <Label className="block text-sm font-medium mb-2">Username</Label>
+                                    <Input name="kid_username" placeholder="Username" className="text-primary/60" value={kidFormState.username} onChange={onKidChange} disabled={kidSaving} />
                                 </div>
                                 <div className="flex flex-col space-y-1.5">
-                                    <Label className="block text-sm font-medium mb-2">Username/Family Name</Label>
-                                    <Input placeholder="Username/Family Name" className="text-primary/60" />
+                                    <Label className="block text-sm font-medium mb-2">Avatar</Label>
+                                    <Input name="kid_avatar" type="file" className="text-primary/60" onChange={onKidChange} disabled={kidSaving} />
                                 </div>
+                            </div>
+                            <div className="flex justify-center gap-4 mt-6">
+                                <Button type="submit" disabled={kidSaving || !selectedChildId}>
+                                    {kidSaving ? "Saving..." : "Save Changes"}
+                                </Button>
+                                <Button variant="outline" className="text-primary border-primary hover:bg-primary/10" type="button" onClick={onKidDelete} disabled={kidSaving || !selectedChildId}>
+                                    Delete kid&apos;s account
+                                </Button>
                             </div>
                         </form>
                     </CardContent>
-                    <CardFooter className="md:flex justify-center gap-10 grid grid-cols-1 md:grid-cols-2">
-                        <Button>Save Changes</Button>
-                        <Button variant="outline" className="text-primary border-primary hover:bg-primary/10">Delete kid&apos;s account</Button>
-                    </CardFooter>
                 </Card>
             </SettingsCard>
 
@@ -109,14 +182,18 @@ const AppAccountSettings = () => {
                 <Card className="bg-background">
 
                     <CardContent>
-                        <form>
+                        <form onSubmit={onPasswordSubmit}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="md:col-span-2">
                                     <Label className="block text-sm font-medium mb-2">Current Password</Label>
                                     <div className="relative">
                                         <Input
+                                            name="current_password"
                                             type={showCurrentPassword ? "text" : "password"}
-                                            placeholder="***************"
+                                            placeholder="********"
+                                            value={passwordForm.current_password}
+                                            onChange={onPasswordChange}
+                                            disabled={passwordLoading}
                                         />
                                         <button
                                             type="button"
@@ -132,8 +209,12 @@ const AppAccountSettings = () => {
                                     <label className="block text-sm font-medium mb-2">New Password</label>
                                     <div className="relative">
                                         <Input
+                                            name="new_password"
                                             type={showNewPassword ? "text" : "password"}
-                                            placeholder="***************"
+                                            placeholder="********"
+                                            value={passwordForm.new_password}
+                                            onChange={onPasswordChange}
+                                            disabled={passwordLoading}
                                         />
                                         <button
                                             type="button"
@@ -148,8 +229,12 @@ const AppAccountSettings = () => {
                                     <label className="block text-sm font-medium mb-2">Confirm New Password</label>
                                     <div className="relative">
                                         <Input
+                                            name="confirm_new_password"
                                             type={showConfirmPassword ? "text" : "password"}
-                                            placeholder="***************"
+                                            placeholder="********"
+                                            value={passwordForm.confirm_new_password}
+                                            onChange={onPasswordChange}
+                                            disabled={passwordLoading}
                                         />
                                         <button
                                             type="button"
@@ -161,11 +246,14 @@ const AppAccountSettings = () => {
                                     </div>
                                 </div>
                             </div>
+                            <div className="flex justify-center gap-4 mt-6">
+                                <Button type="submit" disabled={passwordLoading}>
+                                    {passwordLoading ? "Saving..." : "Save Changes"}
+                                </Button>
+                                
+                            </div>
                         </form>
                     </CardContent>
-                    <CardFooter className="flex justify-center gap-10">
-                        <Button>Save Changes</Button>
-                    </CardFooter>
                 </Card>
             </SettingsCard>
         </div>

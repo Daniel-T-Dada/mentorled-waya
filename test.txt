@@ -560,3 +560,41 @@ GET https://waya-mentorled.onrender.com/api/taskmaster/chores/summary/
   "missed": 0,
   "total": 9
 }
+
+
+// SETTINGS PAGE
+GET https://waya-mentorled.onrender.com/api/settings_waya/profile/ - 200
+{
+    "avatar": "https://waya-mentorled.onrender.com/media/avatars/postman.jpg",
+    "full_name": "Dan Dada",
+    "email": "double.deemedia@gmail.com",
+    "family_name": ""
+}
+
+GET https://waya-mentorled.onrender.com/api/settings_waya/children/{id}/ - 200
+{
+    "id": "26825928-6eb4-4aaf-8a84-047529ac48f8",
+    "name": "Akorede Oguntolu",
+    "username": "maverick",
+    "avatar": null
+}
+
+POST https://waya-mentorled.onrender.com/api/settings_waya/password-reset/ - 200
+{
+    "detail": "Password changed successfully."
+}
+
+GET https://waya-mentorled.onrender.com/api/settings_waya/notification-settings/ - 200
+{
+    "chore_completion": true,
+    "reward_redemption": true,
+    "chore_reminder": true,
+    "weekly_summary": true
+}
+
+GET https://waya-mentorled.onrender.com/api/settings_waya/reward-settings/ - 200
+{
+    "reward_approval_required": false,
+    "max_daily_reward": 0,
+    "allow_savings": true
+}
