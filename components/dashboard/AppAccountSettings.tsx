@@ -91,6 +91,16 @@ const AppAccountSettings = ({
     const [showNewPassword, setShowNewPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
+    // ...existing code...
+    // Show toast if childrenList is empty (only once)
+    const [hasShownToast, setHasShownToast] = useState(false);
+    if (childrenList.length === 0 && !hasShownToast) {
+        setHasShownToast(true);
+        // Dynamically import sonner to avoid SSR issues
+        import('sonner').then(({ toast }) => {
+            toast.info('No children found. Add a child to get started!', { className: 'text-purple-700' });
+        });
+    }
     return (
         <div className="w-full  mx-auto">
             {/* Profile Settings */}
@@ -120,7 +130,7 @@ const AppAccountSettings = ({
                                 <Button type="submit" disabled={saving}>
                                     {saving ? "Saving..." : "Save Changes"}
                                 </Button>
-                                
+
                             </div>
                         </form>
                     </CardContent>
@@ -129,7 +139,6 @@ const AppAccountSettings = ({
 
             {/* Kid's Account Settings */}
             <SettingsCard title="Kid&apos;s Account Settings">
-
                 <Card className="bg-background">
                     <CardContent>
                         <form onSubmit={onKidSubmit}>
@@ -140,7 +149,7 @@ const AppAccountSettings = ({
                                         className="w-full p-2 border rounded"
                                         value={selectedChildId}
                                         onChange={onSelectChild}
-                                        disabled={kidSaving}
+                                        disabled={kidSaving || childrenList.length === 0}
                                     >
                                         <option value="" disabled>Select a kid...</option>
                                         {childrenList.map(child => (
@@ -152,22 +161,22 @@ const AppAccountSettings = ({
                                 </div>
                                 <div className="flex flex-col space-y-1.5">
                                     <Label className="block text-sm font-medium mb-2">Kid&apos;s Name</Label>
-                                    <Input name="kid_name" placeholder="Full name" className="text-primary/60" value={kidFormState.name} onChange={onKidChange} disabled={kidSaving} />
+                                    <Input name="kid_name" placeholder="Full name" className="text-primary/60" value={kidFormState.name} onChange={onKidChange} disabled={kidSaving || childrenList.length === 0} />
                                 </div>
                                 <div className="flex flex-col space-y-1.5">
                                     <Label className="block text-sm font-medium mb-2">Username</Label>
-                                    <Input name="kid_username" placeholder="Username" className="text-primary/60" value={kidFormState.username} onChange={onKidChange} disabled={kidSaving} />
+                                    <Input name="kid_username" placeholder="Username" className="text-primary/60" value={kidFormState.username} onChange={onKidChange} disabled={kidSaving || childrenList.length === 0} />
                                 </div>
                                 <div className="flex flex-col space-y-1.5">
                                     <Label className="block text-sm font-medium mb-2">Avatar</Label>
-                                    <Input name="kid_avatar" type="file" className="text-primary/60" onChange={onKidChange} disabled={kidSaving} />
+                                    <Input name="kid_avatar" type="file" className="text-primary/60" onChange={onKidChange} disabled={kidSaving || childrenList.length === 0} />
                                 </div>
                             </div>
                             <div className="flex justify-center gap-4 mt-6">
-                                <Button type="submit" disabled={kidSaving || !selectedChildId}>
+                                <Button type="submit" disabled={kidSaving || !selectedChildId || childrenList.length === 0}>
                                     {kidSaving ? "Saving..." : "Save Changes"}
                                 </Button>
-                                <Button variant="outline" className="text-primary border-primary hover:bg-primary/10" type="button" onClick={onKidDelete} disabled={kidSaving || !selectedChildId}>
+                                <Button variant="outline" className="text-primary border-primary hover:bg-primary/10" type="button" onClick={onKidDelete} disabled={kidSaving || !selectedChildId || childrenList.length === 0}>
                                     Delete kid&apos;s account
                                 </Button>
                             </div>
@@ -178,9 +187,7 @@ const AppAccountSettings = ({
 
             {/* Password Reset Settings */}
             <SettingsCard title="Password Reset Settings">
-
                 <Card className="bg-background">
-
                     <CardContent>
                         <form onSubmit={onPasswordSubmit}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -204,7 +211,6 @@ const AppAccountSettings = ({
                                         </button>
                                     </div>
                                 </div>
-
                                 <div>
                                     <label className="block text-sm font-medium mb-2">New Password</label>
                                     <div className="relative">
@@ -250,7 +256,7 @@ const AppAccountSettings = ({
                                 <Button type="submit" disabled={passwordLoading}>
                                     {passwordLoading ? "Saving..." : "Save Changes"}
                                 </Button>
-                                
+
                             </div>
                         </form>
                     </CardContent>
