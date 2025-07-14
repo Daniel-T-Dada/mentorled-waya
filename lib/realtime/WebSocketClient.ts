@@ -12,7 +12,20 @@ export type WayaEventType =
     | "KID_UPDATE"
     | "ALLOWANCE_UPDATE"
     | "GOAL_UPDATE"
-    | "MONEYMAZE_UPDATE";
+    | "MONEYMAZE_UPDATE"
+    | "PROFILE_UPDATE";
+
+// Export event types as a value for use in subscriptions
+export const WayaEventTypes = {
+    WALLET_UPDATE: "WALLET_UPDATE",
+    CHORE_UPDATE: "CHORE_UPDATE",
+    TRANSACTION_UPDATE: "TRANSACTION_UPDATE",
+    KID_UPDATE: "KID_UPDATE",
+    ALLOWANCE_UPDATE: "ALLOWANCE_UPDATE",
+    GOAL_UPDATE: "GOAL_UPDATE",
+    MONEYMAZE_UPDATE: "MONEYMAZE_UPDATE",
+    PROFILE_UPDATE: "PROFILE_UPDATE",
+} as const;
 
 export type WayaEventPayload = Record<string, any>;
 
