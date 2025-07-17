@@ -5,7 +5,6 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { PieChart, Pie, Cell, Label } from "recharts";
 import { useState, useEffect } from "react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
-import { Skeleton } from "@/components/ui/skeleton";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { getApiUrl, getBaseApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
@@ -56,32 +55,7 @@ interface ChartDataItem {
     color: string;
 }
 
-const LoadingState = () => (
-    <Card className="lg:h-[400px] flex flex-col">
-        <CardHeader className="pb-2 flex-shrink-0">
-            <div className="flex items-center justify-between">
-                <Skeleton className="h-5 w-32" />
-                <Skeleton className="h-8 w-32" />
-            </div>
-        </CardHeader>
-        <CardContent className="flex-1">
-            <div className="flex flex-col items-center h-full">
-                <div className="mx-auto aspect-square max-h-[200px] w-[200px] animate-pulse bg-muted rounded-full" />
-                <div className="flex flex-col gap-2 w-full mt-4">
-                    {[...Array(2)].map((_, index) => (
-                        <div key={index} className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Skeleton className="w-3 h-3 rounded-full" />
-                                <Skeleton className="h-4 w-24" />
-                            </div>
-                            <Skeleton className="h-4 w-16" />
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </CardContent>
-    </Card>
-);
+
 
 interface InfoStateProps {
     isWallet: boolean;
@@ -276,10 +250,11 @@ const AppPieChart = ({ refreshTrigger }: AppPieChartProps = {}) => {
     console.log('Will render retry info?', needsRetry);
     console.log('Will render chart?', !isLoading && !needsRetry && chartData.length > 0);
 
-    if (isLoading) {
-        return <LoadingState />;
-    }
 
+
+
+
+    // Always show either the info state or the chart, never a skeleton/loading state
     if (needsRetry || chartData.length === 0) {
         return <InfoState isWallet={isWallet} />;
     }

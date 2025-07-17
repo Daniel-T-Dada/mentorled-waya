@@ -6,7 +6,6 @@ import { type ChartConfig, ChartContainer, ChartTooltip } from "@/components/ui/
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
@@ -39,24 +38,7 @@ const chartConfig = {
     lowest: { label: "Lowest Earner", color: "#7D238E" },
 } satisfies ChartConfig;
 
-const LoadingState = () => (
-    <Card className="h-[280px] sm:h-[320px] md:h-[360px] lg:h-[400px] xl:h-[420px] flex flex-col">
-        <CardHeader className="flex-shrink-0">
-            <div className="space-y-2">
-                <Skeleton className="h-6 w-1/3" />
-                <div className="flex items-center justify-between">
-                    <Skeleton className="h-4 w-1/4" />
-                    <Skeleton className="h-9 w-20" />
-                </div>
-            </div>
-        </CardHeader>
-        <CardContent className="flex-1">
-            <div className="h-full flex items-center justify-center">
-                <Skeleton className="h-full w-full" />
-            </div>
-        </CardContent>
-    </Card>
-);
+
 
 const BarChartEarners = () => {
     const [earnerData, setEarnerData] = useState<ChartDataPoint[]>([]);
@@ -250,9 +232,7 @@ const BarChartEarners = () => {
         fetchEarnerData();
     };
 
-    if (loading) {
-        return <LoadingState />;
-    }
+
 
     if (error) {
         return (

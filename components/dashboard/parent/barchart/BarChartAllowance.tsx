@@ -6,7 +6,6 @@ import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } f
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { Wallet } from 'lucide-react';
 
@@ -21,25 +20,7 @@ const chartConfig = {
     allowanceSpent: { label: "Allowance Spent", color: "#7D238E" },
 } satisfies ChartConfig;
 
-const LoadingState = () => (
-    <Card className="h-[280px] sm:h-[320px] md:h-[360px] lg:h-[400px] xl:h-[420px] flex flex-col">
-        <CardHeader className="flex-shrink-0">
-            <div className="space-y-2">
-                <Skeleton className="h-6 w-1/3" />
-                <div className="flex items-center justify-between">
-                    <div className="flex gap-4">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-4 w-24" />
-                    </div>
-                    <Skeleton className="h-8 w-32" />
-                </div>
-            </div>
-        </CardHeader>
-        <CardContent className="flex-1">
-            <Skeleton className="h-full w-full rounded-lg" />
-        </CardContent>
-    </Card>
-);
+
 
 const InfoState = () => (
     <Card className="h-[280px] sm:h-[320px] md:h-[360px] lg:h-[400px] xl:h-[420px] flex flex-col">
@@ -310,9 +291,7 @@ const BarChartAllowance = () => {
 
     console.log(`[BarChartAllowance] Data for ${range} days (${dataToDisplay.length} items):`, dataToDisplay);
 
-    if (isLoading) {
-        return <LoadingState />;
-    }
+
 
     if (needsRetry || dataToDisplay.length === 0) {
         return <InfoState />;

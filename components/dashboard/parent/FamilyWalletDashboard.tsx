@@ -1,11 +1,13 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import AppPieChartLazy from "../../lazy/charts/AppPieChartLazy"
+
 import AppStatCard from "../AppStatCard"
 import { Key, Plus, Wallet } from "lucide-react"
-import BarChartEarnersLazy from "../../lazy/charts/BarChartEarnersLazy"
+
 import AppTable from "../AppTable"
+import AppPieChart from "../AppPieChart"
+import BarChartEarners from "./barchart/BarChartEarners"
 // import AllowanceList from "../AllowanceList"
 
 interface FamilyWalletDashboardProps {
@@ -54,11 +56,11 @@ const FamilyWalletDashboard = ({ onAddAllowanceClick, onAddFundsClick, onSetPinC
                 <AppStatCard />
 
                 <div className="md:col-span-2">
-                    <BarChartEarnersLazy />
+                    <BarChartEarners />
                 </div>
 
                 <div className="lg:col-span-1 self-start">
-                    <AppPieChartLazy />
+                    <AppPieChart />
                 </div>
 
                 <div className="lg:col-span-3">

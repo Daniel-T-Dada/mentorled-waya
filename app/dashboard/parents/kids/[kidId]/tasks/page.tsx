@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { KidTasksManagement } from '@/components/dashboard/parent/kids/tasks';
-import { CreateChoreLazy as CreateChore } from '@/components/lazy/modals/CreateChoreLazy';
+
 import { toast } from 'sonner';
+import { CreateChore } from '@/components/modals/CreateChore';
 
 const KidTasksPage = () => {
   const params = useParams();

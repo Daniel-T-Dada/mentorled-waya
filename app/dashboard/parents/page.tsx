@@ -1,7 +1,9 @@
 'use client'
 
-import { CreateKidAccountLazy } from '@/components/lazy/modals/CreateKidAccountLazy';
-import { ParentDashboardLazy } from '@/components/lazy/pages/ParentDashboardLazy';
+import ParentDashboardOverview from '@/components/dashboard/parent/ParentDashboardOverview';
+
+import { CreateKidAccount } from '@/components/modals/CreateKidAccount';
+
 import { useState } from "react";
 
 const ParentsPage = () => {
@@ -9,9 +11,9 @@ const ParentsPage = () => {
 
     return (
         <div className=" ">
-            <ParentDashboardLazy onCreateKidClick={() => setIsCreateModalOpen(true)} />
+            <ParentDashboardOverview onCreateKidClick={() => setIsCreateModalOpen(true)} />
             {/* Create Kid Account Modal */}
-            <CreateKidAccountLazy
+            <CreateKidAccount
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 onSuccess={() => {
