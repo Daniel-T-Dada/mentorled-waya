@@ -1,9 +1,8 @@
 // Page-level lazy loading components
-export { ParentDashboardLazy } from './ParentDashboardLazy';
-export { FamilyWalletLazy } from './FamilyWalletLazy';
-export { KidsManagementLazy } from './KidsManagementLazy';
-export { IndividualKidDashboardLazy } from './IndividualKidDashboardLazy';
-export { KidDashboardLazy } from './KidDashboardLazy';
+
+
+
+
 
 // Skeleton exports
 export { default as ParentDashboardSkeleton } from './skeletons/ParentDashboardSkeleton';

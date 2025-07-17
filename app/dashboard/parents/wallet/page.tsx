@@ -3,9 +3,9 @@
 
 
 
-import { FamilyWalletLazy } from "@/components/lazy/pages/FamilyWalletLazy";
-import { MakePaymentLazy as MakePayment } from "@/components/lazy/modals/MakePaymentLazy";
-import { AddFundsLazy as AddFunds } from "@/components/lazy/modals/AddFundsLazy";
+
+
+
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState, useCallback } from "react";
@@ -14,6 +14,9 @@ import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { eventManager } from "@/lib/realtime";
 import { WalletUpdatePayload, TransactionUpdatePayload, WayaEvent } from "@/lib/realtime/types";
 import { SetPin } from "@/components/modals/SetPin";
+import FamilyWalletDashboard from "@/components/dashboard/parent/FamilyWalletDashboard";
+import { AddFunds } from "@/components/modals/AddFunds";
+import { MakePayment } from "@/components/modals/MakePayment";
 
 
 interface Transaction {
@@ -164,7 +167,7 @@ const FamilyWalletPage = () => {
 
     return (
         <div>
-            <FamilyWalletLazy
+            <FamilyWalletDashboard
                 onAddAllowanceClick={() => setIsMakePaymentOpen(true)}
                 onAddFundsClick={() => setIsAddFundsOpen(true)}
                 onSetPinClick={() => setIsSetPinOpen(true)}

@@ -3,7 +3,6 @@
 import { useState, useMemo, memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
-import { Skeleton } from "../ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ClipboardList } from 'lucide-react';
 import { Task } from '@/lib/utils/taskTransforms';
@@ -13,23 +12,7 @@ interface AppKidsActivitiesProps {
     childActivities?: any[]; // Accept childActivities prop
 }
 
-const LoadingState = () => (
-    <div className="space-y-4">
-        {Array.from({ length: 5 }).map((_, index) => (
-            <div key={index} className="border rounded-md p-4 space-y-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-                <div className="flex items-center justify-between mt-3">
-                    <Skeleton className="h-4 w-1/6" />
-                    <div className="flex items-center gap-2">
-                        <Skeleton className="h-6 w-6 rounded-full" />
-                        <Skeleton className="h-4 w-12" />
-                    </div>
-                </div>
-            </div>
-        ))}
-    </div>
-);
+
 
 const InfoState = () => (
     <div className="flex flex-col items-center justify-center h-[400px] text-center p-6">
@@ -45,7 +28,7 @@ const InfoState = () => (
 
 const AppKidsActivities = memo<AppKidsActivitiesProps>(({ kidId, childActivities = [] }: AppKidsActivitiesProps = {}) => {
     const [activeKidTab, setActiveKidTab] = useState("all");
-    const isLoading = !childActivities || childActivities.length === 0;
+
 
     // Extract kids from childActivities
     // Helper to capitalize first letter
@@ -124,26 +107,13 @@ const AppKidsActivities = memo<AppKidsActivitiesProps>(({ kidId, childActivities
         }
     };
 
-    if (isLoading) {
-        return (
-            <Card className="w-full">
-                <CardHeader>
-                    <CardTitle>Kid&apos;s Activities</CardTitle>
-                    <CardDescription>View and manage activities for each kid.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <LoadingState />
-                </CardContent>
-            </Card>
-        );
-    }
+
 
     if (activities.length === 0 && kids.length === 0) {
         return (
             <Card className="w-full">
                 <CardHeader>
                     <CardTitle>Kid&apos;s Activities</CardTitle>
-
                 </CardHeader>
                 <CardContent>
                     <InfoState />

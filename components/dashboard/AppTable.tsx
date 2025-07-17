@@ -21,7 +21,6 @@ import {
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { enhanceTransactionDescriptions, formatTransactionForDisplay } from '@/lib/utils/transactionUtils';
 import { ClipboardList } from 'lucide-react';
-import { Skeleton } from "@/components/ui/skeleton";
 import { eventManager } from "@/lib/realtime";
 import { WalletUpdatePayload, TransactionUpdatePayload, WayaEvent } from "@/lib/realtime/types";
 
@@ -34,34 +33,6 @@ interface ActivityRow {
     date: string;
 }
 
-const LoadingState = () => (
-    <div className="space-y-4">
-        <div className="overflow-auto border rounded-lg p-8">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="font-semibold p-6"><Skeleton className="h-4 w-20" /></TableHead>
-                        <TableHead><Skeleton className="h-4 w-24" /></TableHead>
-                        <TableHead><Skeleton className="h-4 w-16" /></TableHead>
-                        <TableHead><Skeleton className="h-4 w-16" /></TableHead>
-                        <TableHead><Skeleton className="h-4 w-20" /></TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {Array.from({ length: 5 }).map((_, index) => (
-                        <TableRow key={index}>
-                            <TableCell className="font-semibold p-6"><Skeleton className="h-4 w-24" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </div>
-    </div>
-);
 
 const InfoState = () => (
     <div className="flex flex-col items-center justify-center h-[400px] text-center p-6">
@@ -78,18 +49,16 @@ const InfoState = () => (
 const AppTable = memo(() => {
     const { data: session } = useSession();
     const [activities, setActivities] = useState<ActivityRow[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+
     const [needsRetry, setNeedsRetry] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
     const fetchActivities = useCallback(async () => {
         if (!session?.user?.accessToken) {
-            setIsLoading(false);
             return;
         }
 
-        setIsLoading(true);
         setNeedsRetry(false);
 
         try {
@@ -124,8 +93,6 @@ const AppTable = memo(() => {
         } catch (error) {
             console.error('Error fetching activities:', error);
             setNeedsRetry(true);
-        } finally {
-            setIsLoading(false);
         }
     }, [session?.user?.accessToken]);
 
@@ -154,8 +121,13 @@ const AppTable = memo(() => {
                         date: new Date().toISOString()
                     };
 
-                    // Add the new transaction to the top of the list
-                    setActivities(prev => [newTransaction, ...prev]);
+                    setActivities(prev => {
+                        // Only add if not already present
+                        if (prev.some(a => a.id === newTransaction.id)) {
+                            return prev;
+                        }
+                        return [newTransaction, ...prev];
+                    });
                 } catch (error) {
                     console.error('Error creating real-time transaction:', error);
                 }
@@ -171,6 +143,10 @@ const AppTable = memo(() => {
                     case "CREATE":
                         if (payload.transaction) {
                             const formattedTransaction = formatTransactionForDisplay(payload.transaction);
+                            // Only add if not already present
+                            if (prev.some(a => a.id === formattedTransaction.id)) {
+                                return prev;
+                            }
                             return [formattedTransaction, ...prev];
                         }
                         break;
@@ -224,17 +200,11 @@ const AppTable = memo(() => {
         }
     };
 
-    if (isLoading) {
-        return (
-            <div className="w-full border rounded-lg bg-card text-card-foreground shadow-sm p-8 min-h-[500px]">
-                <div className="flex items-center justify-between mb-10">
-                    <h3 className="text-lg font-semibold">Recent Activities</h3>
-                </div>
-                <LoadingState />
-            </div>
-        );
-    }
 
+
+
+
+    // Always show either the info state or the table, never a skeleton/loading state
     if (needsRetry || activities.length === 0) {
         return (
             <div className="w-full border rounded-lg bg-card text-card-foreground shadow-sm p-8 min-h-[500px]">
@@ -265,7 +235,7 @@ const AppTable = memo(() => {
                     </TableHeader>
                     <TableBody>
                         {currentActivities.map((activity) => (
-                            <TableRow key={activity.id}>
+                            <TableRow key={`activity-row-${activity.id}`}>
                                 <TableCell className="font-semibold p-6">{activity.name}</TableCell>
                                 <TableCell>{activity.activity}</TableCell>
                                 <TableCell>
@@ -308,7 +278,7 @@ const AppTable = memo(() => {
                             </PaginationItem>
 
                             {[...Array(totalPages)].map((_, index) => (
-                                <PaginationItem key={index}>
+                                <PaginationItem key={`pagination-page-${index + 1}`}>
                                     <PaginationLink
                                         href="#"
                                         isActive={currentPage === index + 1}

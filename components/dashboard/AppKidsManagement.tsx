@@ -6,7 +6,6 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Users, PlusCircle, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ScrollArea } from "../ui/scroll-area";
-import { Skeleton } from "../ui/skeleton";
 import { useState, useEffect, memo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -79,34 +78,7 @@ const EmptyState = ({ onCreateKidClick }: { onCreateKidClick?: () => void }) => 
     </div>
 );
 
-const LoadingState = () => (
-    <div className="space-y-4 pr-4">
-        {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="border rounded-md p-4">
-                <div className="flex items-center gap-4">
-                    <Skeleton className="w-12 h-12 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-20" />
-                        <Skeleton className="h-2 w-full" />
-                    </div>
-                </div>
-                <div className="flex items-center gap-4">
-                    <Skeleton className="w-12 h-12 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-20" />
-                        <Skeleton className="h-2 w-full" />
-                    </div>
-                </div>
-                <div className="flex items-center justify-between mt-3">
-                    <Skeleton className="h-2 w-full" />
-                    <Skeleton className="h-4 w-16 ml-4" />
-                </div>
-            </div>
-        ))}
-    </div>
-);
+
 
 const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAssignChore, refreshTrigger }) => {
     const { getKidDisplayName } = useKid();
@@ -118,7 +90,7 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
     const [chores, setChores] = useState<Chore[]>([]);
     const [childWallets, setChildWallets] = useState<{ [key: string]: any }>({});
     const [isLoadingChores, setIsLoadingChores] = useState(true);
-    const [isLoadingWallets, setIsLoadingWallets] = useState(true);
+
     // Responsive kids per page
     const [kidsPerPage, setKidsPerPage] = useState(2);
 
@@ -156,12 +128,22 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                         'Authorization': `Bearer ${session.user.accessToken}`,
                     },
                 });
-                if (!response.ok) throw new Error(`Failed to fetch kids: ${response.status}`);
+                if (!response.ok) {
+                    // If 404 and not on first page, reset to page 1 and do not set kidsData
+                    if (response.status === 404 && currentPage > 1) {
+                        setCurrentPage(1);
+                        return;
+                    }
+                    throw new Error(`Failed to fetch kids: ${response.status}`);
+                }
                 const data: PaginatedResponse<Kid> = await response.json();
                 setKidsData(data);
             } catch (error) {
                 console.error('Error fetching paginated kids:', error);
-                setKidsData({ count: 0, next: null, previous: null, results: [] });
+                // Only set kidsData to empty if on first page (true empty state)
+                if (currentPage === 1) {
+                    setKidsData({ count: 0, next: null, previous: null, results: [] });
+                }
             } finally {
                 setIsLoadingKids(false);
             }
@@ -173,7 +155,6 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
     useEffect(() => {
         const fetchChildWallets = async () => {
             if (!session?.user?.id) {
-                setIsLoadingWallets(false);
                 return;
             }
 
@@ -225,8 +206,6 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
             } catch (error) {
                 console.error('Error fetching child wallets:', error);
                 setChildWallets({});
-            } finally {
-                setIsLoadingWallets(false);
             }
         };
 
@@ -378,11 +357,14 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
 
     // Pagination logic
     const totalPages = Math.ceil(kidsData.count / kidsPerPage);
+    // If currentPage is out of bounds or backend returns empty results but count > 0, reset to page 1
     useEffect(() => {
-        if (currentPage > totalPages && totalPages > 0) {
+        if (kidsData.count > 0 && processedKids.length === 0 && currentPage !== 1) {
+            setCurrentPage(1);
+        } else if (currentPage > totalPages && totalPages > 0) {
             setCurrentPage(totalPages);
         }
-    }, [kidsPerPage, kidsData.count, currentPage, totalPages]);
+    }, [kidsPerPage, kidsData.count, currentPage, totalPages, processedKids.length]);
 
     // Pagination handlers
     const goToPrevious = () => {
@@ -396,6 +378,7 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
     // Current kids for the page
     const currentKids = processedKids;
 
+    // Only show the empty state if there are truly no kids (count === 0) and not loading
     return (
         <Card className="h-full flex flex-col min-h-[400px]">
             <CardHeader className="pb-4 flex-shrink-0">
@@ -404,10 +387,10 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
-                    {(isLoadingKids || isLoadingChores || isLoadingWallets) ? (
-                        <LoadingState />
-                    ) : processedKids.length === 0 ? (
+                    {!isLoadingKids && kidsData.count === 0 ? (
                         <EmptyState onCreateKidClick={onCreateKidClick} />
+                    ) : kidsData.count > 0 && processedKids.length === 0 ? (
+                        null
                     ) : (
                         <div className="space-y-4 pr-4">
                             {/* Desktop: Show 2 kids per page with pagination */}
@@ -501,7 +484,7 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                                             variant="ghost"
                                             size="sm"
                                             onClick={goToNext}
-                                            disabled={currentPage === totalPages}
+                                            disabled={currentPage === totalPages || processedKids.length === 0}
                                             className="flex items-center gap-1"
                                         >
                                             Next
@@ -603,7 +586,7 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                                             variant="ghost"
                                             size="lg"
                                             onClick={goToNext}
-                                            disabled={currentPage === totalPages}
+                                            disabled={currentPage === totalPages || processedKids.length === 0}
                                             className="flex items-center gap-2"
                                         >
                                             Next
@@ -673,7 +656,8 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                     )}
                 </ScrollArea>
             </CardContent>
-        </Card>);
+        </Card>
+    );
 });
 
 AppKidsManagement.displayName = 'AppKidsManagement';
