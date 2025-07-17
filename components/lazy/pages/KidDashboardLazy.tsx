@@ -24,6 +24,7 @@ export const KidDashboardLazy = () => {
             <KidDashboardOverview
                 // kidId={kidId}
                 // refreshTrigger={refreshTrigger}
+                
             />
         </Suspense>
     );

@@ -3,11 +3,12 @@
 import KidStatCards from "./KidStatCards"
 import KidBarChart from "./KidBarChart"
 import KidPieChart from "./KidPieChart"
-import AppChoreManagement from "../AppChoreManagement"
 import KidDailyStreaks from "./KidDailyStreaks"
 // import { useSession } from "next-auth/react"
 // import { useKid } from "@/contexts/KidContext"
 import { memo } from "react"
+
+import KidChore from "./KidChore"
 
 // interface KidDashboardOverviewProps {
 //     kidId?: string;
@@ -40,7 +41,8 @@ const KidDashboardOverview = memo(() => {
                     <KidPieChart />
                 </div>
                 <div className="lg:col-span-2 min-h-[400px] rounded">
-                    <AppChoreManagement />
+                    <KidChore />
+
                 </div>
                 <div className="lg:col-span-1 min-h-[400px] self-start">
                     <KidDailyStreaks />
