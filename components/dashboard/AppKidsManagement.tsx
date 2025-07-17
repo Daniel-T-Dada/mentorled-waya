@@ -109,17 +109,65 @@ const LoadingState = () => (
 );
 
 const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAssignChore, refreshTrigger }) => {
-    const { kids, isLoadingKids, getKidDisplayName } = useKid();
-    const [currentPage, setCurrentPage] = useState(0);
+    const { getKidDisplayName } = useKid();
+    const pathname = usePathname();
+    const { data: session } = useSession();
+    const [currentPage, setCurrentPage] = useState(1); // Backend pages are 1-indexed
+    const [kidsData, setKidsData] = useState<PaginatedResponse<Kid>>({ count: 0, next: null, previous: null, results: [] });
+    const [isLoadingKids, setIsLoadingKids] = useState(true);
     const [chores, setChores] = useState<Chore[]>([]);
     const [childWallets, setChildWallets] = useState<{ [key: string]: any }>({});
     const [isLoadingChores, setIsLoadingChores] = useState(true);
     const [isLoadingWallets, setIsLoadingWallets] = useState(true);
-    const pathname = usePathname();
-    const { data: session } = useSession();
+    // Responsive kids per page
+    const [kidsPerPage, setKidsPerPage] = useState(2);
 
     // Check if we're on the TaskMaster page
     const isTaskMasterPage = pathname === '/dashboard/parents/taskmaster';
+
+    // Responsive kids per page logic
+    useEffect(() => {
+        const getKidsPerPage = () => {
+            if (typeof window !== 'undefined') {
+                const width = window.innerWidth;
+                if (width >= 1280) return 2;
+                if (width >= 768) return 1;
+                return 10; // Mobile: default to 10 per page
+            }
+            return 2;
+        };
+        setKidsPerPage(getKidsPerPage());
+        const handleResize = () => setKidsPerPage(getKidsPerPage());
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Fetch paginated kids from backend
+    useEffect(() => {
+        const fetchKidsPage = async () => {
+            if (!session?.user?.accessToken) return;
+            setIsLoadingKids(true);
+            try {
+                // Use correct API endpoint from api.ts
+                const url = getApiUrl(API_ENDPOINTS.LIST_CHILDREN) + `?page=${currentPage}&page_size=${kidsPerPage}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.user.accessToken}`,
+                    },
+                });
+                if (!response.ok) throw new Error(`Failed to fetch kids: ${response.status}`);
+                const data: PaginatedResponse<Kid> = await response.json();
+                setKidsData(data);
+            } catch (error) {
+                console.error('Error fetching paginated kids:', error);
+                setKidsData({ count: 0, next: null, previous: null, results: [] });
+            } finally {
+                setIsLoadingKids(false);
+            }
+        };
+        fetchKidsPage();
+    }, [session?.user?.accessToken, currentPage, kidsPerPage, refreshTrigger]);
 
     // Fetch child wallets data
     useEffect(() => {
@@ -235,6 +283,7 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                     id: task.id,
                     title: task.title,
                     description: task.description,
+                    // ...existing code...
                     assignedTo: task.assignedTo,
                     assignedToName: task.assignedToName || '',
                     assignedToUsername: task.assignedToUsername || '',
@@ -269,7 +318,7 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
             // Update child wallet balances in real-time
             if (payload.action === "MAKE_PAYMENT" && payload.kidId && payload.kidNewBalance !== undefined) {
                 // Find the kid by ID and update their wallet balance
-                const kid = kids.find(k => k.id === payload.kidId);
+                const kid = kidsData.results.find((k: Kid) => k.id === payload.kidId);
                 if (kid) {
                     setChildWallets(prev => ({
                         ...prev,
@@ -287,55 +336,32 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
         return () => {
             unsubscribe();
         };
-    }, [session?.user?.id, kids]);
+    }, [session?.user?.id, kidsData.results]);
 
     // Debug logging
     console.log('AppKidsManagement - Debug:', {
-        kids: kids,
-        kidsLength: kids.length,
+        kids: kidsData.results,
+        kidsLength: kidsData.results.length,
         isLoadingKids,
         chores,
         isLoadingChores,
         onCreateKidClick: !!onCreateKidClick
     });
-    // Convert context kids to component Kid interface with real chore data and wallet balances
-    const processedKids: Kid[] = kids.map(contextKid => {
+    // Convert paginated kids to component Kid interface with real chore data and wallet balances
+    const processedKids: Kid[] = kidsData.results.map(contextKid => {
         const displayName = getKidDisplayName(contextKid);
-
         // Filter chores for this specific kid
         const kidChores = chores.filter(chore => chore.assignedTo === contextKid.id);
-
         // Count completed and pending chores for this kid
         const completedChoreCount = kidChores.filter(chore => chore.status === 'completed').length;
         const pendingChoreCount = kidChores.filter(chore => chore.status === 'pending').length;
-
         // Get wallet data for this kid by matching the display name
         const walletData = childWallets[displayName] || childWallets[contextKid.username];
         const balance = walletData?.balance || 0;
         const totalEarned = walletData?.total_earned || 0;
-        const totalSpent = walletData?.total_spent || 0;
-
         // Calculate progress based on completed vs total chores (0-100%)
         const totalChores = kidChores.length;
         const progress = totalChores > 0 ? Math.round((completedChoreCount / totalChores) * 100) : 0;
-
-        // Debug logging for per-child data
-        console.log(`Kid ${contextKid.username} (${contextKid.id}):`, {
-            displayName,
-            walletDataFound: !!walletData,
-            walletKey: displayName,
-            fallbackWalletKey: contextKid.username,
-            totalChores: kidChores.length,
-            completedChoreCount,
-            pendingChoreCount,
-            balance,
-            totalEarned,
-            totalSpent,
-            progress,
-            walletData,
-            kidChoresData: kidChores.map(c => ({ id: c.id, title: c.title, status: c.status }))
-        });
-
         return {
             id: contextKid.id,
             username: contextKid.username,
@@ -344,58 +370,31 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
             level: Math.max(1, Math.floor(totalEarned / 1000) + 1), // Calculate level based on earnings
             balance: balance,
             progress: progress,
-            // Use real chore data for completed and pending counts per child
             completedChoreCount,
             pendingChoreCount,
             created_at: contextKid.created_at,
         };
     });
 
-    // Pagination logic - responsive based on screen size
-    const [kidsPerPage, setKidsPerPage] = useState(2);
-    const totalPages = Math.ceil(processedKids.length / kidsPerPage);
-    const startIndex = currentPage * kidsPerPage;
-    const currentKids = processedKids.slice(startIndex, startIndex + kidsPerPage);
-
-    // Update kids per page on window resize
+    // Pagination logic
+    const totalPages = Math.ceil(kidsData.count / kidsPerPage);
     useEffect(() => {
-        const getKidsPerPage = () => {
-            if (typeof window !== 'undefined') {
-                const width = window.innerWidth;
-                if (width >= 1280) return 2; // xl: Desktop - 2 kids per page
-                if (width >= 768) return 1;  // md: Tablet - 1 kid per page
-                return processedKids.length;  // Mobile - show all kids
-            }
-            return 2; // Default fallback
-        };
-
-        const handleResize = () => {
-            setKidsPerPage(getKidsPerPage());
-        };
-
-        // Set initial value
-        setKidsPerPage(getKidsPerPage());
-
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [processedKids.length]);
-
-    // Update pagination when kids per page changes
-    useEffect(() => {
-        const newTotalPages = Math.ceil(processedKids.length / kidsPerPage);
-        if (currentPage >= newTotalPages && newTotalPages > 0) {
-            setCurrentPage(0);
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(totalPages);
         }
-    }, [kidsPerPage, processedKids.length, currentPage]);
+    }, [kidsPerPage, kidsData.count, currentPage, totalPages]);
 
     // Pagination handlers
     const goToPrevious = () => {
-        setCurrentPage(prev => Math.max(0, prev - 1));
+        setCurrentPage(prev => Math.max(1, prev - 1));
     };
 
     const goToNext = () => {
-        setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));
+        setCurrentPage(prev => Math.min(totalPages, prev + 1));
     };
+
+    // Current kids for the page
+    const currentKids = processedKids;
 
     return (
         <Card className="h-full flex flex-col min-h-[400px]">
@@ -453,9 +452,7 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                                         {/* Action Buttons - Only show on TaskMaster page */}
                                         {isTaskMasterPage && (
                                             <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                                                <Link href="#"
-                                                    // <Link href={`/dashboard/parents/kids/${kid.id}`} // Uncomment when design is ready
-                                                    className="flex-1">
+                                                <Link href={`/dashboard/parents/kids/${kid.id}`} className="flex-1">
                                                     <Button variant="outline" className="w-full"><Users className="mr-2 h-4 w-4" /> View Profile</Button>
                                                 </Link>
                                                 <Button
@@ -476,7 +473,7 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                                             variant="ghost"
                                             size="sm"
                                             onClick={goToPrevious}
-                                            disabled={currentPage === 0}
+                                            disabled={currentPage === 1}
                                             className="flex items-center gap-1"
                                         >
                                             <ChevronLeft className="h-4 w-4" />
@@ -485,14 +482,14 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
 
                                         <div className="flex items-center gap-2">
                                             <span className="text-xs text-muted-foreground">
-                                                Page {currentPage + 1} of {totalPages}
+                                                Page {currentPage} of {totalPages}
                                             </span>
                                             <div className="flex gap-1">
                                                 {Array.from({ length: totalPages }).map((_, index) => (
                                                     <button
                                                         key={index}
-                                                        onClick={() => setCurrentPage(index)}
-                                                        className={`w-2 h-2 rounded-full transition-colors ${index === currentPage ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                                                        onClick={() => setCurrentPage(index + 1)}
+                                                        className={`w-2 h-2 rounded-full transition-colors ${index + 1 === currentPage ? 'bg-primary' : 'bg-muted-foreground/30'}`}
                                                         aria-label={`Go to page ${index + 1}`}
                                                         title={`Page ${index + 1}`}
                                                     />
@@ -504,7 +501,7 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                                             variant="ghost"
                                             size="sm"
                                             onClick={goToNext}
-                                            disabled={currentPage === totalPages - 1}
+                                            disabled={currentPage === totalPages}
                                             className="flex items-center gap-1"
                                         >
                                             Next
@@ -512,7 +509,8 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                                         </Button>
                                     </div>
                                 )}
-                            </div>                                            {/* Tablet: Show 1 kid per page with pagination - iPad Air 5 optimized */}
+                            </div>
+                            {/* Tablet: Show 1 kid per page with pagination - iPad Air 5 optimized */}
                             <div className="hidden md:block xl:hidden">
                                 {currentKids.slice(0, 1).map(kid => (
                                     <div key={kid.id} className="border rounded-lg p-6 mb-6">
@@ -577,7 +575,7 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                                             variant="ghost"
                                             size="lg"
                                             onClick={goToPrevious}
-                                            disabled={currentPage === 0}
+                                            disabled={currentPage === 1}
                                             className="flex items-center gap-2"
                                         >
                                             <ChevronLeft className="h-5 w-5" />
@@ -586,14 +584,14 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
 
                                         <div className="flex items-center gap-3">
                                             <span className="text-sm text-muted-foreground">
-                                                Page {currentPage + 1} of {totalPages}
+                                                Page {currentPage} of {totalPages}
                                             </span>
                                             <div className="flex gap-2">
                                                 {Array.from({ length: totalPages }).map((_, index) => (
                                                     <button
                                                         key={index}
-                                                        onClick={() => setCurrentPage(index)}
-                                                        className={`w-3 h-3 rounded-full transition-colors ${index === currentPage ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                                                        onClick={() => setCurrentPage(index + 1)}
+                                                        className={`w-3 h-3 rounded-full transition-colors ${index + 1 === currentPage ? 'bg-primary' : 'bg-muted-foreground/30'}`}
                                                         aria-label={`Go to page ${index + 1}`}
                                                         title={`Page ${index + 1}`}
                                                     />
@@ -605,7 +603,7 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                                             variant="ghost"
                                             size="lg"
                                             onClick={goToNext}
-                                            disabled={currentPage === totalPages - 1}
+                                            disabled={currentPage === totalPages}
                                             className="flex items-center gap-2"
                                         >
                                             Next
@@ -647,7 +645,8 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                                             <div className="flex flex-col items-center p-2 rounded-md bg-muted">
                                                 <span className="font-semibold">{kid.completedChoreCount}</span>
                                                 <span className="text-xs text-muted-foreground">Completed</span>
-                                            </div>                                        <div className="flex flex-col items-center p-2 rounded-md bg-muted">
+                                            </div>
+                                            <div className="flex flex-col items-center p-2 rounded-md bg-muted">
                                                 <span className="font-semibold">{kid.pendingChoreCount}</span>
                                                 <span className="text-xs text-muted-foreground">Pending</span>
                                             </div>
@@ -655,9 +654,10 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
 
                                         {/* Action Buttons - Only show on TaskMaster page */}
                                         {isTaskMasterPage && (
-                                            <div className="flex flex-col sm:flex-row gap-2 mt-4">                                            <Link href={`/dashboard/parents/kids/${kid.id}`} className="flex-1">
-                                                <Button variant="outline" className="w-full"><Users className="mr-2 h-4 w-4" /> View Profile</Button>
-                                            </Link>
+                                            <div className="flex flex-col sm:flex-row gap-2 mt-4">
+                                                <Link href={`/dashboard/parents/kids/${kid.id}`} className="flex-1">
+                                                    <Button variant="outline" className="w-full"><Users className="mr-2 h-4 w-4" /> View Profile</Button>
+                                                </Link>
                                                 <Button
                                                     className="flex-1"
                                                     onClick={() => onAssignChore?.(kid.id)}

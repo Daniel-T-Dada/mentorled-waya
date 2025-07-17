@@ -598,3 +598,237 @@ GET https://waya-mentorled.onrender.com/api/settings_waya/reward-settings/ - 200
     "max_daily_reward": 0,
     "allow_savings": true
 }
+
+
+
+
+
+
+
+
+
+
+//CHILDREN WORKING ENDPOINTS
+GET https://waya-mentorled.onrender.com/api/familywallet/child-wallets/analysis/
+{
+  "family_wallet_balance": 1010000,
+  "total_rewards_sent": 580700,
+  "total_rewards_pending": 101000,
+  "activities": [
+    {
+      "name": "Marvelous Alabi",
+      "activity": "Manual fund transfer",
+      "amount": 200,
+      "status": "paid",
+      "date": "2025-07-07"
+    },
+    {
+      "name": "Marvelous Alabi",
+      "activity": "7th of July earnings",
+      "amount": 100000,
+      "status": "paid",
+      "date": "2025-07-07"
+    },
+    {
+      "name": "Marvelous Alabi",
+      "activity": "Check for top earner",
+      "amount": 210000,
+      "status": "paid",
+      "date": "2025-07-05"
+    },
+    {
+      "name": "Marvelous Alabi",
+      "activity": "Top up",
+      "amount": 100000,
+      "status": "cancelled",
+      "date": "2025-07-05"
+    },
+    {
+      "name": "Marvelous Alabi",
+      "activity": "Fund transfer from django admin",
+      "amount": 10000,
+      "status": "paid",
+      "date": "2025-07-05"
+    },
+    {
+      "name": "Toluwani Ogunde",
+      "activity": "Reward for chore e81df8a7-7877-4e57-9225-9a1c5cf9a69b",
+      "amount": 5000,
+      "status": "paid",
+      "date": "2025-07-07"
+    },
+    {
+      "name": "Rebecca Balogun",
+      "activity": "Reward for chore 7dec27f2-5e08-481b-94f9-2d5257c88648",
+      "amount": 5500,
+      "status": "paid",
+      "date": "2025-07-07"
+    },
+    {
+      "name": "Akins Sam",
+      "activity": "Reward for chore 682e07f2-a998-4fa6-bb20-f95737d38ded",
+      "amount": 45000,
+      "status": "paid",
+      "date": "2025-07-07"
+    },
+    {
+      "name": "Akins Sam",
+      "activity": "Top up",
+      "amount": 100000,
+      "status": "pending",
+      "date": "2025-07-05"
+    },
+    {
+      "name": "Akins Sam",
+      "activity": "Reward for chore 682e07f2-a998-4fa6-bb20-f95737d38ded",
+      "amount": 45000,
+      "status": "paid",
+      "date": "2025-07-05"
+    },
+    {
+      "name": "Akorede Oguntolu",
+      "activity": "Manual fund transfer",
+      "amount": 150000,
+      "status": "paid",
+      "date": "2025-07-05"
+    },
+    {
+      "name": "Akorede Oguntolu",
+      "activity": "For a job well done",
+      "amount": 1000,
+      "status": "pending",
+      "date": "2025-07-05"
+    },
+    {
+      "name": "N/A",
+      "activity": "Add funds to parent wallet",
+      "amount": 10000,
+      "status": "paid",
+      "date": "2025-07-09"
+    }
+  ],
+  "savings_breakdown": [
+    {
+      "child_name": "Akorede Oguntolu",
+      "reward_saved": 2000,
+      "reward_spent": 0,
+      "total_earned": 2000,
+      "savings_rate": 0
+    },
+    {
+      "child_name": "Akins Sam",
+      "reward_saved": 2000,
+      "reward_spent": 1000,
+      "total_earned": 3000,
+      "savings_rate": 0
+    },
+    {
+      "child_name": "Marvelous Alabi",
+      "reward_saved": 3000,
+      "reward_spent": 1000,
+      "total_earned": 5000,
+      "savings_rate": 0
+    },
+    {
+      "child_name": "Toluwani Ogunde",
+      "reward_saved": 0,
+      "reward_spent": 0,
+      "total_earned": 0,
+      "savings_rate": 0
+    },
+    {
+      "child_name": "Rebecca Balogun",
+      "reward_saved": 0,
+      "reward_spent": 0,
+      "total_earned": 0,
+      "savings_rate": 0
+    },
+    {
+      "child_name": "Post Man",
+      "reward_saved": 0,
+      "reward_spent": 0,
+      "total_earned": 0,
+      "savings_rate": 0
+    }
+  ]
+}
+
+GET https://waya-mentorled.onrender.com/api/familywallet/child-wallets/?page=1
+{
+  "count": 6,
+  "next": "https://waya-mentorled.onrender.com/api/familywallet/child-wallets/?page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": "6841b298-eb1b-445d-8e4f-317b7b4500d5",
+      "child_name": "Akorede Oguntolu",
+      "balance": "2000.00",
+      "total_earned": "2000.00",
+      "total_spent": "0.00",
+      "savings_rate": "0.00",
+      "child_id": "26825928-6eb4-4aaf-8a84-047529ac48f8"
+    },
+    {
+      "id": "85d4dd3b-fecd-483c-b199-ee8c483422bc",
+      "child_name": "Akins Sam",
+      "balance": "2000.00",
+      "total_earned": "3000.00",
+      "total_spent": "1000.00",
+      "savings_rate": "0.00",
+      "child_id": "eee509bb-4f60-48d7-b6d0-64765e364b90"
+    },
+    {
+      "id": "86173bf1-76a4-45be-a3d6-8a99ef1b3929",
+      "child_name": "Marvelous Alabi",
+      "balance": "3000.00",
+      "total_earned": "5000.00",
+      "total_spent": "1000.00",
+      "savings_rate": "0.00",
+      "child_id": "71eb1ca5-0741-4b80-be11-a411d645e89a"
+    }
+  ]
+}
+
+
+
+//CHOREQUEST
+GET https://waya-mentorled.onrender.com/api/chorequest/chores/?page=1 - 200
+{
+  "count": 123,
+  "next": "https://waya-mentorled.onrender.com/api/chorequest/chores/?page=4",
+  "previous": "https://waya-mentorled.onrender.com/api/chorequest/chores/?page=2",
+  "results": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "title": "string",
+      "description": "string",
+      "assignedTo": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "assignedToName": "string",
+      "assignedToUsername": "string",
+      "status": "pending",
+      "amount": "0",
+      "createdAt": "2025-07-14T21:51:55.982Z",
+      "completedAt": "2025-07-14T21:51:55.982Z",
+      "parentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "category": "string",
+      "isRedeemed": true
+    }
+  ]
+}
+
+PATCH https://waya-mentorled.onrender.com/api/chorequest/chores/{id}/redeem/
+{
+  "title": "string",
+  "amount": "54306.2",
+  "isRedeemed": true
+}
+
+
+PUT https://waya-mentorled.onrender.com/api/chorequest/chores/{id}/status/
+{
+  "status": "pending"
+}
+PATCH https://waya-mentorled.onrender.com/api/chorequest/chores/{id}/status/
+{
+  "status": "pending"
+}

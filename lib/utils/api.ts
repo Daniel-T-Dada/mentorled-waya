@@ -67,8 +67,10 @@ export const API_ENDPOINTS = {
     CHORE_SUMMARY: '/api/taskmaster/chores/summary/',
 
     // Child Task endpoints (for children to view and update their own tasks)
-    CHILD_CHORES: '/api/taskmaster/children/chores/',
-    CHILD_CHORE_STATUS: '/api/taskmaster/children/chores/:taskId/status/',
+    CHILD_CHORES: '/api/chorequest/chorequest/',
+    CHILD_CHORE_COMPLETE: '/api/chorequest/chorequest/complete/',
+    CHILD_CHORE_REDEEM: '/api/chorequest/chorequest/redeem/', 
+    CHILD_CHORE_DETAIL: '/api/chorequest/chorequest/:id/',
 
     // Family Wallet endpoints
     WALLET: '/api/familywallet/wallet/',
