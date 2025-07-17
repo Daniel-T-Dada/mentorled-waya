@@ -1,6 +1,8 @@
 'use client'
 
-import { KidDashboardLazy } from "@/components/lazy/pages/KidDashboardLazy";
+import KidDashboardOverview from "@/components/dashboard/kid/KidDashboardOverview"
+
+
 
 
 const KidsPage = () => {
@@ -8,7 +10,7 @@ const KidsPage = () => {
 
     return (
         <div className="">
-            <KidDashboardLazy  />
+            <KidDashboardOverview  />
         </div>
     )
 }

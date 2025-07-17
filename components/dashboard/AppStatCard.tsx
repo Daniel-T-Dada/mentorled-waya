@@ -2,7 +2,6 @@
 
 import { useState, useEffect, memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Skeleton } from "../ui/skeleton";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
@@ -73,7 +72,6 @@ const AppStatCard = memo<AppStatCardProps>(({ kidId, insightStats }: AppStatCard
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [choreSummary, setChoreSummary] = useState<ChoreSummary | null>(null);
     const [walletStats, setWalletStats] = useState<WalletDashboardStats | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
     const pathname = usePathname();
     const { data: session } = useSession();
     const isWalletPage = pathname.includes('/wallet');
@@ -81,11 +79,8 @@ const AppStatCard = memo<AppStatCardProps>(({ kidId, insightStats }: AppStatCard
     useEffect(() => {
         const fetchData = async () => {
             if (!session?.user?.id) {
-                setIsLoading(false);
                 return;
             }
-
-            setIsLoading(true);
             try {
                 if (isWalletPage) {
                     // For wallet pages, use wallet dashboard stats
@@ -289,7 +284,7 @@ const AppStatCard = memo<AppStatCardProps>(({ kidId, insightStats }: AppStatCard
             } catch (err) {
                 console.error("Error fetching data:", err);
             } finally {
-                setIsLoading(false);
+                // removed setIsLoading
             }
         };
 
@@ -468,45 +463,32 @@ const AppStatCard = memo<AppStatCardProps>(({ kidId, insightStats }: AppStatCard
 
     return (
         <>
-            {isLoading ? (
-                Array.from({ length: 3 }).map((_, index) => (
-                    <Card key={index} className="min-h-[120px]">
-                        <CardHeader className="pb-2">
-                            <Skeleton className="h-4 w-1/2" />
-                        </CardHeader>
-                        <CardContent>
-                            <Skeleton className="h-8 w-1/4" />
-                        </CardContent>
-                    </Card>
-                ))
-            ) : (
-                stats.map((stat, index) => (
-                    <Card key={index} className="min-h-[120px]">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground leading-tight">
-                                {stat.title}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold flex items-center gap-2 leading-tight">
-                                {stat.value}
-                                {stat.percentageChange !== undefined && stat.trend && (
-                                    <Badge
-                                        className={`flex items-center gap-1 ${stat.trend === 'up' ? 'bg-green-100 text-green-800' : stat.trend === 'down' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}
-                                    >
-                                        {stat.trend === 'up' ? (
-                                            <TrendingUp size={12} />
-                                        ) : stat.trend === 'down' ? (
-                                            <TrendingDown size={12} />
-                                        ) : null}
-                                        {Math.abs(stat.percentageChange)}%
-                                    </Badge>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))
-            )}
+            {stats.map((stat, index) => (
+                <Card key={index} className="min-h-[120px]">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground leading-tight">
+                            {stat.title}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold flex items-center gap-2 leading-tight">
+                            {stat.value}
+                            {stat.percentageChange !== undefined && stat.trend && (
+                                <Badge
+                                    className={`flex items-center gap-1 ${stat.trend === 'up' ? 'bg-green-100 text-green-800' : stat.trend === 'down' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}
+                                >
+                                    {stat.trend === 'up' ? (
+                                        <TrendingUp size={12} />
+                                    ) : stat.trend === 'down' ? (
+                                        <TrendingDown size={12} />
+                                    ) : null}
+                                    {Math.abs(stat.percentageChange)}%
+                                </Badge>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            ))}
         </>
     );
 });

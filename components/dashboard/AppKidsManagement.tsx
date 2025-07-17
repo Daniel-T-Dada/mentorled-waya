@@ -6,7 +6,6 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Users, PlusCircle, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ScrollArea } from "../ui/scroll-area";
-import { Skeleton } from "../ui/skeleton";
 import { useState, useEffect, memo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -79,34 +78,7 @@ const EmptyState = ({ onCreateKidClick }: { onCreateKidClick?: () => void }) => 
     </div>
 );
 
-const LoadingState = () => (
-    <div className="space-y-4 pr-4">
-        {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="border rounded-md p-4">
-                <div className="flex items-center gap-4">
-                    <Skeleton className="w-12 h-12 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-20" />
-                        <Skeleton className="h-2 w-full" />
-                    </div>
-                </div>
-                <div className="flex items-center gap-4">
-                    <Skeleton className="w-12 h-12 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-20" />
-                        <Skeleton className="h-2 w-full" />
-                    </div>
-                </div>
-                <div className="flex items-center justify-between mt-3">
-                    <Skeleton className="h-2 w-full" />
-                    <Skeleton className="h-4 w-16 ml-4" />
-                </div>
-            </div>
-        ))}
-    </div>
-);
+
 
 const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAssignChore, refreshTrigger }) => {
     const { getKidDisplayName } = useKid();
@@ -118,7 +90,7 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
     const [chores, setChores] = useState<Chore[]>([]);
     const [childWallets, setChildWallets] = useState<{ [key: string]: any }>({});
     const [isLoadingChores, setIsLoadingChores] = useState(true);
-    const [isLoadingWallets, setIsLoadingWallets] = useState(true);
+
     // Responsive kids per page
     const [kidsPerPage, setKidsPerPage] = useState(2);
 
@@ -173,7 +145,6 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
     useEffect(() => {
         const fetchChildWallets = async () => {
             if (!session?.user?.id) {
-                setIsLoadingWallets(false);
                 return;
             }
 
@@ -226,7 +197,7 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                 console.error('Error fetching child wallets:', error);
                 setChildWallets({});
             } finally {
-                setIsLoadingWallets(false);
+                // removed setIsLoadingWallets
             }
         };
 
@@ -396,6 +367,7 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
     // Current kids for the page
     const currentKids = processedKids;
 
+    // Always show either the empty state or the kids list, never a skeleton/loading state
     return (
         <Card className="h-full flex flex-col min-h-[400px]">
             <CardHeader className="pb-4 flex-shrink-0">
@@ -404,9 +376,7 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
-                    {(isLoadingKids || isLoadingChores || isLoadingWallets) ? (
-                        <LoadingState />
-                    ) : processedKids.length === 0 ? (
+                    {processedKids.length === 0 ? (
                         <EmptyState onCreateKidClick={onCreateKidClick} />
                     ) : (
                         <div className="space-y-4 pr-4">
@@ -673,7 +643,8 @@ const AppKidsManagement = memo<AppKidsManagementProps>(({ onCreateKidClick, onAs
                     )}
                 </ScrollArea>
             </CardContent>
-        </Card>);
+        </Card>
+    );
 });
 
 AppKidsManagement.displayName = 'AppKidsManagement';
