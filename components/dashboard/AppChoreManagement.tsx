@@ -316,7 +316,7 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
                                 const fullName = getKidDisplayName(kid);
                                 const firstName = fullName.split(' ')[0]; // Get first name only
                                 return (
-                                    <TabsTrigger key={kid.id} value={kid.id}>{firstName}&apos;s Chore</TabsTrigger>
+                                    <TabsTrigger key={`kid-tab-${kid.id}`} value={kid.id}>{firstName}&apos;s Chore</TabsTrigger>
                                 );
                             })}
                         </TabsList>
@@ -355,7 +355,7 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
                                     </div>
                                 ) : (
                                     paginatedPendingChores.map((chore) => (
-                                        <div key={chore.id} className="border rounded-md p-4">
+                                        <div key={`pending-chore-${chore.id}`} className="border rounded-md p-4">
                                             <div className="flex items-start justify-between">
                                                 <div>
                                                     <h3 className="font-medium">{chore.title}</h3>
@@ -386,11 +386,20 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
                                                     ₦{chore.reward && !isNaN(Number(chore.reward)) ? Number(chore.reward).toLocaleString() : '0'}
                                                 </div>
                                                 <div className="flex items-center gap-1 text-muted-foreground">
-                                                    <Avatar className="w-5 h-5">
-                                                        <AvatarImage src={kids.find(kid => kid.id === chore.assignedTo)?.avatar || undefined} alt={chore.assignedToName ? getFirstName(chore.assignedToName) : 'Kid'} />
-                                                        <AvatarFallback>{chore.assignedToName ? getFirstName(chore.assignedToName).charAt(0) : 'K'}</AvatarFallback>
-                                                    </Avatar>
-                                                    <span className="text-xs">{chore.assignedToName ? getFirstName(chore.assignedToName) : ''}</span>
+                                                    {(() => {
+                                                        const kid = kids.find(k => k.id === chore.assignedTo);
+                                                        const kidName = kid?.name || kid?.username || chore.assignedToUsername || 'Kid';
+                                                        const firstName = kidName.split(' ')[0];
+                                                        return (
+                                                            <>
+                                                                <Avatar className="w-5 h-5">
+                                                                    <AvatarImage src={kid?.avatar || undefined} alt={firstName} />
+                                                                    <AvatarFallback>{firstName.charAt(0).toUpperCase()}</AvatarFallback>
+                                                                </Avatar>
+                                                                <span className="text-xs">{firstName}</span>
+                                                            </>
+                                                        );
+                                                    })()}
                                                 </div>
                                             </div>
                                         </div>
@@ -418,7 +427,7 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
                                     <div className="flex items-center gap-1">
                                         {Array.from({ length: totalPendingPages }, (_, i) => i + 1).map(page => (
                                             <Button
-                                                key={page}
+                                                key={`pending-page-btn-${page}`}
                                                 variant={currentPendingPage === page ? "default" : "outline"}
                                                 size="sm"
                                                 onClick={() => setCurrentPendingPage(page)}
@@ -451,7 +460,7 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
                                         No completed chores found for {kidId ? getKidName(kidId) : (activeKidTab === "all" ? "all kids" : getKidName(activeKidTab))}.
                                     </div>
                                 ) : (paginatedCompletedChores.map((chore) => (
-                                    <div key={chore.id} className="border rounded-md p-4">
+                                    <div key={`completed-chore-${chore.id}`} className="border rounded-md p-4">
                                         <div className="flex items-start justify-between">
                                             <div>
                                                 <h3 className="font-medium">{chore.title}</h3>
@@ -514,7 +523,7 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
                                     <div className="flex items-center gap-1">
                                         {Array.from({ length: totalCompletedPages }, (_, i) => i + 1).map(page => (
                                             <Button
-                                                key={page}
+                                                key={`completed-page-btn-${page}`}
                                                 variant={currentCompletedPage === page ? "default" : "outline"}
                                                 size="sm"
                                                 onClick={() => setCurrentCompletedPage(page)}

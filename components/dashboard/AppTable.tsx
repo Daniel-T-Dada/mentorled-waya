@@ -121,8 +121,13 @@ const AppTable = memo(() => {
                         date: new Date().toISOString()
                     };
 
-                    // Add the new transaction to the top of the list
-                    setActivities(prev => [newTransaction, ...prev]);
+                    setActivities(prev => {
+                        // Only add if not already present
+                        if (prev.some(a => a.id === newTransaction.id)) {
+                            return prev;
+                        }
+                        return [newTransaction, ...prev];
+                    });
                 } catch (error) {
                     console.error('Error creating real-time transaction:', error);
                 }
@@ -138,6 +143,10 @@ const AppTable = memo(() => {
                     case "CREATE":
                         if (payload.transaction) {
                             const formattedTransaction = formatTransactionForDisplay(payload.transaction);
+                            // Only add if not already present
+                            if (prev.some(a => a.id === formattedTransaction.id)) {
+                                return prev;
+                            }
                             return [formattedTransaction, ...prev];
                         }
                         break;
@@ -226,7 +235,7 @@ const AppTable = memo(() => {
                     </TableHeader>
                     <TableBody>
                         {currentActivities.map((activity) => (
-                            <TableRow key={activity.id}>
+                            <TableRow key={`activity-row-${activity.id}`}>
                                 <TableCell className="font-semibold p-6">{activity.name}</TableCell>
                                 <TableCell>{activity.activity}</TableCell>
                                 <TableCell>
@@ -269,7 +278,7 @@ const AppTable = memo(() => {
                             </PaginationItem>
 
                             {[...Array(totalPages)].map((_, index) => (
-                                <PaginationItem key={index}>
+                                <PaginationItem key={`pagination-page-${index + 1}`}>
                                     <PaginationLink
                                         href="#"
                                         isActive={currentPage === index + 1}
