@@ -8,7 +8,7 @@ const KidsPage = () => {
 
     return (
         <div className="">
-            <KidDashboardLazy />
+            <KidDashboardLazy  />
         </div>
     )
 }

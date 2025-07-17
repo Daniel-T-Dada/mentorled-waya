@@ -11,6 +11,7 @@ export interface Task {
     dueDate: string;
     assignedTo: string; // Child ID (UUID)
     assignedToName?: string; // Child's display name from backend
+    kidName?: string; // Child's display name from frontend
     assignedToUsername?: string; // Child's username from backend
     parentId?: string;
     status: 'pending' | 'completed' | 'missed';
@@ -27,6 +28,7 @@ export interface BackendTask {
     due_date?: string;
     assignedTo: string; // Child ID (UUID)
     assignedToName?: string; // Child's display name
+    child_name?: string; // Child's display name (for frontend)
     assignedToUsername?: string; // Child's username
     parentId?: string;
     status: 'pending' | 'completed' | 'missed';
@@ -74,6 +76,7 @@ export function transformTaskFromBackend(backendTask: BackendTask): Task {
         dueDate: backendTask.due_date || '',
         assignedTo: backendTask.assignedTo,
         assignedToName: backendTask.assignedToName,
+        kidName: backendTask.child_name,
         assignedToUsername: backendTask.assignedToUsername,
         parentId: backendTask.parentId,
         status: backendTask.status,

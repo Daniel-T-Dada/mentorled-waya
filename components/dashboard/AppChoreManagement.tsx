@@ -12,7 +12,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Pencil, Trash, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
 import { usePathname } from 'next/navigation';
-import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSession } from "next-auth/react";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
@@ -53,11 +52,10 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
     const pathname = usePathname();
     const { data: session } = useSession();
 
-    const { kids, getKidDisplayName, isLoadingKids, currentKid, isKidSession } = useKid();
+    const { kids, getKidDisplayName } = useKid();
 
     const [activeKidTab, setActiveKidTab] = useState("all");
     const [activeStatusTab, setActiveStatusTab] = useState("pending");
-    const [isLoading, setIsLoading] = useState(true);
     const [chores, setChores] = useState<Task[]>([]);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -67,6 +65,8 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
     // Pagination state for desktop view
     const [currentPendingPage, setCurrentPendingPage] = useState(1);
     const [currentCompletedPage, setCurrentCompletedPage] = useState(1);
+    const [pendingTotalCount, setPendingTotalCount] = useState(0);
+    const [completedTotalCount, setCompletedTotalCount] = useState(0);
     const isMobile = useIsMobile();
     const [editFormData, setEditFormData] = useState({
         title: '',
@@ -76,91 +76,44 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
         assignedTo: ''
     });
 
+    // Fetch chores for the current page and status
     useEffect(() => {
-        const fetchData = async () => {
-            if (!session?.user?.id) {
-                setIsLoading(false);
-                return;
-            }
-
-            setIsLoading(true);
+        const fetchChores = async (status: string, page: number) => {
+            if (!session?.user?.id) return;
             try {
-                // Build API URL with filters - fetch all chores without pagination
                 let apiUrl = getApiUrl(API_ENDPOINTS.LIST_TASKS);
-
-                // Add query parameters
                 const urlParams = new URLSearchParams();
-
-                // If kidId prop is provided, filter by that specific kid
-                if (kidId) {
-                    urlParams.append('assignedTo', kidId);
-                }
-
-            
-                // Append query parameters to URL
-                if (urlParams.toString()) {
-                    apiUrl += `?${urlParams.toString()}`;
-                }
-
+                urlParams.append('status', status);
+                urlParams.append('page', page.toString());
+                if (kidId) urlParams.append('assignedTo', kidId);
+                apiUrl += `?${urlParams.toString()}`;
                 const choresResponse = await fetch(apiUrl, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${session.user.accessToken}`,
                     },
                 });
-
-                if (!choresResponse.ok) {
-                    throw new Error('Failed to fetch chores');
+                if (!choresResponse.ok) throw new Error('Failed to fetch chores');
+                const choresData: PaginatedResponse<BackendTask> = await choresResponse.json();
+                const transformedChores = transformTasksFromBackend(choresData.results);
+                if (status === 'pending') {
+                    setChores(transformedChores);
+                    setPendingTotalCount(choresData.count);
+                } else {
+                    setChores(transformedChores);
+                    setCompletedTotalCount(choresData.count);
                 }
-
-                const choresData: BackendTask[] | PaginatedResponse<BackendTask> = await choresResponse.json();
-
-                // Handle different response formats
-                let allChores: BackendTask[] = [];
-
-                if (Array.isArray(choresData)) {
-                    // Direct array response
-                    allChores = choresData;
-                } else if ('results' in choresData && Array.isArray(choresData.results)) {
-                    // Paginated response - collect all pages
-                    allChores = [...choresData.results];
-
-                    // If there are more pages, fetch them all
-                    let nextUrl = choresData.next;
-                    while (nextUrl) {
-                        console.log('Fetching next page:', nextUrl);
-                        const nextResponse = await fetch(nextUrl, {
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${session.user.accessToken}`,
-                            },
-                        });
-
-                        if (!nextResponse.ok) {
-                            console.warn('Failed to fetch next page, stopping pagination');
-                            break;
-                        }
-
-                        const nextData: PaginatedResponse<BackendTask> = await nextResponse.json();
-                        allChores = [...allChores, ...nextData.results];
-                        nextUrl = nextData.next;
-                    }
-                }
-
-                console.log(`Fetched ${allChores.length} total chores across all pages`);
-
-                // Transform backend task data to frontend format
-                const transformedChores = transformTasksFromBackend(allChores);
-                setChores(transformedChores);
             } catch (err) {
                 console.error("Error fetching chores:", err);
-            } finally {
-                setIsLoading(false);
             }
         };
 
-        fetchData();
-    }, [session?.user?.id, session?.user?.accessToken, refreshTrigger, kidId]);
+        if (activeStatusTab === 'pending') {
+            fetchChores('pending', currentPendingPage);
+        } else {
+            fetchChores('completed', currentCompletedPage);
+        }
+    }, [session?.user?.id, session?.user?.accessToken, refreshTrigger, kidId, activeStatusTab, currentPendingPage, currentCompletedPage]);
 
     // Select the first 3 kids for dynamic tabs
     const kidsForTabs = kids.slice(0, 3);
@@ -186,23 +139,17 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
     // Pagination logic for desktop view
     const CHORES_PER_PAGE = 3;
 
-    // Calculate pagination for pending chores
-    const totalPendingPages = Math.ceil(pendingFilteredChores.length / CHORES_PER_PAGE);
+    // Calculate pagination for pending chores using backend total count
+    const totalPendingPages = Math.ceil(pendingTotalCount / CHORES_PER_PAGE);
     const paginatedPendingChores = isMobile
         ? pendingFilteredChores
-        : pendingFilteredChores.slice(
-            (currentPendingPage - 1) * CHORES_PER_PAGE,
-            currentPendingPage * CHORES_PER_PAGE
-        );
+        : pendingFilteredChores;
 
-    // Calculate pagination for completed chores
-    const totalCompletedPages = Math.ceil(completedFilteredChores.length / CHORES_PER_PAGE);
+    // Calculate pagination for completed chores using backend total count
+    const totalCompletedPages = Math.ceil(completedTotalCount / CHORES_PER_PAGE);
     const paginatedCompletedChores = isMobile
         ? completedFilteredChores
-        : completedFilteredChores.slice(
-            (currentCompletedPage - 1) * CHORES_PER_PAGE,
-            currentCompletedPage * CHORES_PER_PAGE
-        );
+        : completedFilteredChores;
 
     // Reset pagination when filters change
     useEffect(() => {
@@ -346,64 +293,13 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
     };
 
     // Function to get kid's name by username (from chore.assignedTo)
-    const getKidNameByUsername = (username: string, choreName?: string) => {
-        // If we have the name from chore data, use it directly but return only first name
-        if (choreName) {
-            return getFirstName(choreName);
-        }
-
-        // Handle empty or invalid username
-        if (!username) {
-            return 'Unassigned';
-        }
-
-        // For kid sessions, use currentKid if it matches the username
-        if (isKidSession && currentKid && currentKid.username === username) {
-            return currentKid.username || 'Kid';
-        }
-
-        // For parent sessions, find in kids list
-        const kid = kids.find(k => k.username === username);
-        if (kid) {
-            const fullName = getKidDisplayName(kid);
-            // Return only first name using our utility function
-            return getFirstName(fullName);
-        }
-
-        // If kids are still loading, show loading state
-        if (isLoadingKids) {
-            return 'Loading...';
-        }
-
-        // Fallback: return the username itself if not found in kids list
-        return username;
-    };
+    // Removed unused getKidNameByUsername
 
     // Function to get kid's avatar by username (from chore.assignedTo)
-    const getKidAvatarByUsername = (username: string): string | undefined => {
-        // Handle empty or invalid username
-        if (!username) {
-            return undefined;
-        }
-
-        // For kid sessions, use currentKid if it matches the username
-        if (isKidSession && currentKid && currentKid.username === username) {
-            return currentKid.avatar ?? undefined;
-        }
-
-        // For parent sessions, find in kids list
-        const kid = kids.find(k => k.username === username);
-        return kid?.avatar ?? undefined;
-    };
+    // Removed unused getKidAvatarByUsername
 
     // Function to get kid's name by ID (for UI components that still use IDs)
     const getKidName = (kidId: string) => {
-        // For kid sessions, use currentKid if available
-        if (isKidSession && currentKid && currentKid.id === kidId) {
-            return currentKid.username || 'Kid';
-        }
-
-        // For parent sessions, find in kids list
         const kid = kids.find(k => k.id === kidId);
         return kid ? getKidDisplayName(kid) : 'Unknown Kid';
     };
@@ -431,10 +327,10 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
                     </Tabs>
                 )}
                 <CardTitle className="text-xl font-semibold">
-                    {kidId ? (isKidSession ? 'My Chores' : `${getKidName(kidId)}'s Chore Management`) : 'Chore Management'}
+                    {kidId ? `${getKidName(kidId)}'s Chore Management` : 'Chore Management'}
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">
-                    {kidId ? (isKidSession ? 'View and manage your assigned chores' : `Assign and manage ${getKidName(kidId)}'s chores`) : "Assign and manage kid's chores"}
+                    {kidId ? `Assign and manage ${getKidName(kidId)}'s chores` : "Assign and manage kid's chores"}
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col overflow-hidden">
@@ -453,107 +349,61 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
                     <TabsContent value="pending" className="flex-1 flex flex-col mt-4 overflow-hidden">
                         <ScrollArea className="flex-1">
                             <div className="space-y-4 pr-4">
-                                {isLoading || isLoadingKids ? (
-                                    // Skeleton loading for pending chores
-                                    Array.from({ length: 4 }).map((_, index) => (
-                                        <div key={index} className="border rounded-md p-4 space-y-2">
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
-                                                    <Skeleton className="h-4 w-3/4 mb-2" />
-                                                    <Skeleton className="h-3 w-1/2" />
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Skeleton className="h-8 w-8" />
-                                                    <Skeleton className="h-8 w-8" />
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center justify-between mt-3">
-                                                <Skeleton className="h-4 w-16" />
-                                                <div className="flex items-center gap-1">
-                                                    <Skeleton className="h-5 w-5 rounded-full" />
-                                                    <Skeleton className="h-3 w-12" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : pendingFilteredChores.length === 0 ? (
+                                {pendingFilteredChores.length === 0 ? (
                                     <div className="text-center text-muted-foreground py-8">
-                                        {isKidSession
-                                            ? "You don't have any pending chores right now! 🎉"
-                                            : `No pending chores found for ${kidId ? getKidName(kidId) : (activeKidTab === "all" ? "all kids" : getKidName(activeKidTab))}.`
-                                        }
+                                        No pending chores found for {kidId ? getKidName(kidId) : (activeKidTab === "all" ? "all kids" : getKidName(activeKidTab))}.
                                     </div>
                                 ) : (
                                     paginatedPendingChores.map((chore) => (
                                         <div key={chore.id} className="border rounded-md p-4">
-                                            {kidId ? (
-                                                // Kid view: Simple format matching kidschore.png
-                                                <>
+                                            <div className="flex items-start justify-between">
+                                                <div>
                                                     <h3 className="font-medium">{chore.title}</h3>
                                                     <p className="text-sm text-muted-foreground mt-1">{chore.description}</p>
-                                                    <div className="flex items-center justify-between mt-3">
-                                                        <div className="text-sm font-medium text-green-500">
-                                                            ₦{parseFloat(chore.reward || '0').toLocaleString()}
-                                                        </div>
-                                                        <div className="flex items-center gap-1 text-muted-foreground">
-                                                            <span className="text-xs">U</span>
-                                                            <span className="text-xs">{getKidNameByUsername(chore.assignedTo, chore.assignedToName)}</span>
-                                                        </div>
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                // Parent view: Full format with action buttons
-                                                <>
-                                                    <div className="flex items-start justify-between">
-                                                        <div>
-                                                            <h3 className="font-medium">{chore.title}</h3>
-                                                            <p className="text-sm text-muted-foreground mt-1">{chore.description}</p>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="text-primary hover:text-primary/90"
-                                                                onClick={() => handleEditTask(chore.id)}
-                                                            >
-                                                                <Pencil className="w-5 h-5" />
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="text-destructive hover:text-destructive/90"
-                                                                onClick={() => handleDeleteTask(chore.id)}
-                                                                disabled={isDeleting === chore.id}
-                                                            >
-                                                                <Trash className="w-5 h-5" />
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center justify-between mt-3">
-                                                        <div className="text-sm font-medium text-green-500">
-                                                            ₦{parseFloat(chore.reward || '0').toLocaleString()}
-                                                        </div>
-                                                        <div className="flex items-center gap-1 text-muted-foreground">
-                                                            <Avatar className="w-5 h-5">
-                                                                <AvatarImage src={getKidAvatarByUsername(chore.assignedTo)} alt={getKidNameByUsername(chore.assignedTo, chore.assignedToName)} />
-                                                                <AvatarFallback>{getKidNameByUsername(chore.assignedTo, chore.assignedToName)?.charAt(0)}</AvatarFallback>
-                                                            </Avatar>
-                                                            <span className="text-xs">{getKidNameByUsername(chore.assignedTo, chore.assignedToName)}</span>
-                                                        </div>
-                                                    </div>
-                                                </>
-                                            )}
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="text-primary hover:text-primary/90"
+                                                        onClick={() => handleEditTask(chore.id)}
+                                                    >
+                                                        <Pencil className="w-5 h-5" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="text-destructive hover:text-destructive/90"
+                                                        onClick={() => handleDeleteTask(chore.id)}
+                                                        disabled={isDeleting === chore.id}
+                                                    >
+                                                        <Trash className="w-5 h-5" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center justify-between mt-3">
+                                                <div className="text-sm font-medium text-green-500">
+                                                    ₦{chore.reward && !isNaN(Number(chore.reward)) ? Number(chore.reward).toLocaleString() : '0'}
+                                                </div>
+                                                <div className="flex items-center gap-1 text-muted-foreground">
+                                                    <Avatar className="w-5 h-5">
+                                                        <AvatarImage src={kids.find(kid => kid.id === chore.assignedTo)?.avatar || undefined} alt={chore.assignedToName ? getFirstName(chore.assignedToName) : 'Kid'} />
+                                                        <AvatarFallback>{chore.assignedToName ? getFirstName(chore.assignedToName).charAt(0) : 'K'}</AvatarFallback>
+                                                    </Avatar>
+                                                    <span className="text-xs">{chore.assignedToName ? getFirstName(chore.assignedToName) : ''}</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     ))
                                 )}
                             </div>
                         </ScrollArea>
 
-                        {/* Pagination Controls for Desktop - Pending Chores */}
-                        {!isMobile && pendingFilteredChores.length > CHORES_PER_PAGE && (
+                        {/* Pagination Controls for Desktop - Pending Chores (always show, based on backend count) */}
+                        {!isMobile && totalPendingPages > 0 && (
                             <div className="flex items-center justify-between mt-4 px-4">
                                 <div className="text-sm text-muted-foreground">
-                                    Showing {Math.min((currentPendingPage - 1) * CHORES_PER_PAGE + 1, pendingFilteredChores.length)} to {Math.min(currentPendingPage * CHORES_PER_PAGE, pendingFilteredChores.length)} of {pendingFilteredChores.length} pending chores
+                                    Showing {Math.min((currentPendingPage - 1) * CHORES_PER_PAGE + 1, pendingTotalCount)} to {Math.min(currentPendingPage * CHORES_PER_PAGE, pendingTotalCount)} of {pendingTotalCount} pending chores
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Button
@@ -596,103 +446,60 @@ export function AppChoreManagement({ kidId, refreshTrigger }: AppChoreManagement
                     <TabsContent value="completed" className="flex-1 flex flex-col mt-4 overflow-hidden">
                         <ScrollArea className="flex-1">
                             <div className="space-y-4 pr-4">
-                                {isLoading || isLoadingKids ? (
-                                    // Skeleton loading for completed chores
-                                    Array.from({ length: 4 }).map((_, index) => (
-                                        <div key={index} className="border rounded-md p-4 space-y-2">
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
-                                                    <Skeleton className="h-4 w-3/4 mb-2" />
-                                                    <Skeleton className="h-3 w-1/2" />
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Skeleton className="h-8 w-8" />
-                                                    <Skeleton className="h-8 w-8" />
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center justify-between mt-3">
-                                                <Skeleton className="h-4 w-16" />
-                                                <div className="flex items-center gap-1">
-                                                    <Skeleton className="h-5 w-5 rounded-full" />
-                                                    <Skeleton className="h-3 w-12" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : completedFilteredChores.length === 0 ? (
+                                {completedFilteredChores.length === 0 ? (
                                     <div className="text-center text-muted-foreground py-8">
                                         No completed chores found for {kidId ? getKidName(kidId) : (activeKidTab === "all" ? "all kids" : getKidName(activeKidTab))}.
                                     </div>
                                 ) : (paginatedCompletedChores.map((chore) => (
                                     <div key={chore.id} className="border rounded-md p-4">
-                                        {kidId ? (
-                                            // Kid view: Simple format matching kidschore.png
-                                            <>
+                                        <div className="flex items-start justify-between">
+                                            <div>
                                                 <h3 className="font-medium">{chore.title}</h3>
                                                 <p className="text-sm text-muted-foreground mt-1">{chore.description}</p>
-                                                <div className="flex items-center justify-between mt-3">
-                                                    <div className="text-sm font-medium text-green-500">
-                                                        ₦{parseFloat(chore.reward || '0').toLocaleString()}
-                                                    </div>
-                                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                                        <span className="text-xs">U</span>
-                                                        <span className="text-xs">{getKidNameByUsername(chore.assignedTo, chore.assignedToName)}</span>
-                                                    </div>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            // Parent view: Full format with action buttons
-                                            <>
-                                                <div className="flex items-start justify-between">
-                                                    <div>
-                                                        <h3 className="font-medium">{chore.title}</h3>
-                                                        <p className="text-sm text-muted-foreground mt-1">{chore.description}</p>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="text-primary hover:text-primary/90"
-                                                            onClick={() => handleEditTask(chore.id)}
-                                                        >
-                                                            <Pencil className="w-5 h-5" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="text-destructive hover:text-destructive/90"
-                                                            onClick={() => handleDeleteTask(chore.id)}
-                                                            disabled={isDeleting === chore.id}
-                                                        >
-                                                            <Trash className="w-5 h-5" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center justify-between mt-3">
-                                                    <div className="text-sm font-medium text-green-500">
-                                                        ₦{parseFloat(chore.reward || '0').toLocaleString()}
-                                                    </div>
-                                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                                        <Avatar className="w-5 h-5">
-                                                            <AvatarImage src={getKidAvatarByUsername(chore.assignedTo)} alt={getKidNameByUsername(chore.assignedTo, chore.assignedToName)} />
-                                                            <AvatarFallback>{getKidNameByUsername(chore.assignedTo, chore.assignedToName)?.charAt(0)}</AvatarFallback>
-                                                        </Avatar>
-                                                        <span className="text-xs">{getKidNameByUsername(chore.assignedTo, chore.assignedToName)}</span>
-                                                    </div>
-                                                </div>
-                                            </>
-                                        )}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-primary hover:text-primary/90"
+                                                    onClick={() => handleEditTask(chore.id)}
+                                                >
+                                                    <Pencil className="w-5 h-5" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-destructive hover:text-destructive/90"
+                                                    onClick={() => handleDeleteTask(chore.id)}
+                                                    disabled={isDeleting === chore.id}
+                                                >
+                                                    <Trash className="w-5 h-5" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between mt-3">
+                                            <div className="text-sm font-medium text-green-500">
+                                                ₦{chore.reward && !isNaN(Number(chore.reward)) ? Number(chore.reward).toLocaleString() : '0'}
+                                            </div>
+                                            <div className="flex items-center gap-1 text-muted-foreground">
+                                                <Avatar className="w-5 h-5">
+                                                    <AvatarImage src={kids.find(kid => kid.id === chore.assignedTo)?.avatar || undefined} alt={chore.assignedToName ? getFirstName(chore.assignedToName) : 'Kid'} />
+                                                    <AvatarFallback>{chore.assignedToName ? getFirstName(chore.assignedToName).charAt(0) : 'K'}</AvatarFallback>
+                                                </Avatar>
+                                                <span className="text-xs">{chore.assignedToName ? getFirstName(chore.assignedToName) : ''}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 ))
                                 )}
                             </div>
                         </ScrollArea>
 
-                        {/* Pagination Controls for Desktop - Completed Chores */}
-                        {!isMobile && completedFilteredChores.length > CHORES_PER_PAGE && (
+                        {/* Pagination Controls for Desktop - Completed Chores (always show, based on backend count) */}
+                        {!isMobile && totalCompletedPages > 0 && (
                             <div className="flex items-center justify-between mt-4 px-4">
                                 <div className="text-sm text-muted-foreground">
-                                    Showing {Math.min((currentCompletedPage - 1) * CHORES_PER_PAGE + 1, completedFilteredChores.length)} to {Math.min(currentCompletedPage * CHORES_PER_PAGE, completedFilteredChores.length)} of {completedFilteredChores.length} completed chores
+                                    Showing {Math.min((currentCompletedPage - 1) * CHORES_PER_PAGE + 1, completedTotalCount)} to {Math.min(currentCompletedPage * CHORES_PER_PAGE, completedTotalCount)} of {completedTotalCount} completed chores
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Button

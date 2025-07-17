@@ -305,6 +305,7 @@ export function useKid() {
 // Helper hooks for common patterns - optimized with useMemo
 export function useKidsList() {
     const { kids, isLoadingKids, refreshKids } = useKid();
+    // No frontend slicing, just return the full kids array from context
     return useMemo(() => ({
         kids,
         isLoadingKids,
@@ -349,6 +350,7 @@ export function useKidByIdSelector(kidId: string) {
 
 export function useKidsCount() {
     const { kids, isLoadingKids } = useKid();
+    // No frontend slicing, just use the full kids array from context
     return useMemo(() => ({
         count: kids.length,
         hasKids: kids.length > 0,
