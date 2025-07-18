@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import { useEffect } from 'react'
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getAvatarUrl, getAvatarDebugInfo } from "@/lib/utils/avatarUtils"
@@ -42,7 +42,7 @@ const DashboardNavbar = () => {
     };
 
     // Debug: Log user avatar for troubleshooting
-    React.useEffect(() => {
+    useEffect(() => {
         if (user && !isLoading) {
             const debugInfo = getAvatarDebugInfo(user.avatar);
             console.log("DashboardNavbar - Avatar debug info:", debugInfo);

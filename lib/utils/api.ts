@@ -37,7 +37,8 @@ export const API_ENDPOINTS = {
     // Authentication endpoints
     SIGNUP: '/api/users/register/',
     LOGIN: '/api/users/login/',
-    TOKEN_REFRESH: '/api/auth/token/refresh/',
+
+    TOKEN_REFRESH: '/api/users/token/refresh/',
     PASSWORD_CHANGE: '/api/users/password-change/',
     PASSWORD_RESET: '/api/users/password-reset/',
     PASSWORD_RESET_CONFIRM: '/api/users/password-reset-confirm/:uidb64/:token/',
@@ -69,7 +70,7 @@ export const API_ENDPOINTS = {
     // Child Task endpoints (for children to view and update their own tasks)
     CHILD_CHORES: '/api/chorequest/chorequest/',
     CHILD_CHORE_COMPLETE: '/api/chorequest/chorequest/complete/',
-    CHILD_CHORE_REDEEM: '/api/chorequest/chorequest/redeem/', 
+    CHILD_CHORE_REDEEM: '/api/chorequest/chorequest/redeem/',
     CHILD_CHORE_DETAIL: '/api/chorequest/chorequest/:id/',
 
     // Family Wallet endpoints
@@ -84,7 +85,7 @@ export const API_ENDPOINTS = {
     WALLET_REWARD_PIE_CHART: '/api/familywallet/wallet/reward_pie_chart/',
     WALLET_SET_PIN: '/api/familywallet/wallet/set_pin/',
     WALLET_MAKE_PAYMENT: '/api/familywallet/wallet/make_payment/',
-    
+
     // Child Wallet endpoints
     CHILDREN_WALLETS: '/api/familywallet/child-wallets/',
     CHILDREN_WALLETS_ANALYSIS: '/api/familywallet/child-wallets/analysis/',
@@ -104,7 +105,7 @@ export const API_ENDPOINTS = {
     UPDATE_ALLOWANCE: '/api/familywallet/allowances/:allowanceId/',
     PATCH_ALLOWANCE: '/api/familywallet/allowances/:allowanceId/',
     DELETE_ALLOWANCE: '/api/familywallet/allowances/:allowanceId/',
-    
+
     // Insight Tracker endpoints
     INSIGHT_CHORES: '/api/insighttracker/chores/insights/',
 
@@ -134,12 +135,18 @@ export const API_ENDPOINTS = {
     GOALGETTER_LEADERBOARD: '/api/goalgetter/leaderboard/',
     GOALGETTER_REWARDS: '/api/goalgetter/rewards/',
     CHILD_BAR_CHART: '/api/goalgetter/children/:childId/bar_chart/',
+    GOALGETTER_SUMMARY: '/api/goalgetter/goal/summary/',
 
     // Leaderboard endpoints
     LEADERBOARD: '/api/leaderboard/',
     LEADERBOARD_CHILD: '/api/leaderboard/children/:childId/',
     LEADERBOARD_FAMILY: '/api/leaderboard/family/',
-    
+
+    // EarningMeter endpoints
+    EARNINGMETER_TOTALS: '/api/earningmeter/totals/',
+    EARNINGMETER_DASHBOARD: '/api/earningmeter/dashboard/',
+    EARNINGMETER_SUMMARY: '/api/earningmeter/summary/',
+
     // Notifications endpoints
     NOTIFICATIONS_LIST: '/api/parents/notifications/',
     NOTIFICATIONS_PROFILE: '/api/parents/notifications/profile/',
@@ -242,7 +249,7 @@ export const SettingsEndpoints = {
     resetPassword: () => buildApiUrl(API_ENDPOINTS.SETTINGS_RESET_PASSWORD),
     getNotificationSettings: () => buildApiUrl(API_ENDPOINTS.NOTIFICATION_SETTINGS),
     getRewardSettings: () => buildApiUrl(API_ENDPOINTS.REWARD_SETTINGS),
-}; 
+};
 
 /**
  * Cache management utilities

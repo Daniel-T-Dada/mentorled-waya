@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { useEffect } from "react";
 import { BarChart, ChartSpline, Clipboard, Goal, HandCoins, Home, List, LogOut, Settings, User, UsersRound, Wallet } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator, useSidebar } from "../ui/sidebar"
 
@@ -11,7 +11,7 @@ import { useTheme } from "next-themes"
 import { Avatar, AvatarFallback, AvatarImage, } from "../ui/avatar";
 import { getAvatarUrl, getAvatarDebugInfo } from "@/lib/utils/avatarUtils";
 import { Button } from "../ui/button";
-import ThemeToggle from "@/components/theme-toggle";
+// import ThemeToggle from "@/components/theme-toggle";
 import { useUser } from "@/contexts/UserContext";
 import { signOut } from "next-auth/react";
 import { Skeleton } from "../ui/skeleton";
@@ -25,7 +25,7 @@ const AppSidebar = () => {
     const { isParent, isKid } = useRoleAccess();
 
     // Debug: Log user avatar for troubleshooting
-    React.useEffect(() => {
+    useEffect(() => {
         if (user && !isLoading) {
             const debugInfo = getAvatarDebugInfo(user.avatar);
             console.log("AppSidebar - Avatar debug info:", debugInfo);
@@ -220,7 +220,7 @@ const AppSidebar = () => {
                 <SidebarMenu>
                     <div className="flex items-center justify-between">
                         {state !== 'collapsed' && <span className="text-sm">Theme</span>}
-                        <ThemeToggle />
+                        {/* <ThemeToggle /> */}
                     </div>
                 </SidebarMenu>
 
@@ -266,9 +266,10 @@ const AppSidebar = () => {
                                             </>
                                         ) : (
                                             <>
-                                                <span className="truncate font-medium leading-tight">{user?.name || "User"}</span>
+                                                <span className="font-medium leading-tight">{user?.name ? user.name.split(" ")[0] : "User"}</span>
+                                                
                                                 <span className="truncate text-xs text-muted-foreground leading-tight">
-                                                    {user?.email || "No email"}
+                                                    {user?.isChild ? `@${user.childUsername}` : user?.email || "No email"}
                                                 </span>
                                             </>
                                         )}

@@ -832,3 +832,181 @@ PATCH https://waya-mentorled.onrender.com/api/chorequest/chores/{id}/status/
 {
   "status": "pending"
 }
+
+GET https://waya-mentorled.onrender.com/api/earningmeter/dashboard/ 
+{
+  "bar_chart": [],
+  "pie_chart": {
+    "reward_saved": "2000.00",
+    "reward_spent": "0.00"
+  },
+  "recent_activities": [
+    {
+      "name": "Akorede Oguntolu",
+      "activity": "Manual fund transfer",
+      "amount": "NGN 150000.00",
+      "status": "saved",
+      "date": "05-July-2025"
+    },
+    {
+      "name": "Akorede Oguntolu",
+      "activity": "For a job well done",
+      "amount": "NGN 1000.00",
+      "status": "processing",
+      "date": "05-July-2025"
+    }
+  ]
+}
+GET https://waya-mentorled.onrender.com/api/earningmeter/summary/ 
+{
+  "bar_chart": [],
+  "pie_chart": {
+    "reward_saved": "2000.00",
+    "reward_spent": "0.00"
+  },
+  "recent_activities": [
+    {
+      "name": "Akorede Oguntolu",
+      "activity": "Manual fund transfer",
+      "amount": "NGN 150000.00",
+      "status": "saved",
+      "date": "05-July-2025"
+    },
+    {
+      "name": "Akorede Oguntolu",
+      "activity": "For a job well done",
+      "amount": "NGN 1000.00",
+      "status": "processing",
+      "date": "05-July-2025"
+    }
+  ]
+}
+
+GET "https://waya-mentorled.onrender.com/api/earningmeter/totals/"
+{
+    "total_earned": "2000.00",
+    "total_saved": "2000.00",
+    "total_spent": "0.00"
+}
+
+
+
+
+
+
+GOAL GETTER - 404
+curl -X GET "https://waya-mentorled.onrender.com/api/goalgetter/goals/"
+
+  {
+    "id": "5cad8ed0-2482-4d13-a312-72d8928898bb",
+    "title": "Buy a Bicycle",
+    "description": "Save up for a new bicycle.",
+    "target_amount": "10000.00",
+    "saved_amount": "2500.00",
+    "target_duration_months": 6,
+    "image": null,
+    "trophy_image": null,
+    "trophy_type": null,
+    "status": "active",
+    "created_at": "2025-07-01T12:00:00Z"
+  },
+
+
+
+POST - 200
+curl -X POST "https://waya-mentorled.onrender.com/api/goalgetter/goals/" \ 
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUyODYzMjE2LCJpYXQiOjE3NTI3NzY4MTYsImp0aSI6IjA2ODI5MWFkODQ4ODQxNWNhMzAwOGNlZWIyNzE4NTM4IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.oJzRGJ9SMsrSQBwALCWtZ3l5Llxz4Ynpt_lToxy8l3c" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "title": "Buy a Bicycle",
+        "target_amount": "10000.00",
+        "target_duration_months": 3,
+        "due_date": "2025-09-30"
+      }'
+
+Response 
+{
+  "id": "5cad8ed0-2482-4d13-a312-72d8928898bb",
+  "title": "Buy a Bicycle",
+  "description": "",
+  "target_amount": "10000.00",
+  "target_duration_months": 3,
+  "image": null,
+  "status": "active",
+  "created_at": "2025-07-17T21:15:22.089500Z",
+  "achieved_at": null,
+  "saved_amount": 0,
+  "percent_completed": 0,
+  "time_remaining": 89,
+  "trophy_image": null,
+  "trophy_type": null
+}
+
+GET - 200
+curl -X GET "https://waya-mentorled.onrender.com/api/goalgetter/goals/5cad8ed0-2482-4d13-a312-72d8928898bb/" \ 
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUyODYzMjE2LCJpYXQiOjE3NTI3NzY4MTYsImp0aSI6IjA2ODI5MWFkODQ4ODQxNWNhMzAwOGNlZWIyNzE4NTM4IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.oJzRGJ9SMsrSQBwALCWtZ3l5Llxz4Ynpt_lToxy8l3c"
+
+  Response
+  {
+  "id": "5cad8ed0-2482-4d13-a312-72d8928898bb",
+  "title": "Buy a Bicycle",
+  "description": "",
+  "target_amount": "10000.00",
+  "target_duration_months": 3,
+  "image": null,
+  "status": "active",
+  "created_at": "2025-07-17T21:15:22.089500Z",
+  "achieved_at": null,
+  "saved_amount": 0,
+  "percent_completed": 0,
+  "time_remaining": 89,
+  "trophy_image": null,
+  "trophy_type": null
+}
+
+PATCH - 200
+curl -X PATCH "https://waya-mentorled.onrender.com/api/goalgetter/goals/5cad8ed0-2482-4d13-a312-72d8928898bb/" \ 
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUyODYzMjE2LCJpYXQiOjE3NTI3NzY4MTYsImp0aSI6IjA2ODI5MWFkODQ4ODQxNWNhMzAwOGNlZWIyNzE4NTM4IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.oJzRGJ9SMsrSQBwALCWtZ3l5Llxz4Ynpt_lToxy8l3c" | jq
+  -H "Content-Type: application/json" \
+  -d '{"title": "Buy a Hair Relaxer"}'
+
+  Response
+  {
+  "id": "5cad8ed0-2482-4d13-a312-72d8928898bb",
+  "title": "Buy a Hair Relaxer",
+  "description": "",
+  "target_amount": "10000.00",
+  "target_duration_months": 3,
+  "image": null,
+  "status": "active",
+  "created_at": "2025-07-17T21:15:22.089500Z",
+  "achieved_at": null,
+  "saved_amount": 0,
+  "percent_completed": 0,
+  "time_remaining": 89,
+  "trophy_image": null,
+  "trophy_type": null
+}
+
+POST - - 200
+POST "https://waya-mentorled.onrender.com/api/goalgetter/goals/5cad8ed0-2482-4d13-a312-72d8928898bb/contribute/"  200
+{
+  "id": "63956f3e-b2c2-4c8a-a069-91acfae74a94",
+  "goal": "5cad8ed0-2482-4d13-a312-72d8928898bb",
+  "amount": "1500.00",
+  "transaction_date": "2025-07-18T11:29:07.077057Z"
+}
+
+
+GET - 404
+GET "https://waya-mentorled.onrender.com/api/goalgetter/goals/summary/" 
+{
+  "total_saved": "2500.00",
+  "active_goals": 2,
+  "achieved_goals": 1
+}
+
+DELETE - 200
+DELETE "https://waya-mentorled.onrender.com/api/goalgetter/goals/c92b8b24-bb22-4916-b391-8fd5eda3e2eb/" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUyOTIyMTQwLCJpYXQiOjE3NTI4MzU3NDAsImp0aSI6IjhhZmQ2ODJkNGE1YzRjMTlhY2M3NDU2MzJhN2YyYjg5IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.uqAj05pEKgAXNs-3m3oSQ8phMOqRNgo6jIOtijaQlio" \
+| jq
