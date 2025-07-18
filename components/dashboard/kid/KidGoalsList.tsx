@@ -1,248 +1,321 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Target, Trophy, Calendar, Edit, Trash2 } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { MockApiService } from "@/lib/services/mockApiService";
-import { Goal, Achievement, mockDataService } from "@/lib/services/mockDataService";
+import { useApiQuery } from "@/hooks/useApiQuery";
+import { useAuthenticatedApi } from "@/hooks/use-authenticated-api";
+import { API_ENDPOINTS, getApiUrl } from "@/lib/utils/api";
+import { formatNaira } from "@/lib/utils/currency";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
 
-interface KidGoalsListProps {
-    kidId?: string;
+// Status pill styles using Tailwind classes
+const getStatusPill = (progress: number) => {
+    if (progress >= 60) return { bg: "bg-[color:var(--status-success-bg)] bg-opacity-50", color: "text-[color:var(--status-success-text)]" };
+    if (progress >= 30) return { bg: "bg-[color:var(--status-warning-bg)]", color: "text-[color:var(--status-warning-text)]" };
+    return { bg: "bg-[color:var(--status-error-bg)]", color: "text-[color:var(--status-error-text)]" };
+};
+
+const getTimeLeft = (days: number) => {
+    if (days <= 0) return "Due soon";
+    if (days >= 30) {
+        const months = Math.floor(days / 30);
+        return `${months} Month${months > 1 ? "s" : ""} left`;
+    }
+    if (days >= 7) {
+        const weeks = Math.floor(days / 7);
+        return `${weeks} Week${weeks > 1 ? "s" : ""} left`;
+    }
+    return `${days} Day${days > 1 ? "s" : ""} left`;
+};
+
+interface Goal {
+    id: string;
+    title: string;
+    description: string;
+    target_amount: string;
+    target_duration_months: number;
+    image: string | null;
+    status: string;
+    created_at: string;
+    achieved_at: string | null;
+    saved_amount: number;
+    percent_completed: number;
+    time_remaining: number;
+    trophy_image: string | null;
+    trophy_type: string | null;
 }
 
-// Utility functions
-const calculateProgress = (currentAmount: number, targetAmount: number): number => {
-    if (targetAmount === 0) return 0;
-    return Math.min((currentAmount / targetAmount) * 100, 100);
-};
+// Edit Modal for updating title
+function EditGoalModal({
+    open,
+    onClose,
+    goal,
+    onSave,
+    isLoading,
+}: {
+    open: boolean;
+    onClose: () => void;
+    goal: Goal | null;
+    onSave: (title: string) => void;
+    isLoading: boolean;
+}) {
+    const [title, setTitle] = useState(goal?.title ?? "");
 
-const getDaysLeft = (deadline: string): string => {
-    const deadlineDate = new Date(deadline);
-    const today = new Date();
-    const diffTime = deadlineDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) return "Overdue";
-    if (diffDays === 0) return "Due today";
-    if (diffDays === 1) return "1 day left";
-    return `${diffDays} days left`;
-};
-
-const getProgressColor = (progress: number): string => {
-    if (progress >= 80) return "bg-green-500";
-    if (progress >= 60) return "bg-blue-500";
-    if (progress >= 40) return "bg-yellow-500";
-    return "bg-red-500";
-};
-
-const KidGoalsList = ({ kidId: propKidId }: KidGoalsListProps) => {
-    const { data: session } = useSession();
-    const [goals, setGoals] = useState<Goal[]>([]);
-    const [achievements, setAchievements] = useState<Achievement[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState("goals");
-
-    const sessionKidId = session?.user?.id;
-    const validKidIds = ['kid-001', 'kid-002', 'kid-003', 'kid-004'];
-
-    let kidId = propKidId || "kid-001";
-
-    // If we have a session kid ID, check if it's valid, otherwise use fallback
-    if (sessionKidId && validKidIds.includes(sessionKidId)) {
-        kidId = sessionKidId;
-    }
-
+    // Sync title with goal when opening
     useEffect(() => {
-        const fetchGoalData = async () => {
-            try {
-                setLoading(true);
-                setError(null);
+        setTitle(goal?.title ?? "");
+    }, [goal]);
 
-                // Try to fetch from API first
-                try {
-                    const [goalsData, achievementsData] = await Promise.all([
-                        MockApiService.fetchGoalsByKidId(kidId),
-                        MockApiService.fetchAchievementsByKidId(kidId)
-                    ]);
-                    setGoals(goalsData);
-                    setAchievements(achievementsData);
-                } catch (apiError) {
-                    console.log('API fetch failed, falling back to direct mock data service:', apiError);
+    if (!open || !goal) return null;
+    return (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+            <div className="bg-[color:var(--card)] rounded-lg shadow-lg p-6 w-full max-w-md">
+                <h2 className="font-semibold text-lg mb-4">Edit Goal Title</h2>
+                <Input
+                    className="w-full px-3 py-2 border rounded mb-4"
+                    style={{ borderColor: "var(--border)" }}
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    disabled={isLoading}
+                />
+                <div className="flex justify-end gap-2">
+                    <Button variant="ghost" onClick={onClose} disabled={isLoading}>Cancel</Button>
+                    <Button onClick={() => onSave(title)} disabled={isLoading || !title.trim()}>
+                        {isLoading ? "Saving..." : "Save"}
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
 
-                    // Fallback to direct mock data service
-                    const goalsData = mockDataService.getGoalsByKidId(kidId);
-                    const achievementsData = mockDataService.getAchievementsByKidId(kidId);
-                    setGoals(goalsData);
-                    setAchievements(achievementsData);
-                }
-            } catch (err) {
-                console.error('Error fetching goal data:', err);
-                setError('Failed to load goal data');
-                setGoals([]);
-                setAchievements([]);
-            } finally {
-                setLoading(false);
-            }
-        };
+const KidGoalsList = () => {
+    const queryClient = useQueryClient();
+    const { makeAuthenticatedCall } = useAuthenticatedApi();
 
-        fetchGoalData();
-    }, [kidId]);
+    const { data, isLoading, error } = useApiQuery<{
+        count: number;
+        next: string | null;
+        previous: string | null;
+        results: Goal[];
+    }>({
+        endpoint: getApiUrl(API_ENDPOINTS.GOAL_GETTER),
+        queryKey: ["goalgetter-goals"],
+    });
 
-    const handleEditGoal = (goalId: string) => {
-        console.log('Edit goal:', goalId);
-    };
+    const goals = (data?.results ?? []).filter(g => g.status === "active");
+    const achievements = (data?.results ?? []).filter(
+        g => g.status === "completed" || g.status === "achieved"
+    );
 
-    const handleDeleteGoal = (goalId: string) => {
-        console.log('Delete goal:', goalId);
-        setGoals(prev => prev.filter(goal => goal.id !== goalId));
-    };
+    // EDIT logic
+    const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+    const editMutation = useMutation({
+        mutationFn: async (payload: { id: string; title: string }) => {
+            return await makeAuthenticatedCall({
+                endpoint: getApiUrl(`${API_ENDPOINTS.GOAL_GETTER}${payload.id}/`),
+                method: "PATCH",
+                body: JSON.stringify({ title: payload.title }),
+            });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["goalgetter-goals"] });
+            setEditingGoal(null);
+        },
+    });
 
-    const formatCurrency = (amount: number) => {
-        return `NGN ${amount.toLocaleString()}`;
-    };
-
-    if (loading) {
-        return (
-            <Card>
-                <CardContent className="p-6">
-                    <div className="text-center py-8">
-                        <p>Loading goals and achievements...</p>
-                    </div>
-                </CardContent>
-            </Card>
-        );
-    }
-
-    if (error) {
-        return (
-            <Card>
-                <CardContent className="p-6">
-                    <div className="text-center py-8">
-                        <p className="text-red-500">{error}</p>
-                    </div>
-                </CardContent>
-            </Card>
-        );
-    }
+    // DELETE logic
+    const deleteMutation = useMutation({
+        mutationFn: async (goalId: string) => {
+            return await makeAuthenticatedCall({
+                endpoint: getApiUrl(`${API_ENDPOINTS.GOAL_GETTER}${goalId}/`),
+                method: "DELETE",
+            });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["goalgetter-goals"] });
+        },
+    });
 
     return (
-        <Card>
-            <CardContent className="p-6">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid grid-cols-2 w-full mb-6">
-                        <TabsTrigger value="goals" className="text-sm">
-                            My Goals
-                        </TabsTrigger>
-                        <TabsTrigger value="achievements" className="text-sm">
-                            Achievement
-                        </TabsTrigger>
-                    </TabsList>
+        <div className="p-0 bg-transparent rounded-xl">
+            {/* Edit Modal */}
+            <EditGoalModal
+                open={!!editingGoal}
+                onClose={() => setEditingGoal(null)}
+                goal={editingGoal}
+                onSave={title => {
+                    if (editingGoal) editMutation.mutate({ id: editingGoal.id, title });
+                }}
+                isLoading={editMutation.isPending}
+            />
 
-                    <TabsContent value="goals" className="mt-0 space-y-4">
-                        <div className="space-y-4">
-                            {goals.length === 0 ? (
-                                <div className="text-center py-8 text-muted-foreground">
-                                    <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                                    <p className="font-medium">No goals set yet</p>
-                                    <p className="text-sm">Create your first savings goal to get started!</p>
-                                </div>
-                            ) : (
-                                goals.map((goal) => (
-                                    <div key={goal.id} className="border rounded-lg p-4 space-y-4">
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <h3 className="font-semibold text-lg">{goal.title}</h3>
-                                                    <div className={`px-2 py-1 rounded-md text-xs font-medium ${calculateProgress(goal.currentAmount, goal.targetAmount) >= 60 ? 'bg-green-100 text-green-600' :
-                                                        calculateProgress(goal.currentAmount, goal.targetAmount) >= 30 ? 'bg-yellow-100 text-yellow-600' :
-                                                            'bg-red-100 text-red-600'
-                                                        }`}>
-                                                        {Math.round(calculateProgress(goal.currentAmount, goal.targetAmount))}%
+            <Card className="shadow-none">
+                <CardContent className="px-10 py-0">
+                    <Tabs defaultValue="goals" className="">
+                        <TabsList className="w-full flex rounded-md bg-muted mb-5 px-1 py-0 h-11">
+                            <TabsTrigger value="goals" className="flex-1 data-[state=active]:bg-white data-[state=active]:text-[color:var(--primary)] data-[state=active]:shadow-sm h-10 font-semibold text-base rounded-l-md flex items-center justify-center">
+                                <Target className="w-5 h-5 mr-2" /> My Goals
+                            </TabsTrigger>
+                            <TabsTrigger value="achievements" className="flex-1 data-[state=active]:bg-white data-[state=active]:text-[color:var(--status-warning-text)] data-[state=active]:shadow-sm h-10 font-semibold text-base rounded-r-md flex items-center justify-center">
+                                <Trophy className="w-5 h-5 mr-2 text-[color:var(--status-warning-text)]" /> Achievement
+                            </TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="goals">
+                            <div className="space-y-5">
+                                {isLoading ? (
+                                    <div className="text-center py-10">
+                                        <p>Loading goals...</p>
+                                    </div>
+                                ) : error ? (
+                                    <div className="text-center py-10 text-red-500">
+                                        {error.message || String(error)}
+                                    </div>
+                                ) : goals.length === 0 ? (
+                                    <div className="text-center py-10 text-muted-foreground">
+                                        <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                                        <p className="font-medium">No goals set yet</p>
+                                        <p className="text-sm">Create your first savings goal to get started!</p>
+                                    </div>
+                                ) : (
+                                    goals.map(goal => {
+                                        const progress = Math.round(goal.percent_completed);
+                                        const status = getStatusPill(progress);
+                                        return (
+                                            <div
+                                                key={goal.id}
+                                                className="bg-background rounded-md border px-6 py-5 flex items-center justify-between shadow-sm"
+                                            >
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-semibold text-[15px] mb-1">{goal.title}</div>
+                                                    <div className="text-xs text-[color:var(--muted-foreground)] mb-3">
+                                                        {goal.description}
+                                                    </div>
+                                                    {/* Progress bar */}
+                                                    <div className="w-full bg-[color:var(--muted)] rounded-full h-[7px] mt-2 mb-2">
+                                                        <div
+                                                            className="h-[7px] rounded-full transition-all"
+                                                            style={{
+                                                                width: `${progress}%`,
+                                                                background: "var(--primary)",
+                                                            }}
+                                                        />
                                                     </div>
                                                 </div>
-                                                <p className="text-sm text-muted-foreground mb-3">
-                                                    {goal.description}
-                                                </p>
-                                            </div>
-                                            <div className="flex gap-2 ml-4">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleEditGoal(goal.id)}
-                                                >
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleDeleteGoal(goal.id)}
-                                                >
-                                                    <Trash2 className="h-4 w-4 text-red-500" />
-                                                </Button>
-                                            </div>
-                                        </div>
-
-                                        {/* Progress Bar */}
-                                        <div className="w-full bg-gray-200 rounded-full h-2">
-                                            <div
-                                                className={`h-2 rounded-full transition-all ${getProgressColor(calculateProgress(goal.currentAmount, goal.targetAmount))}`}
-                                                style={{ width: `${calculateProgress(goal.currentAmount, goal.targetAmount)}%` }}
-                                            />
-                                        </div>
-
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                <Calendar className="h-4 w-4" />
-                                                <span>{getDaysLeft(goal.deadline)}</span>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-sm font-medium">
-                                                    {formatCurrency(goal.currentAmount)} / {formatCurrency(goal.targetAmount)}
+                                                {/* Right side */}
+                                                <div className="flex flex-col items-end min-w-[125px] ml-3 space-y-2">
+                                                    <div className="flex items-center justify-end gap-3">
+                                                        <span className="text-[color:var(--status-success)] font-semibold text-[15px]">
+                                                            {formatNaira(goal.target_amount)}
+                                                        </span>
+                                                        <span
+                                                            className={`font-semibold text-xs px-3 py-1 rounded-lg min-w-[46px] text-center ${status.bg} ${status.color}`}
+                                                        >
+                                                            {progress}%
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-xs text-[color:var(--muted-foreground)]">
+                                                        <Calendar className="w-3.5 h-3.5" />
+                                                        <span className="font-semibold">
+                                                            {getTimeLeft(goal.time_remaining)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7"
+                                                            onClick={() => setEditingGoal(goal)}
+                                                            disabled={editMutation.isPending || deleteMutation.isPending}
+                                                        >
+                                                            <Edit className="w-4 h-4 text-[color:var(--muted-foreground)]" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7"
+                                                            onClick={() => deleteMutation.mutate(goal.id)}
+                                                            disabled={editMutation.isPending} 
+                                                        >
+                                                            <Trash2 className="w-4 h-4 text-[color:var(--destructive)]" />
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </TabsContent>
+                        <TabsContent value="achievements">
+                            <div className="space-y-5">
+                                {isLoading ? (
+                                    <div className="text-center py-10">
+                                        <p>Loading achievements...</p>
                                     </div>
-                                ))
-                            )}
-                        </div>
-                    </TabsContent>
-
-                    <TabsContent value="achievements" className="mt-0 space-y-4">
-                        <div className="space-y-4">
-                            {achievements.length === 0 ? (
-                                <div className="text-center py-8 text-muted-foreground">
-                                    <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                                    <p className="font-medium">No achievements yet</p>
-                                    <p className="text-sm">Complete goals to unlock achievements!</p>
-                                </div>
-                            ) : (
-                                achievements.map((achievement) => (
-                                    <div key={achievement.id} className="border rounded-lg p-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                                                <Trophy className="h-6 w-6 text-yellow-600" />
+                                ) : error ? (
+                                    <div className="text-center py-10 text-red-500">
+                                        {error.message || String(error)}
+                                    </div>
+                                ) : achievements.length === 0 ? (
+                                    <div className="text-center py-10 text-muted-foreground">
+                                        <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                                        <p className="font-medium">No achievements yet</p>
+                                        <p className="text-sm">Complete goals to unlock achievements!</p>
+                                    </div>
+                                ) : (
+                                    achievements.map(goal => (
+                                        <div
+                                            key={goal.id}
+                                            className="bg-[color:var(--card)] rounded-md border px-6 py-5 flex items-center justify-between shadow-sm"
+                                        >
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-semibold text-[15px] mb-1">{goal.title}</div>
+                                                <div className="text-xs text-[color:var(--muted-foreground)] mb-3">
+                                                    {goal.description}
+                                                </div>
+                                                <div className="flex items-center gap-2 text-xs text-[color:var(--muted-foreground)]">
+                                                    <Calendar className="w-3.5 h-3.5" />
+                                                    <span>
+                                                        {goal.achieved_at
+                                                            ? new Date(goal.achieved_at).toLocaleDateString()
+                                                            : "Completed"}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="flex-1">
-                                                <h3 className="font-semibold">{achievement.title}</h3>
-                                                <p className="text-sm text-muted-foreground">{achievement.description}</p>
-                                            </div>
-                                            <div className="text-right text-sm text-muted-foreground">
-                                                <div>Earned</div>
-                                                <div>{new Date(achievement.unlockedAt).toLocaleDateString()}</div>
+                                            <div className="flex flex-col items-end min-w-[120px] ml-3 space-y-2">
+                                                <div className="flex items-center justify-end gap-3">
+                                                    <span className="text-[color:var(--status-success)] font-semibold text-[15px]">
+                                                        {formatNaira(goal.target_amount)}
+                                                    </span>
+                                                    <span
+                                                        className="font-semibold text-xs px-3 py-1 rounded-lg"
+                                                        style={{
+                                                            minWidth: 46,
+                                                            textAlign: "center",
+                                                            background: "var(--status-success-bg)",
+                                                            color: "var(--status-success-text)",
+                                                        }}
+                                                    >
+                                                        100%
+                                                    </span>
+                                                </div>
+                                                <Trophy className="w-7 h-7 text-[color:var(--status-warning-text)] my-1" />
                                             </div>
                                         </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </TabsContent>
-                </Tabs>
-            </CardContent>
-        </Card>
+                                    ))
+                                )}
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+                </CardContent>
+            </Card>
+        </div>
     );
 };
 

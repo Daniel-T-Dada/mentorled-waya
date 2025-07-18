@@ -5,27 +5,33 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Zap, Target } from "lucide-react";
 import { memo } from "react";
+import { formatNaira } from "@/lib/utils/currency";
 
 interface KidStatCardsProps {
     kidId?: string;
+
     section?: 'overview' | 'chore' | 'money-maze' | 'goal-getter' | 'earning-meter';
+    totals?: {
+        total_earned: string;
+        total_saved: string;
+        total_spent: string;
+    };
+    summary?: {
+        totalSaved: string;
+        activeGoals: number;
+        achievedGoals: number;
+        // error?: string;
+    };
 }
 
-const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview' }) => {
+const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview', totals, summary }) => {
     // Hardcoded kid and chores data
-    // ...existing code...
     const kidChores = [
         { id: 'c1', title: 'Sweep the living room', status: 'completed', reward: 500 },
         { id: 'c2', title: 'Do homework', status: 'completed', reward: 700 },
         { id: 'c3', title: 'Take out trash', status: 'pending', reward: 0 },
         { id: 'c4', title: 'Wash dishes', status: 'completed', reward: 600 },
         { id: 'c5', title: 'Feed the dog', status: 'completed', reward: 400 },
-    ];
-    // Hardcoded goals data
-    const goals = [
-        { id: 'g1', title: 'Buy a book', status: 'active', currentAmount: 1200 },
-        { id: 'g2', title: 'New shoes', status: 'completed', currentAmount: 3000 },
-        { id: 'g3', title: 'School bag', status: 'active', currentAmount: 800 },
     ];
 
     // Calculate stats
@@ -37,22 +43,22 @@ const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview' }) => {
     // Mock level calculation (based on completed chores)
     const currentLevel = Math.min(Math.floor(completedChores / 3) + 1, 10); // Level up every 3 chores
     const choresNeededForNextLevel = ((currentLevel) * 3) - completedChores;
-    const progressToNextLevel = ((completedChores % 3) / 3) * 100; const formatCurrency = (amount: number) => {
-        return amount.toLocaleString('en-NG', {
-            style: 'currency',
-            currency: 'NGN',
-            maximumFractionDigits: 0
-        });
-    };
+    const progressToNextLevel = ((completedChores % 3) / 3) * 100;
 
     // Get stats based on section
     const getStatCards = () => {
-        if (section === 'goal-getter') {
-            // Use hardcoded goals data
-            const activeGoals = goals.filter(goal => goal.status === "active").length;
-            const completedGoals = goals.filter(goal => goal.status === "completed").length;
-            const totalSaved = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
-            const savingsGrowth = 20; // Mock growth percentage
+            if (section === 'goal-getter' && summary) {
+                // if (summary.error) {
+                // return (
+                //     <div className="p-4 text-sm text-red-600 bg-red-50 rounded">
+                //         {summary.error}
+                //     </div>
+                // );
+            // }
+            const totalSaved = Number(summary.totalSaved || 0);
+            const activeGoals = summary.activeGoals ?? 0;
+            const achievedGoals = summary.achievedGoals ?? 0;
+            const savingsGrowth = 20; // Placeholder, or calculate if possible
 
             return (
                 <>
@@ -66,7 +72,7 @@ const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview' }) => {
                         <CardContent>
                             <div className="flex items-center justify-between">
                                 <div className="text-2xl font-bold text-green-600">
-                                    {formatCurrency(totalSaved)}
+                                    {formatNaira(totalSaved)}
                                 </div>
                                 <Badge className="bg-green-100 text-green-800 border-green-200">
                                     +{savingsGrowth}%
@@ -104,7 +110,7 @@ const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview' }) => {
                             <div className="flex items-center gap-3">
                                 <Trophy className="h-8 w-8 text-yellow-500" />
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-3xl font-bold text-gray-900">{completedGoals}</span>
+                                    <span className="text-3xl font-bold text-gray-900">{achievedGoals}</span>
                                     <span className="text-sm text-muted-foreground">Achieved goals</span>
                                 </div>
                             </div>
@@ -112,12 +118,78 @@ const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview' }) => {
                     </Card>
                 </>
             );
-        }        // Default overview stats (existing logic)
+        }        
+        // Default overview stats (existing logic)
         // Calculate stats
         const completedChores = kidChores.filter(chore => chore.status === 'completed').length;
 
         // Mock level calculation (based on completed chores)
         const currentLevel = Math.min(Math.floor(completedChores / 3) + 1, 10); // Level up every 3 chores
+
+        if (section === 'earning-meter' && totals) {
+            return (
+                <>
+                    {/* Total Earned Card */}
+                    <Card className="border-2">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Total Amount Earned
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center justify-between">
+                                <div className="text-2xl font-bold text-green-600">
+                                    {formatNaira(totals.total_earned)}
+                                </div>
+                                <Badge className="bg-green-100 text-green-800 border-green-200">
+                                    <Zap className="w-4 h-4 mr-1 inline" />
+                                    Earned
+                                </Badge>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Total Saved Card */}
+                    <Card className="border-2">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Total Amount Saved
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center justify-between">
+                                <div className="text-2xl font-bold text-blue-600">
+                                    {formatNaira(totals.total_saved)}
+                                </div>
+                                <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                                    <Trophy className="w-4 h-4 mr-1 inline" />
+                                    Saved
+                                </Badge>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Total Spent Card */}
+                    <Card className="border-2">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Total Amount Spent
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center justify-between">
+                                <div className="text-2xl font-bold text-red-600">
+                                    {formatNaira(totals.total_spent)}
+                                </div>
+                                <Badge className="bg-red-100 text-red-800 border-red-200">
+                                    Spent
+                                </Badge>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </>
+            );
+        }
 
         return (
             <>
@@ -155,7 +227,7 @@ const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview' }) => {
                     <CardContent>
                         <div className="flex items-center justify-between">
                             <div className="text-2xl font-bold">
-                                {formatCurrency(totalEarnings)}
+                                {formatNaira(totalEarnings)}
                             </div>
                             <Badge className="bg-green-100 text-green-800 border-green-200">
                                 +20%
@@ -193,3 +265,4 @@ const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview' }) => {
 KidStatCards.displayName = 'KidStatCards';
 
 export default KidStatCards;
+

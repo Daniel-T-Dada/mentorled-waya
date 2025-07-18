@@ -66,3 +66,4 @@ export const formatNGNCode = (amount: number | string): string => {
 export const formatNGNFull = (amount: number | string): string => {
     return formatNGN(amount, true, true);
 };
+

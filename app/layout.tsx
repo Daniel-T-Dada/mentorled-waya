@@ -1,15 +1,13 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-// import { ThemeProvider } from "@/components/providers/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
 import { metadata, viewport } from "./metadata";
-import ClientWrapper from "@/components/ClientWrapper";
+import { WebVitals } from "@/components/WebVitals";
+import { SessionProvider } from "next-auth/react";
+import { RealtimeProvider } from "@/contexts/RealtimeContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
-import { WebVitals } from "@/components/WebVitals";
-import { RealtimeProvider } from "@/contexts/RealtimeContext";
-
-import { SessionProvider } from "next-auth/react";
+import ClientWrapper from "@/components/ClientWrapper";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

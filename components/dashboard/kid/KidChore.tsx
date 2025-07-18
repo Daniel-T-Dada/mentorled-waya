@@ -89,13 +89,13 @@ const KidChore = ({ kidId: propKidId, refreshTrigger }: KidChoreProps) => {
                             <TabsList className="w-full mb-6 flex">
                                 <TabsTrigger
                                     value="pending"
-                                    className="text-sm data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=active]:font-bold px-4 py-2 rounded transition-colors"
+                                    className="text-sm px-4 py-2 rounded transition-colors"
                                 >
                                     Pending ({pendingChores.length})
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="completed"
-                                    className="text-sm data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=active]:font-bold px-4 py-2 rounded transition-colors"
+                                    className="text-sm px-4 py-2 rounded transition-colors"
                                 >
                                     Completed ({completedChores.length})
                                 </TabsTrigger>

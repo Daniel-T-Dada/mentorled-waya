@@ -3,40 +3,40 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { type ChartConfig, ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { PieChart as RePieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useState } from "react";
-// ...existing code...
 
-// Chart configuration matching the image colors
 const chartConfig = {
-    rewardSaved: {
-        label: "Reward Saved",
-        color: "#7DE2D1" // Green color from image
-    },
-    rewardSpent: {
-        label: "Reward Spent",
-        color: "#7D238E" // Purple color from image
-    },
-    // Removed goalsBudget from chartConfig
+    rewardSaved: { label: "Reward Saved", color: "#7DE2D1" },
+    rewardSpent: { label: "Reward Spent", color: "#7D238E" }
 } satisfies ChartConfig;
 
-interface ChartDataPoint {
-    name: string;
-    value: number;
-    color: string;
+interface PieChartData {
+    reward_saved: string; 
+    reward_spent: string; 
 }
 
-// interface KidPieChartProps {
-//     kidId?: string;
-// }
+interface KidPieChartProps {
+    pieChart?: PieChartData;
+}
 
-const KidPieChart = () => {
+const KidPieChart = ({ pieChart }: KidPieChartProps) => {
     const [range, setRange] = useState("7");
-    // Hardcoded chart data as placeholder
-    const chartData: ChartDataPoint[] = [
-        { name: "Reward Saved", value: 595, color: chartConfig.rewardSaved.color },
-        { name: "Reward Spent", value: 255, color: chartConfig.rewardSpent.color }
+
+    // Convert API data to chart data
+    const chartData = [
+        {
+            name: chartConfig.rewardSaved.label,
+            value: Number(pieChart?.reward_saved ?? 0),
+            color: chartConfig.rewardSaved.color,
+        },
+        {
+            name: chartConfig.rewardSpent.label,
+            value: Number(pieChart?.reward_spent ?? 0),
+            color: chartConfig.rewardSpent.color,
+        },
     ];
+
     const formatCurrency = (value: number) => `NGN ${value.toLocaleString()}`;
 
     return (
@@ -60,7 +60,7 @@ const KidPieChart = () => {
                     <div className="flex-1 mb-4 flex items-center justify-center">
                         <ChartContainer config={chartConfig} className="w-[200px] h-[200px] mx-auto">
                             <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
+                                <RePieChart>
                                     <Pie
                                         data={chartData}
                                         cx="50%"
@@ -90,7 +90,7 @@ const KidPieChart = () => {
                                             return null;
                                         }}
                                     />
-                                </PieChart>
+                                </RePieChart>
                             </ResponsiveContainer>
                         </ChartContainer>
                     </div>
