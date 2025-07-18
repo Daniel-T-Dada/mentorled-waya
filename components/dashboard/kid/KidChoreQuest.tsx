@@ -1,156 +1,59 @@
 'use client'
 
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useSession } from "next-auth/react";
-import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
-import { Task } from '@/lib/utils/taskTransforms';
 import { useKid } from '@/contexts/KidContext';
 import { getAvatarUrl } from '@/lib/utils/avatarUtils';
 import Image from "next/image";
 
-// Type for paginated API responses
-interface PaginatedResponse<T> {
-    count: number;
-    next: string | null;
-    previous: string | null;
-    results: T[];
+interface Task {
+    id: string;
+    title: string;
+    description: string;
+    status: "completed" | "pending";
+    reward: string;
+    kidName: string;
+    completedAt?: string;
+    dueDate?: string;
+    assignedTo?: string;
+    createdAt?: string;
 }
 
-interface KidMyChoreProps {
+interface KidChoreQuestProps {
+    chores: Task[];
+    onStatusChange: (choreId: string, newStatus: "completed" | "pending") => void;
+    loading?: boolean;
     kidId?: string;
-    refreshTrigger?: number;
 }
 
-const KidChoreQuest = ({ kidId: propKidId, refreshTrigger }: KidMyChoreProps) => {
+const KidChoreQuest = ({
+    chores,
+    onStatusChange,
+    loading = false,
+    kidId: propKidId,
+}: KidChoreQuestProps) => {
     const { data: session } = useSession();
     const { kids } = useKid();
-
-    const [chores, setChores] = useState<Task[]>([]);
-    // const [kidName, setKidName] = useState<string>("Kid"); // Unused variable
-    // Removed loading and error state for non-lazy loading
     const [activeTab, setActiveTab] = useState("all");
 
-    // For kid sessions, use childId; for parent sessions viewing a kid, use the session user ID
-    const sessionKidId = session?.user?.isChild ? session.user.childId : session?.user?.id;
-
-    // Use real session kid ID instead of mock fallbacks
-    const kidId = propKidId || sessionKidId || "kid-001";
-
-    console.log('KidChoreQuest - Using kidId:', kidId, {
-        propKidId,
-        sessionKidId,
-        isChildSession: session?.user?.isChild,
-        childId: session?.user?.childId,
-        userId: session?.user?.id,
-        finalKidId: kidId
-    });
-
-
-    useEffect(() => {
-        const fetchChoreData = async () => {
-            if (!session?.user?.id || !session?.user?.accessToken) {
-                return;
-            }
-            try {
-                // Use CHILD_CHORES endpoint for child chores
-                const apiUrl = getApiUrl(API_ENDPOINTS.CHILD_CHORES + '?page=1');
-                const choresResponse = await fetch(apiUrl, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session.user.accessToken}`,
-                    },
-
-                });
-                if (!choresResponse.ok) {
-                    throw new Error('Failed to fetch chores');
-                }
-                const choresData: PaginatedResponse<any> = await choresResponse.json();
-                console.log('Chores API results:', choresData.results);
-                // Transform backend chores to local Task type
-                const processedChores = Array.isArray(choresData.results) ? choresData.results.map((chore) => ({
-                    id: chore.id,
-                    title: chore.description,
-                    description: chore.description,
-                    status: chore.status,
-                    reward: chore.reward?.toString() ?? "",
-                    kidName: chore.child_name,
-                    completedAt: chore.completed_at,
-                    dueDate: chore.due_date,
-                    assignedTo: chore.assigned_to,
-                    createdAt: chore.created_at,
-                })) : [];
-                setChores(processedChores);
-
-            } catch {
-                setChores([]);
-            }
-        };
-        fetchChoreData();
-
-    }, [session?.user?.id, session?.user?.accessToken, refreshTrigger]);
-    const allChores = chores;
-    const completedChores = chores.filter(chore => chore.status === "completed");    // Handle status change for chores
-
-    const handleStatusChange = async (choreId: string, newStatus: "completed" | "pending") => {
-        if (!session?.user?.accessToken) return;
-
-        try {
-            // Optimistically update the UI
-            setChores(prevChores =>
-                prevChores.map(chore =>
-                    chore.id === choreId
-                        ? { ...chore, status: newStatus }
-                        : chore
-                )
-            );
-
-            console.log(`KidChoreQuest - Updating chore ${choreId} status to ${newStatus}`);
-
-            // Use CHILD_CHORE_COMPLETE endpoint for marking as completed
-            const endpoint = API_ENDPOINTS.CHILD_CHORE_COMPLETE;
-            const method = 'POST';
-            const body = JSON.stringify({ chore_id: choreId });
-            const response = await fetch(getApiUrl(endpoint), {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.user.accessToken}`,
-                },
-                body,
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update chore status');
-            }
-
-            console.log(`KidChoreQuest - Successfully updated chore ${choreId} status to ${newStatus}`);
-        } catch (error) {
-            console.error('KidChoreQuest - Error updating chore status:', error);
-            // Revert the optimistic update on error
-            setChores(prevChores =>
-                prevChores.map(chore =>
-                    chore.id === choreId
-                        ? { ...chore, status: newStatus === "completed" ? "pending" : "completed" }
-                        : chore
-                )
-            );
-        }
-    };
-
-
-
+    const completedChores = chores.filter((chore) => chore.status === "completed");
+    const kidId =
+        propKidId ||
+        (session?.user?.isChild ? session?.user?.childId : session?.user?.id) ||
+        "kid-001";
 
     return (
         <main>
             <div className="mb-6 flex items-center justify-between">
-                <div className="">
+                <div>
                     <h2 className="text-xl font-semibold">My Chore</h2>
-                    <p className="text-muted-foreground">View, complete your chore and gain reward.</p>
+                    <p className="text-muted-foreground">
+                        View, complete your chore and gain reward.
+                    </p>
                 </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
@@ -167,26 +70,32 @@ const KidChoreQuest = ({ kidId: propKidId, refreshTrigger }: KidMyChoreProps) =>
                             </TabsList>
                             <TabsContent value="all" className="mt-0 space-y-4">
                                 <div className="space-y-3">
-                                    {allChores.length === 0 ? (
+                                    {chores.length === 0 ? (
                                         <div className="text-center py-8 text-muted-foreground">
                                             <p>No chores found.</p>
                                         </div>
                                     ) : (
-                                        allChores.map((chore) => (
-                                            <div key={chore.id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                                        chores.map((chore) => (
+                                            <div
+                                                key={chore.id}
+                                                className="border-b border-gray-200 pb-4 last:border-b-0"
+                                            >
                                                 <div className="flex justify-between items-start">
                                                     <div className="flex-1">
-                                                        <h3 className="font-medium text-base text-gray-900 mb-1">{chore.title}</h3>
-                                                        <p className="text-sm text-gray-600">
-                                                            {chore.description}
-                                                        </p>
+                                                        <h3 className="font-medium text-base text-gray-900 mb-1">
+                                                            {chore.title}
+                                                        </h3>
+                                                        <p className="text-sm text-gray-600">{chore.description}</p>
                                                     </div>
                                                     <div className="flex items-center gap-4 ml-4">
                                                         <div className="flex flex-col gap-2 pb-6">
                                                             <RadioGroup
                                                                 value={chore.status}
-                                                                onValueChange={(value) => handleStatusChange(chore.id, value as "completed" | "pending")}
+                                                                onValueChange={(value) =>
+                                                                    onStatusChange(chore.id, value as "completed" | "pending")
+                                                                }
                                                                 className="flex flex-col gap-1"
+                                                                disabled={loading}
                                                             >
                                                                 <div className="flex items-center gap-1">
                                                                     <RadioGroupItem
@@ -194,7 +103,10 @@ const KidChoreQuest = ({ kidId: propKidId, refreshTrigger }: KidMyChoreProps) =>
                                                                         id={`completed-${chore.id}`}
                                                                         className="h-4 w-4"
                                                                     />
-                                                                    <Label htmlFor={`completed-${chore.id}`} className="text-sm text-gray-600">
+                                                                    <Label
+                                                                        htmlFor={`completed-${chore.id}`}
+                                                                        className="text-sm text-gray-600"
+                                                                    >
                                                                         Completed
                                                                     </Label>
                                                                 </div>
@@ -204,7 +116,10 @@ const KidChoreQuest = ({ kidId: propKidId, refreshTrigger }: KidMyChoreProps) =>
                                                                         id={`pending-${chore.id}`}
                                                                         className="h-4 w-4"
                                                                     />
-                                                                    <Label htmlFor={`pending-${chore.id}`} className="text-sm text-gray-600">
+                                                                    <Label
+                                                                        htmlFor={`pending-${chore.id}`}
+                                                                        className="text-sm text-gray-600"
+                                                                    >
                                                                         Pending
                                                                     </Label>
                                                                 </div>
@@ -217,44 +132,39 @@ const KidChoreQuest = ({ kidId: propKidId, refreshTrigger }: KidMyChoreProps) =>
                                                             <div className="text-base font-semibold text-teal-600">
                                                                 {chore.reward.toLocaleString()}
                                                             </div>
-                                                            {/* Display kid's avatar and first name with fallback using avatarUtils */}
                                                             <div className="flex items-center gap-2">
-                                                                {/* Avatar rendering logic */}
                                                                 {(() => {
-                                                                    // Try to get avatar from context (kids array)
                                                                     let avatarPath: string | undefined;
-                                                                    const kid = kids.find(k => k.id === kidId);
-                                                                    if (kid && kid.avatar) {
-                                                                        avatarPath = kid.avatar;
-                                                                    }
+                                                                    const kid = kids.find((k) => k.id === kidId);
+                                                                    if (kid && kid.avatar) avatarPath = kid.avatar;
                                                                     const avatarUrl = getAvatarUrl(avatarPath);
                                                                     const name = chore.kidName;
                                                                     if (avatarUrl) {
                                                                         return (
-                                                                            <>
-
-                                                                                <Image
-                                                                                    src={avatarUrl}
-                                                                                    alt={name || ""}
-                                                                                    className="w-4 h-4 rounded-full object-cover mr-1 border border-gray-200"
-                                                                                />
-                                                                            </>
+                                                                            <Image
+                                                                                src={avatarUrl}
+                                                                                alt={name || ""}
+                                                                                className="w-4 h-4 rounded-full object-cover mr-1 border border-gray-200"
+                                                                            />
                                                                         );
                                                                     } else {
                                                                         return (
                                                                             <span className="w-4 h-4 flex items-center justify-center rounded-full bg-teal-100 text-teal-700 font-bold text-xs mr-1">
-                                                                                {name?.charAt(0).toUpperCase() || ''}
+                                                                                {name?.charAt(0).toUpperCase() || ""}
                                                                             </span>
                                                                         );
                                                                     }
                                                                 })()}
                                                                 <span className="text-xs text-gray-500">
-                                                                    {chore.kidName?.split(' ')[0] || ''}
+                                                                    {chore.kidName?.split(" ")[0] || ""}
                                                                 </span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
+                                                {loading && (
+                                                    <div className="pt-2 text-xs text-muted-foreground">Updating...</div>
+                                                )}
                                             </div>
                                         ))
                                     )}
@@ -266,65 +176,66 @@ const KidChoreQuest = ({ kidId: propKidId, refreshTrigger }: KidMyChoreProps) =>
                                         <div className="text-center py-8 text-muted-foreground">
                                             <div className="text-4xl mb-2">🎯</div>
                                             <p className="font-medium">No completed chores yet</p>
-                                            <p className="text-xs">Complete your chores to see them here!</p>
+                                            <p className="text-xs">
+                                                Complete your chores to see them here!
+                                            </p>
                                         </div>
                                     ) : (
                                         completedChores.map((chore) => (
-                                            <div key={chore.id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                                            <div
+                                                key={chore.id}
+                                                className="border-b border-gray-200 pb-4 last:border-b-0"
+                                            >
                                                 <div className="flex justify-between items-start">
                                                     <div className="flex-1">
-                                                        <h3 className="font-medium text-base text-gray-900 mb-1">{chore.title}</h3>
-                                                        <p className="text-sm text-gray-600">
-                                                            {chore.description}
-                                                        </p>
+                                                        <h3 className="font-medium text-base text-gray-900 mb-1">
+                                                            {chore.title}
+                                                        </h3>
+                                                        <p className="text-sm text-gray-600">{chore.description}</p>
                                                     </div>
                                                     <div className="flex flex-col items-end gap-2 ml-4">
                                                         <div className="flex items-center gap-3">
                                                             <span className="text-sm font-medium">Completed</span>
                                                         </div>
                                                         <div className="flex items-center gap-4">
-
                                                             <div className="text-right">
                                                                 <div className="text-base font-semibold text-teal-600">
                                                                     {chore.reward.toLocaleString()}
                                                                 </div>
                                                                 <div className="flex items-center gap-2">
-                                                                    {/* Avatar rendering logic */}
                                                                     {(() => {
                                                                         let avatarPath: string | undefined;
-                                                                        const kid = kids.find(k => k.id === kidId);
-                                                                        if (kid && kid.avatar) {
-                                                                            avatarPath = kid.avatar;
-                                                                        }
+                                                                        const kid = kids.find((k) => k.id === kidId);
+                                                                        if (kid && kid.avatar) avatarPath = kid.avatar;
                                                                         const avatarUrl = getAvatarUrl(avatarPath);
                                                                         const name = chore.kidName;
                                                                         if (avatarUrl) {
                                                                             return (
-                                                                                <>
-
-                                                                                    <Image
-                                                                                        src={avatarUrl}
-                                                                                        alt={name || ""}
-                                                                                        className="w-6 h-6 rounded-full object-cover mr-1 border border-gray-200"
-                                                                                    />
-                                                                                </>
+                                                                                <Image
+                                                                                    src={avatarUrl}
+                                                                                    alt={name || ""}
+                                                                                    className="w-6 h-6 rounded-full object-cover mr-1 border border-gray-200"
+                                                                                />
                                                                             );
                                                                         } else {
                                                                             return (
                                                                                 <span className="w-6 h-6 flex items-center justify-center rounded-full bg-teal-100 text-teal-700 font-bold text-xs mr-1">
-                                                                                    {name?.charAt(0).toUpperCase() || ''}
+                                                                                    {name?.charAt(0).toUpperCase() || ""}
                                                                                 </span>
                                                                             );
                                                                         }
                                                                     })()}
                                                                     <span className="text-xs text-gray-500">
-                                                                        {chore.kidName?.split(' ')[0] || ''}
+                                                                        {chore.kidName?.split(" ")[0] || ""}
                                                                     </span>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
+                                                {loading && (
+                                                    <div className="pt-2 text-xs text-muted-foreground">Updating...</div>
+                                                )}
                                             </div>
                                         ))
                                     )}
@@ -335,6 +246,7 @@ const KidChoreQuest = ({ kidId: propKidId, refreshTrigger }: KidMyChoreProps) =>
                 </Card>
             </div>
         </main>
-    )
-}
-export default KidChoreQuest
+    );
+};
+
+export default KidChoreQuest;

@@ -7,7 +7,6 @@ import { Button } from "./ui/button"
 import { SignInButton } from "./auth/signin-button"
 import { SignUpButton } from "./auth/signup-button"
 import { useTheme } from "next-themes"
-import ThemeToggle from "./theme-toggle"
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Menu } from "lucide-react"
 
@@ -53,7 +52,7 @@ const Navbar = () => {
 
                     {/* Desktop Authentication Buttons */}
                     <div className="hidden md:flex space-x-4">
-                        <ThemeToggle />
+                        {/* <ThemeToggle /> */}
                         <SignUpButton>
                             <Button className="bg-primary dark:text-foreground hover:bg-primary/90 text-primary-foreground font-semibold mr-4">
                                 Sign Up

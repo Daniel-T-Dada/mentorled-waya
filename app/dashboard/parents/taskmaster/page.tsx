@@ -1,11 +1,11 @@
 'use client'
 
 import TaskMasterDashboard from "@/components/dashboard/parent/TaskMasterDashboard"
-import { CreateChoreLazy as CreateChore } from "@/components/lazy/modals/CreateChoreLazy";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
+import { CreateChore } from "@/components/modals/CreateChore";
 
 
 interface Chore {

@@ -1,19 +1,42 @@
 'use client'
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
 import KidStatCards from "./KidStatCards";
 import KidGoalsList from "./KidGoalsList";
-import { CreateGoalLazy as CreateGoal } from "@/components/lazy/modals/CreateGoalLazy";
+import CreateGoal from "@/components/modals/CreateGoal";
+
+
+interface StatSummary {
+    totalSaved: string;
+    activeGoals: number;
+    achievedGoals: number;
+
+}
 
 interface KidGoalGetterProps {
     kidId?: string;
+    statSummary?: StatSummary;
+    isCreateGoalOpen: boolean;
+    onOpenCreateGoal: () => void;
+    onSubmitCreateGoal: (goalData: any) => void;
+    createGoalLoading?: boolean;
+    createGoalError?: Error;
+    onCloseCreateGoal: () => void;
 }
 
-const KidGoalGetter = ({ kidId: propKidId }: KidGoalGetterProps) => {
+const KidGoalGetter = ({
+    kidId: propKidId,
+    statSummary, 
+    isCreateGoalOpen,
+    onOpenCreateGoal,
+    onSubmitCreateGoal,
+    createGoalLoading,
+    createGoalError,
+    onCloseCreateGoal,
+}: KidGoalGetterProps) => {
     const { data: session } = useSession();
-    const [isCreateGoalOpen, setIsCreateGoalOpen] = useState(false);
+    
 
     const sessionKidId = session?.user?.id;
     const validKidIds = ['kid-001', 'kid-002', 'kid-003', 'kid-004'];
@@ -27,14 +50,7 @@ const KidGoalGetter = ({ kidId: propKidId }: KidGoalGetterProps) => {
         console.log(`KidGoalGetter - Session kidId "${sessionKidId}" not found in mock data, using fallback: kid-001`);
     }
 
-    const handleCreateGoal = () => {
-        setIsCreateGoalOpen(true);
-    };
 
-    const handleCreateGoalSuccess = () => {
-        // Goal created successfully - the modal will close itself
-        // The KidGoalsList component should automatically refresh
-    };
 
     return (
         <main>
@@ -45,7 +61,7 @@ const KidGoalGetter = ({ kidId: propKidId }: KidGoalGetterProps) => {
                 </div>
                 <Button
                     className="bg-primary hover:bg-primary/90"
-                    onClick={handleCreateGoal}
+                    onClick={onOpenCreateGoal}
                 >
                     Create New Goal
                 </Button>
@@ -53,17 +69,19 @@ const KidGoalGetter = ({ kidId: propKidId }: KidGoalGetterProps) => {
 
             {/* Statistics Cards */}
             <div className="mb-8">
-                <KidStatCards kidId={kidId} section="goal-getter" />
+                <KidStatCards kidId={kidId} section="goal-getter" summary={statSummary} />
             </div>
 
             {/* Goals List and Achievements */}
-            <KidGoalsList kidId={kidId} />
+            <KidGoalsList />
 
             {/* Create Goal Modal */}
             <CreateGoal
                 isOpen={isCreateGoalOpen}
-                onClose={() => setIsCreateGoalOpen(false)}
-                onSuccess={handleCreateGoalSuccess}
+                onClose={onCloseCreateGoal}
+                onSubmit={onSubmitCreateGoal}
+                isLoading={createGoalLoading}
+                error={createGoalError}
                 kidId={kidId}
             />
         </main>

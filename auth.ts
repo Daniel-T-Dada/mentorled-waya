@@ -375,44 +375,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     const kidLoginResponse = await ChildrenService.kidLogin({
                         username: credentials.username as string,
                         pin: credentials.pin as string
-                    });
+                    }) as unknown as {
+                        id: string;
+                        name: string;
+                        username: string;
+                        avatar: string | null;
+                        token: string;
+                        refresh: string;
+                    };
 
                     console.log("Kid login response:", kidLoginResponse);
 
-                    // If childName is not provided by backend, try to fetch it
-                    let childName = kidLoginResponse.childName || kidLoginResponse.childUsername;
+                    // Use backend fields directly
+                    const { id, name, username, avatar, token, refresh } = kidLoginResponse;
+                    let childName = name || username;
 
-                    if (!kidLoginResponse.childName && kidLoginResponse.token && kidLoginResponse.childId) {
-                        try {
-                            // Try to fetch child details to get the name
-                            const childDetails = await ChildrenService.getChildDetail(
-                                kidLoginResponse.childId,
-                                kidLoginResponse.token
-                            );
-                            childName = childDetails.name || kidLoginResponse.childUsername;
-                            console.log("Fetched child name from details:", childName);
-                        } catch (error) {
-                            console.warn("Could not fetch child name, using username:", error);
-                            childName = kidLoginResponse.childUsername;
-                        }
-                    }
-
-                    // Return user object with kid context
+                    // Return user object with correct mapping
                     return {
-                        id: kidLoginResponse.parentId, // Use parent ID for session
-                        name: kidLoginResponse.childUsername,
-                        email: `${kidLoginResponse.childUsername}@kid.local`, // Dummy email for session
+                        id: id, // Child's ID
+                        name: childName, // Child's display name
+                        username: `@${username}`,
                         role: "kid",
                         emailVerified: new Date(),
-                        avatar: null,
-                        accessToken: kidLoginResponse.token,
-                        refreshToken: kidLoginResponse.refresh,
+                        avatar: avatar || null,
+                        accessToken: token,
+                        refreshToken: refresh,
 
                         // Kid-specific fields
-                        childId: kidLoginResponse.childId,
-                        childUsername: kidLoginResponse.childUsername,
-                        childName: childName, // Use fetched name or fallback to username
-                        parentId: kidLoginResponse.parentId,
+                        childId: id,
+                        childUsername: username,
+                        childName: childName,
+                        // parentId is not available in backend response, so omit or set undefined
                         isChild: true,
                     };
                 } catch (error) {
@@ -517,6 +510,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         ...session.user,
                         ...token.user
                     };
+                }
+
+                // Fix: For child users, set name to childName if available
+                if (session.user.isChild && session.user.childName) {
+                    session.user.name = session.user.childName;
                 }
 
                 console.log("Session callback - final session user:", {

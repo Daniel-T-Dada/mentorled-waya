@@ -4,24 +4,28 @@ import { UserProvider } from "@/contexts/UserContext"
 import { KidProvider } from "@/contexts/KidContext"
 import { RoleBasedLayout } from "@/components/dashboard/RoleBasedLayout"
 
+import QueryProvider from "@/components/providers/query-provider"
+
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     return (
-        <UserProvider>
-            <KidProvider>
-                <RoleBasedLayout>
-                    <div className="flex">
-                        <AppSidebar />
-                        <div className="w-full">
-                            <DashboardNavbar />
-                            <main className="px-8 lg:px-16 mb-4 pt-16">
-                                {children}
-                            </main>
+        <QueryProvider>
+            <UserProvider>
+                <KidProvider>
+                    <RoleBasedLayout>
+                        <div className="flex">
+                            <AppSidebar />
+                            <div className="w-full">
+                                <DashboardNavbar />
+                                <main className="px-8 lg:px-16 mb-4 pt-16">
+                                    {children}
+                                </main>
+                            </div>
                         </div>
-                    </div>
-                </RoleBasedLayout>
-            </KidProvider>
-        </UserProvider>
+                    </RoleBasedLayout>
+                </KidProvider>
+            </UserProvider>
+        </QueryProvider>
     )
 }
 
-export default DashboardLayout
+export default DashboardLayout;
