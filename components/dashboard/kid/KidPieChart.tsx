@@ -6,22 +6,32 @@ import { type ChartConfig, ChartContainer, ChartTooltip } from "@/components/ui/
 import { PieChart as RePieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 
-const chartConfig = {
-    rewardSaved: { label: "Reward Saved", color: "#7DE2D1" },
-    rewardSpent: { label: "Reward Spent", color: "#7D238E" }
-} satisfies ChartConfig;
-
+// Types for PieChartData and props
 interface PieChartData {
-    reward_saved: string; 
-    reward_spent: string; 
+    reward_saved: string;
+    reward_spent: string;
 }
 
 interface KidPieChartProps {
     pieChart?: PieChartData;
+    variant?: "dashboard" | "earning-meter"; // determines color/title
 }
 
-const KidPieChart = ({ pieChart }: KidPieChartProps) => {
+const KidPieChart = ({ pieChart, variant = "dashboard" }: KidPieChartProps) => {
     const [range, setRange] = useState("7");
+
+    // Set config and title based on variant prop
+    const chartConfig: ChartConfig = variant === "earning-meter"
+        ? {
+            rewardSaved: { label: "Reward Saved", color: "#8AD7AC" },
+            rewardSpent: { label: "Reward Spent", color: "#FFB938" }
+        }
+        : {
+            rewardSaved: { label: "Reward Saved", color: "#8AD6BD" },
+            rewardSpent: { label: "Reward Spent", color: "#79166A" }
+        };
+
+    const cardTitle = variant === "earning-meter" ? "Savings Breakdown" : "Expense Breakdown";
 
     // Convert API data to chart data
     const chartData = [
@@ -43,7 +53,7 @@ const KidPieChart = ({ pieChart }: KidPieChartProps) => {
         <Card className="flex flex-col">
             <CardHeader className="flex-shrink-0 pb-4">
                 <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-semibold">Expense Breakdown</CardTitle>
+                    <CardTitle className="text-lg font-semibold">{cardTitle}</CardTitle>
                     <Select value={range} onValueChange={setRange}>
                         <SelectTrigger className="w-20 h-8 text-xs">
                             <SelectValue />

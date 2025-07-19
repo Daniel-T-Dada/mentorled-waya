@@ -835,10 +835,46 @@ PATCH https://waya-mentorled.onrender.com/api/chorequest/chores/{id}/status/
 
 GET https://waya-mentorled.onrender.com/api/earningmeter/dashboard/ 
 {
-  "bar_chart": [],
+  "bar_chart": [
+    {
+      "day": "Sunday",
+      "earned": "0.00",
+      "spent": "0.00"
+    },
+    {
+      "day": "Monday",
+      "earned": "0.00",
+      "spent": "0.00"
+    },
+    {
+      "day": "Tuesday",
+      "earned": "0.00",
+      "spent": "0.00"
+    },
+    {
+      "day": "Wednesday",
+      "earned": "0.00",
+      "spent": "0.00"
+    },
+    {
+      "day": "Thursday",
+      "earned": "0.00",
+      "spent": "0.00"
+    },
+    {
+      "day": "Friday",
+      "earned": "0.00",
+      "spent": "0.00"
+    },
+    {
+      "day": "Saturday",
+      "earned": "0.00",
+      "spent": "0.00"
+    }
+  ],
   "pie_chart": {
-    "reward_saved": "2000.00",
-    "reward_spent": "0.00"
+    "reward_saved": "500.00",
+    "reward_spent": "800.00"
   },
   "recent_activities": [
     {

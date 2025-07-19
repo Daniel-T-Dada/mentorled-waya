@@ -33,18 +33,18 @@ const ParentDashboardOverview = memo<ParentDashboardProps>(({ onCreateKidClick, 
                 <AppStatCard />
                 {/* <DebugBarChart/> */}
 
-                <div className="lg:col-span-2 ">
+                <div className="lg:col-span-2 relative z-0">
                     <BarChartAllowance />
                 </div>
 
 
-                <div className="lg:col-span-1 self-start">
+                <div className="lg:col-span-1 self-start relative z-50">
                     <AppPieChart refreshTrigger={refreshTrigger} />
                 </div>
 
 
 
-                <div className="lg:col-span-2 min-h-[400px] rounded">
+                <div className="lg:col-span-2 min-h-[400px] rounded relative z-50">
 
 
 

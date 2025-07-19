@@ -131,11 +131,7 @@ export const API_ENDPOINTS = {
 
     // Goal Getter (Child Interface) endpoints
     GOAL_GETTER: '/api/goalgetter/goals/',
-    GOALGETTER_PROGRESS: '/api/goalgetter/progress/',
-    GOALGETTER_LEADERBOARD: '/api/goalgetter/leaderboard/',
-    GOALGETTER_REWARDS: '/api/goalgetter/rewards/',
-    CHILD_BAR_CHART: '/api/goalgetter/children/:childId/bar_chart/',
-    GOALGETTER_SUMMARY: '/api/goalgetter/goal/summary/',
+    GOALGETTER_SUMMARY: '/api/goalgetter/goals/summary/',
 
     // Leaderboard endpoints
     LEADERBOARD: '/api/leaderboard/',

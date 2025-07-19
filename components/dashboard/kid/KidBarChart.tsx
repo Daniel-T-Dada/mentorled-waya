@@ -4,37 +4,42 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { formatNGN } from '@/lib/utils/currency';
 
-const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const chartConfig = {
-    rewardEarned: { label: "Reward Saved", color: "#7DE2D1" },
-    rewardSpent: { label: "Reward Spent", color: "#7D238E" },
-} satisfies ChartConfig;
+const WEEK_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-interface ChartDataPoint {
+interface BarChartPoint {
     date: string;
     rewardEarned: number;
     rewardSpent: number;
 }
 
-interface PieChartData {
-    week_data?: Record<string, { saved?: string, spent?: string }>;
-    reward_saved: string;
-    reward_spent: string;
-    highest_saved?: string;
-    lowest_saved?: string;
+interface ApiBarChartPoint {
+    day: string;
+    earned: string;
+    spent: string;
 }
 
 interface KidBarChartProps {
-    pieChart?: PieChartData;
-    kidId?: string;
+    bar_chart?: ApiBarChartPoint[];
+    variant?: "dashboard" | "earning-meter"; // add variant prop
 }
 
-const KidBarChart = ({ pieChart }: KidBarChartProps) => {
+const KidBarChart = ({ bar_chart, variant = "dashboard" }: KidBarChartProps) => {
     const [range, setRange] = useState("7");
     const [screenSize, setScreenSize] = useState('sm');
+
+    // Set config and title based on variant prop
+    const chartConfig: ChartConfig = variant === "earning-meter"
+        ? {
+            rewardEarned: { label: "Reward Saved", color: "#8AD7AC" },
+            rewardSpent: { label: "Reward Spent", color: "#FFB938" }
+        }
+        : {
+            rewardEarned: { label: "Reward Saved", color: "#8AD6BD" },
+            rewardSpent: { label: "Reward Spent", color: "#79166A" }
+        };
 
     // Responsive margin logic
     useEffect(() => {
@@ -63,58 +68,19 @@ const KidBarChart = ({ pieChart }: KidBarChartProps) => {
         }
     };
 
-
-    let chartData: ChartDataPoint[];
-
-    if (pieChart?.week_data && Object.keys(pieChart.week_data).length > 0) {
-        // Use per-day data when available
-        chartData = WEEK_DAYS.map((day) => ({
-            date: day,
-            rewardEarned: Number(pieChart.week_data?.[day]?.saved ?? 0),
-            rewardSpent: Number(pieChart.week_data?.[day]?.spent ?? 0),
-        }));
-    } else if (pieChart) {
-        // Use same value for all days if only weekly totals present
-        chartData = WEEK_DAYS.map((day) => ({
-            date: day,
-            rewardEarned: Number(pieChart.reward_saved ?? 0),
-            rewardSpent: Number(pieChart.reward_spent ?? 0),
-        }));
-    } else {
-        chartData = [
-            { date: "Mon", rewardEarned: 100, rewardSpent: 50 },
-            { date: "Tue", rewardEarned: 1200, rewardSpent: 5000 },
-            { date: "Wed", rewardEarned: 90, rewardSpent: 40 },
-            { date: "Thu", rewardEarned: 110, rewardSpent: 70 },
-            { date: "Fri", rewardEarned: 130, rewardSpent: 80 },
-            { date: "Sat", rewardEarned: 140, rewardSpent: 90 },
-            { date: "Sun", rewardEarned: 2000, rewardSpent: 1000 },
-        ];
-    }
-
-    // Optional: loading/error state if you want to support suspense or async
-    const loading = false;
-    const error = null;
-
-    if (loading) {
-        return (
-            <Card className="h-[280px] sm:h-[320px] md:h-[360px] lg:h-[400px] xl:h-[420px] flex flex-col">
-                {/* ...loading skeleton UI... */}
-            </Card>
-        );
-    }
-    if (error) {
-        return (
-            <Card className="h-[280px] sm:h-[320px] md:h-[360px] lg:h-[400px] xl:h-[420px] flex flex-col">
-                <CardContent className="flex items-center justify-center h-full">
-                    <div className="text-center space-y-2">
-                        <p className="text-sm text-red-600">Error loading chart: {error}</p>
-                        <p className="text-xs text-muted-foreground">Please try refreshing the page</p>
-                    </div>
-                </CardContent>
-            </Card>
-        );
-    }
+    // Memoize chartData to avoid recalculation
+    const chartData = useMemo<BarChartPoint[]>(() => {
+        if (!bar_chart || !Array.isArray(bar_chart)) return [];
+        // Make sure days are always shown in correct order (Monday-Sunday)
+        return WEEK_DAYS.map((day) => {
+            const dataForDay = bar_chart.find((item) => item.day === day);
+            return {
+                date: day.slice(0, 3), // "Mon", "Tue", etc.
+                rewardEarned: Number(dataForDay?.earned ?? 0),
+                rewardSpent: Number(dataForDay?.spent ?? 0),
+            };
+        });
+    }, [bar_chart]);
 
     return (
         <Card className="h-[280px] sm:h-[320px] md:h-[360px] lg:h-[400px] xl:h-[420px] flex flex-col">
@@ -128,7 +94,7 @@ const KidBarChart = ({ pieChart }: KidBarChartProps) => {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="7">Last 7 days</SelectItem>
-                                <SelectItem value="30">Last 30 days</SelectItem>
+                                {/* <SelectItem value="30">Last 30 days</SelectItem> */}
                             </SelectContent>
                         </Select>
                     </div>
@@ -136,11 +102,11 @@ const KidBarChart = ({ pieChart }: KidBarChartProps) => {
                     <div className="flex items-center justify-center gap-3 sm:gap-6 text-xs flex-wrap">
                         <div className="flex items-center gap-1 sm:gap-2">
                             <div className="w-2 h-2 sm:w-3 sm:h-3 rounded" style={{ backgroundColor: chartConfig.rewardEarned.color }}></div>
-                            <span className="text-muted-foreground text-[10px] sm:text-xs">Reward Saved</span>
+                            <span className="text-muted-foreground text-[10px] sm:text-xs">{chartConfig.rewardEarned.label}</span>
                         </div>
                         <div className="flex items-center gap-1 sm:gap-2">
                             <div className="w-2 h-2 sm:w-3 sm:h-3 rounded" style={{ backgroundColor: chartConfig.rewardSpent.color }}></div>
-                            <span className="text-muted-foreground text-[10px] sm:text-xs">Reward Spent</span>
+                            <span className="text-muted-foreground text-[10px] sm:text-xs">{chartConfig.rewardSpent.label}</span>
                         </div>
                     </div>
                 </div>
@@ -196,4 +162,4 @@ const KidBarChart = ({ pieChart }: KidBarChartProps) => {
     );
 };
 
-export default KidBarChart
+export default KidBarChart;
