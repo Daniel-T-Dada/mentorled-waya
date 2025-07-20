@@ -6,6 +6,8 @@ import KidPieChart from '@/components/dashboard/kid/KidPieChart';
 import RecentActivities from '@/components/dashboard/kid/RecentActivities';
 
 
+
+
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { API_ENDPOINTS, getApiUrl } from '@/lib/utils/api';
 
@@ -25,10 +27,9 @@ const EarningMeterPage = () => {
         enabled: true,
         refetchInterval: 10000,
     });
-
+    
 
     console.log('Tanstack EARNING METER DOUBLE D DATA:', data);
-
 
     if (isLoading) return <div>Loading...</div>;
     if (error) return <div>Error loading data: {error.message}</div>;
@@ -47,10 +48,10 @@ const EarningMeterPage = () => {
                     />
                 </div>
                 <div className="lg:col-span-2">
-                    <KidBarChart pieChart={data?.pie_chart} />
+                    <KidBarChart bar_chart={data?.bar_chart} />
                 </div>
                 <div className="lg:col-span-1 self-start">
-                    <KidPieChart pieChart={data?.pie_chart} />
+                    <KidPieChart pieChart={data?.pie_chart} variant="earning-meter" />
                 </div>
             </div>
             <div className="mt-8">

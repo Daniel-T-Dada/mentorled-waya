@@ -53,7 +53,8 @@ export default function RecentActivities({ activities = [] }: { activities?: Rec
                     </TableHeader>
                     <TableBody>
                         {paginated.map((activity, idx) => (
-                            <TableRow key={idx}>                                <TableCell className="flex items-center gap-2">
+                            <TableRow key={idx}>                                
+                            <TableCell className="flex items-center gap-2">
                                 <Avatar className="w-7 h-7">
                                     {/* <AvatarImage src={activity.avatar} alt={activity.name} /> */}
                                     <AvatarFallback>{activity.name.charAt(0)}</AvatarFallback>
