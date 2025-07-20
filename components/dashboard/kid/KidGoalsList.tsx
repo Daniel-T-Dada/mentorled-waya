@@ -105,6 +105,8 @@ const KidGoalsList = () => {
     }>({
         endpoint: getApiUrl(API_ENDPOINTS.GOAL_GETTER),
         queryKey: ["goalgetter-goals"],
+        enabled: true,
+        refetchInterval: 10000
     });
 
     const goals = (data?.results ?? []).filter(g => g.status === "active");
@@ -133,7 +135,7 @@ const KidGoalsList = () => {
         mutationFn: async (goalId: string) => {
             return await makeAuthenticatedCall({
                 endpoint: getApiUrl(`${API_ENDPOINTS.GOAL_GETTER}${goalId}/`),
-                method: "DELETE",
+                method: "DELETE"
             });
         },
         onSuccess: () => {
@@ -240,7 +242,7 @@ const KidGoalsList = () => {
                                                             size="icon"
                                                             className="h-7 w-7"
                                                             onClick={() => deleteMutation.mutate(goal.id)}
-                                                            disabled={editMutation.isPending} 
+                                                            disabled={editMutation.isPending}
                                                         >
                                                             <Trash2 className="w-4 h-4 text-[color:var(--destructive)]" />
                                                         </Button>

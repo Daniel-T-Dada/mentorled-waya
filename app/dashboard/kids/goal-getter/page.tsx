@@ -1,5 +1,6 @@
 'use client'
 
+
 import KidGoalGetter from "@/components/dashboard/kid/KidGoalGetter";
 import { useAuthenticatedApi } from "@/hooks/use-authenticated-api";
 import { useApiQuery } from '@/hooks/useApiQuery';
@@ -17,14 +18,16 @@ const GoalGetterPage = () => {
     const { data: summary, error } = useApiQuery({
         endpoint: getApiUrl(API_ENDPOINTS.GOALGETTER_SUMMARY),
         queryKey: ['goalgetter-summary'],
-        enabled: true
+        enabled: true,
+        refetchInterval: 10000,
     });
 
     // Fetch goals list (optional, for refetch)
     const { refetch: refetchGoals } = useApiQuery({
         endpoint: getApiUrl(API_ENDPOINTS.GOAL_GETTER),
         queryKey: ['goalgetter-goals'],
-        enabled: false // only when needed, e.g. after create
+        enabled: true,
+        refetchInterval: 10000,
 
     });
 

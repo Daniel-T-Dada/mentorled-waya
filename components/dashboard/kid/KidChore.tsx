@@ -2,7 +2,7 @@
 
 import { getAvatarUrl } from '@/lib/utils/avatarUtils';
 import Image from 'next/image';
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 
 
@@ -17,7 +17,7 @@ interface KidChoreProps {
     refreshTrigger?: number;
 }
 
-const KidChore = ({ kidId: propKidId, refreshTrigger }: KidChoreProps) => {
+const KidChore = memo(function KidChore({ kidId: propKidId, refreshTrigger }: KidChoreProps) {
     const { data: session } = useSession();
     const { kids } = useKid();
     const [chores, setChores] = useState<Task[]>([]);
@@ -83,7 +83,7 @@ const KidChore = ({ kidId: propKidId, refreshTrigger }: KidChoreProps) => {
     return (
         <main>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                <Card className="col-span-3">
+                <Card className="col-span-3 md:min-h-[755px]">
                     <CardContent className="p-6">
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                             <TabsList className="w-full mb-6 flex">
@@ -236,6 +236,7 @@ const KidChore = ({ kidId: propKidId, refreshTrigger }: KidChoreProps) => {
             </div>
         </main>
     );
-};
+});
+KidChore.displayName = 'KidChore';
 
 export default KidChore;
