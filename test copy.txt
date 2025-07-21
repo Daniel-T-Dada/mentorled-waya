@@ -1,23 +1,28 @@
 Moneymaze
 
 curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/concepts/ \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMDExNDI5LCJpYXQiOjE3NTI5MjUwMjksImp0aSI6ImQzM2EwNjMyZTBiYTQyYjA4NmYwZDliYjRiYWRjYWYzIiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.mfTOULa6f9p8JUsEwep_uEf58GqPSD69ExZMFshgyzI" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
   | jq
 
 curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/concepts/progress/ \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMDExNDI5LCJpYXQiOjE3NTI5MjUwMjksImp0aSI6ImQzM2EwNjMyZTBiYTQyYjA4NmYwZDliYjRiYWRjYWYzIiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.mfTOULa6f9p8JUsEwep_uEf58GqPSD69ExZMFshgyzI" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
   | jq
 
 curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/concepts/8e8298f8-ea79-4f79-9e08-a75169300336/sections/ \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMDExNDI5LCJpYXQiOjE3NTI5MjUwMjksImp0aSI6ImQzM2EwNjMyZTBiYTQyYjA4NmYwZDliYjRiYWRjYWYzIiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.mfTOULa6f9p8JUsEwep_uEf58GqPSD69ExZMFshgyzI" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
   | jq
 
-curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/concepts/8e8298f8-ea79-4f79-9e08-a75169300336/sections/1/ \
- -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMDExNDI5LCJpYXQiOjE3NTI5MjUwMjksImp0aSI6ImQzM2EwNjMyZTBiYTQyYjA4NmYwZDliYjRiYWRjYWYzIiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.mfTOULa6f9p8JUsEwep_uEf58GqPSD69ExZMFshgyzI" \
+curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/concepts/e778df4e-a1b5-4fe9-9cbc-372b4484d7d5/sections/1/ \
+ -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
   | jq
 
-curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/quizzes/YOUR_QUIZ_UUID/ \
-  -H "Authorization: Bearer YOUR_CHILD_JWT_TOKEN"
+curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/quizzes/3fa85f64-5717-4562-b3fc-2c963f66afa6/ \
+   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
+
+curl -X GET "https://waya-mentorled.onrender.com/api/moneymaze/quizzes/" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
 
 curl -X POST https://waya-mentorled.onrender.com/api/moneymaze/quizzes/submit/ \
   -H "Authorization: Bearer YOUR_CHILD_JWT_TOKEN" \
@@ -27,17 +32,32 @@ curl -X POST https://waya-mentorled.onrender.com/api/moneymaze/quizzes/submit/ \
         "answers": {"QUESTION_UUID_1": "ANSWER_CHOICE_UUID", "QUESTION_UUID_2": "ANSWER_CHOICE_UUID"}
       }'
 
-curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/concepts/YOUR_CONCEPT_UUID/can-access-quiz/ \
-  -H "Authorization: Bearer YOUR_CHILD_JWT_TOKEN"
+curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/concepts/8e8298f8-ea79-4f79-9e08-a75169300336/can-access-quiz/ \
+   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
 
 curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/rewards/ \
-  -H "Authorization: Bearer YOUR_CHILD_JWT_TOKEN"
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
 
 curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/dashboard/ \
-  -H "Authorization: Bearer YOUR_CHILD_JWT_TOKEN"
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
 
 curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/weekly-streak/ \
-  -H "Authorization: Bearer YOUR_CHILD_JWT_TOKEN"
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
+
+
+
+
+
+
+
+
+
+
+
 
 Earning meter
 
