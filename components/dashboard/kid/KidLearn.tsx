@@ -1,124 +1,102 @@
 'use client'
 
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import { Badge } from "@/components/ui/badge";
 import { Trophy, BookOpen, BarChart3 } from "lucide-react";
-import { MockApiService } from "@/lib/services/mockApiService";
-import { mockDataService } from "@/lib/services/mockDataService";
 
-interface FinancialConcept {
+
+
+
+
+interface ApiConcept {
     id: string;
     title: string;
     description: string;
-    progress: number;
-    isCompleted: boolean;
+    level: number;
+    sections: any[];
+}
+interface ApiConceptProgress {
+    id: number;
+    child: string;
+    concept: ApiConcept;
+    progress_percentage: string;
+    completed: boolean;
+    unlocked: boolean;
+}
+interface KidLearnProps {
+    concepts: ApiConcept[];
+    conceptsProgress: ApiConceptProgress[];
 }
 
-interface Achievement {
-    id: string;
-    title: string;
-    description: string;
-    progress: number;
-    isCompleted: boolean;
-    hasTrophy: boolean;
-}
-
-interface ProgressLesson {
-    id: string;
-    title: string;
-    description: string;
-    progress: number;
-    isCompleted: boolean;
-}
-
-interface LearningData {
-    financialConcepts: FinancialConcept[];
-    achievements: Achievement[];
-    progressLessons: ProgressLesson[];
-}
-
-const KidLearn = () => {
-    const [learningData, setLearningData] = useState<LearningData | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+const KidLearn = ({ concepts, conceptsProgress }: KidLearnProps) => {
+    // Remove unused learningData, loading, error state for now
     const [activeTab, setActiveTab] = useState("learn");
 
-    useEffect(() => {
-        const fetchLearningData = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-
-                // Try to fetch from API first
-                try {
-                    const data = await MockApiService.fetchLearningData();
-                    setLearningData(data);
-                } catch (apiError) {
-                    console.log('API fetch failed, falling back to direct mock data service:', apiError);
-
-                    // Fallback to direct mock data service
-                    const data = mockDataService.getLearningData();
-                    setLearningData(data);
-                }
-            } catch (err) {
-                console.error('Error fetching learning data:', err);
-                setError('Failed to load learning data');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchLearningData();
-    }, []); const getProgressBadgeColor = (progress: number) => {
-        if (progress >= 60) return "bg-green-100 text-green-800 hover:bg-green-100"; // Green
-        if (progress >= 30) return "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"; // Yellow  
-        return "bg-red-100 text-red-800 hover:bg-red-100"; // Red
+    const financialConcepts = useMemo(() => {
+        if (!concepts) return [];
+        return concepts.map(concept => {
+            const progressEntry = conceptsProgress.find(p => p.concept.id === concept.id);
+            return {
+                id: concept.id,
+                title: concept.title,
+                level: concept.level,
+                description: concept.description,
+                progress: progressEntry ? Number(progressEntry.progress_percentage) : 0,
+                isCompleted: progressEntry ? progressEntry.completed : false,
+                unlocked: progressEntry ? progressEntry.unlocked : true,
+            };
+        });
+    }, [concepts, conceptsProgress]);
+    const getProgressBadgeColor = (progress: number) => {
+        if (progress >= 60) return "bg-green-100 text-green-800 hover:bg-green-100";
+        if (progress >= 30) return "bg-yellow-100 text-yellow-800 hover:bg-yellow-100";
+        return "bg-red-100 text-red-800 hover:bg-red-100";
     };
 
-    if (loading) {
-        return (
-            <div className="space-y-6">
-                <div className="flex space-x-1 p-1 bg-muted rounded-lg">
-                    <Skeleton className="h-10 flex-1" />
-                    <Skeleton className="h-10 flex-1" />
-                    <Skeleton className="h-10 flex-1" />
-                </div>
 
-                <Card>
-                    <CardContent className="p-6">
-                        <div className="space-y-4">
-                            <Skeleton className="h-6 w-48" />
-                            <Skeleton className="h-4 w-64" />
-                            {Array.from({ length: 3 }).map((_, index) => (
-                                <div key={index} className="space-y-2">
-                                    <div className="flex justify-between items-center">
-                                        <Skeleton className="h-5 w-32" />
-                                        <Skeleton className="h-5 w-12" />
-                                    </div>
-                                    <Skeleton className="h-4 w-full" />
-                                    <Skeleton className="h-2 w-full" />
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
 
-    if (error || !learningData) {
-        return (
-            <Card>
-                <CardContent className="flex items-center justify-center py-8">
-                    <p className="text-destructive">{error || 'No learning data available'}</p>
-                </CardContent>
-            </Card>
-        );
-    }
+
+
+    // Remove loading and error UI for now
+    // Hardcoded data for Achievement and Progress tabs
+    const hardcodedAchievements = [
+        {
+            id: 'achv1',
+            title: 'First Steps',
+            description: 'Completed your first lesson!',
+            progress: 100,
+            isCompleted: true,
+            hasTrophy: true,
+        },
+        {
+            id: 'achv2',
+            title: 'Halfway There',
+            description: 'Reached 50% progress in a concept.',
+            progress: 50,
+            isCompleted: false,
+            hasTrophy: false,
+        },
+    ];
+    const hardcodedProgressLessons = [
+        {
+            id: 'lesson1',
+            title: 'Budgeting Basics',
+            description: 'Learned how to create a budget.',
+            progress: 100,
+            isCompleted: true,
+        },
+        {
+            id: 'lesson2',
+            title: 'Saving Money',
+            description: 'Discovered the importance of saving.',
+            progress: 60,
+            isCompleted: false,
+        },
+    ];
 
     return (
         <div className="space-y-6">
@@ -136,7 +114,10 @@ const KidLearn = () => {
                         <BarChart3 className="w-4 h-4" />
                         Progress
                     </TabsTrigger>
-                </TabsList>                <TabsContent value="learn" className="mt-6">
+                </TabsList>
+
+                {/* Financial Concepts */}
+                <TabsContent value="learn" className="mt-6">
                     <Card>
                         <CardContent className="p-6">
                             <div className="space-y-6">
@@ -146,12 +127,12 @@ const KidLearn = () => {
                                 </div>
 
                                 <div className="space-y-4">
-                                    {learningData.financialConcepts.map((concept) => (
+                                    {financialConcepts.map((concept) => (
                                         <Card key={concept.id} className="p-4 bg-muted/50">
                                             <div className="space-y-3">
                                                 <div className="flex justify-between items-start">
                                                     <div className="flex-1">
-                                                        <h4 className="font-medium text-card-foreground mb-1">{concept.title}</h4>
+                                                        <h4 className="font-medium text-card-foreground mb-1">{concept.level}</h4>
                                                         <p className="text-sm text-muted-foreground">{concept.description}</p>
                                                     </div>
                                                     <Badge className={getProgressBadgeColor(concept.progress)}>
@@ -169,7 +150,10 @@ const KidLearn = () => {
                             </div>
                         </CardContent>
                     </Card>
-                </TabsContent>                <TabsContent value="achievement" className="mt-6">
+                </TabsContent>
+
+                {/* Achievements */}
+                <TabsContent value="achievement" className="mt-6">
                     <Card>
                         <CardContent className="p-6">
                             <div className="space-y-6">
@@ -177,9 +161,8 @@ const KidLearn = () => {
                                     <h3 className="text-lg font-semibold text-card-foreground">Achievement</h3>
                                     <p className="text-sm text-muted-foreground">View how many trophies you&apos;ve earned</p>
                                 </div>
-
                                 <div className="space-y-4">
-                                    {learningData.achievements.map((achievement) => (
+                                    {hardcodedAchievements.map((achievement) => (
                                         <Card key={achievement.id} className="p-4 bg-muted/50">
                                             <div className="space-y-3">
                                                 <div className="flex justify-between items-start">
@@ -207,7 +190,10 @@ const KidLearn = () => {
                             </div>
                         </CardContent>
                     </Card>
-                </TabsContent>                <TabsContent value="progress" className="mt-6">
+                </TabsContent>
+
+                {/* Progress */}
+                <TabsContent value="progress" className="mt-6">
                     <Card>
                         <CardContent className="p-6">
                             <div className="space-y-6">
@@ -215,9 +201,8 @@ const KidLearn = () => {
                                     <h3 className="text-lg font-semibold text-card-foreground">Progress</h3>
                                     <p className="text-sm text-muted-foreground">Track your journey so far</p>
                                 </div>
-
                                 <div className="space-y-4">
-                                    {learningData.progressLessons.map((lesson) => (
+                                    {hardcodedProgressLessons.map((lesson) => (
                                         <Card key={lesson.id} className="p-4 bg-muted/50">
                                             <div className="space-y-3">
                                                 <div className="flex justify-between items-start">

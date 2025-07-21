@@ -33,7 +33,7 @@ const KidBarChart = ({ bar_chart, variant = "dashboard" }: KidBarChartProps) => 
     // Set config and title based on variant prop
     const chartConfig: ChartConfig = variant === "earning-meter"
         ? {
-            rewardEarned: { label: "Reward Saved", color: "#8AD7AC" },
+            rewardEarned: { label: "Reward Saved", color: "#8AD6BD" },
             rewardSpent: { label: "Reward Spent", color: "#FFB938" }
         }
         : {

@@ -1,80 +1,79 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Flame, Gift, CheckCircle } from "lucide-react"
-// ...existing code...
+import { useState } from "react"
 
 interface DayStatus {
     day: string
     completed: boolean
 }
 
-interface RewardItem {
-    id: string
-    title: string
-    description: string
-    isRedeemed: boolean
+interface RewardResult {
+    id: number;
+    child: string;
+    reward: {
+        id: number;
+        concept: string;
+        name: string;
+        description: string;
+        image: string | null;
+        points_required: number;
+    };
+    earned_on: string | null;
 }
 
 interface KidDailyStreaksProps {
     kidId?: string
+    weeklyStreak?: {
+        week_start_date: string
+        streak: {
+            mon: boolean
+            tue: boolean
+            wed: boolean
+            thu: boolean
+            fri: boolean
+            sat: boolean
+            sun: boolean
+        }
+    }
+    rewards?: RewardResult[];
 }
 
-const KidDailyStreaks = ({ kidId = 'kid-001' }: KidDailyStreaksProps) => {
-    const [weeklyProgress, setWeeklyProgress] = useState<DayStatus[]>([])
-    const [rewards, setRewards] = useState<RewardItem[]>([])
-    const [isLoading, setIsLoading] = useState(true)
-    // Removed unused error state
+const DAY_ORDER = [
+    { api: "mon", label: "Mon" },
+    { api: "tue", label: "Tue" },
+    { api: "wed", label: "Wed" },
+    { api: "thu", label: "Thu" },
+    { api: "fri", label: "Fri" },
+    { api: "sat", label: "Sat" },
+    { api: "sun", label: "Sun" },
+];
 
-    useEffect(() => {
-        // Hardcoded placeholder data for weekly progress and rewards
-        setWeeklyProgress([
-            { day: 'Mon', completed: true },
-            { day: 'Tue', completed: true },
-            { day: 'Wed', completed: true },
-            { day: 'Thu', completed: false },
-            { day: 'Fri', completed: false },
-            { day: 'Sat', completed: false },
-            { day: 'Sun', completed: false },
-        ]);
-        setRewards([
-            {
-                id: '1',
-                title: 'Clean your room',
-                description: 'Make your bed, organize your wardrobe, clothes and toys',
-                isRedeemed: false
-            },
-            {
-                id: '2',
-                title: 'Take out the trash',
-                description: 'Empty all the trash can in the house.',
-                isRedeemed: false
-            },
-            {
-                id: '3',
-                title: 'Wash the dishes',
-                description: 'Wash all the dishes in the kitchen and put them away.',
-                isRedeemed: false
-            }
-        ]);
-        setIsLoading(false);
-    }, [kidId]);
+const KidDailyStreaks = ({ weeklyStreak, rewards = [] }: KidDailyStreaksProps) => {
+    // Track redeemed reward ids locally. This should be replaced by backend status when available.
+    const [redeemedIds, setRedeemedIds] = useState<number[]>([]);
 
-    const handleRedeem = (rewardId: string) => {
-        setRewards(prev => prev.map(reward =>
-            reward.id === rewardId
-                ? { ...reward, isRedeemed: true }
-                : reward
-        ));
+    const handleRedeem = (rewardId: number) => {
+        // TODO: Call backend to redeem, then update UI on success
+        setRedeemedIds(prev => [...prev, rewardId]);
     };
+
+    // Map API data to DayStatus[]
+    let weeklyProgress: DayStatus[] = [];
+    if (weeklyStreak?.streak) {
+        weeklyProgress = DAY_ORDER.map(day => ({
+            day: day.label,
+            completed: weeklyStreak.streak[day.api as keyof typeof weeklyStreak.streak]
+        }));
+    }
 
     const completedDaysCount = weeklyProgress.filter(day => day.completed).length;
 
-    if (isLoading) {
+    if (!weeklyStreak) {
         return (
             <div className="space-y-4 sm:space-y-6">
                 {/* Daily Streaks Skeleton */}
@@ -131,8 +130,9 @@ const KidDailyStreaks = ({ kidId = 'kid-001' }: KidDailyStreaksProps) => {
                 </Card>
             </div>
         )
-        // ...existing code...
-    } return (
+    }
+
+    return (
         <div className="space-y-4 sm:space-y-6">
             {/* Daily Streaks Section */}
             <Card className="h-fit">
@@ -176,7 +176,9 @@ const KidDailyStreaks = ({ kidId = 'kid-001' }: KidDailyStreaksProps) => {
                         </Badge>
                     </div>
                 </CardContent>
-            </Card>            {/* Redeem Rewards Section */}
+            </Card>
+
+            {/* Redeem Rewards Section */}
             <Card className="h-fit">
                 <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6">
                     <div className="flex items-center gap-2">
@@ -188,31 +190,39 @@ const KidDailyStreaks = ({ kidId = 'kid-001' }: KidDailyStreaksProps) => {
                 <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
                     {rewards.length > 0 ? (
                         <div className="space-y-3 sm:space-y-4">
-                            {rewards.map((reward) => (
-                                <div
-                                    key={reward.id}
-                                    className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border bg-card transition-all duration-200 hover:shadow-sm"
-                                >
-                                    <div className="flex-1 space-y-1 sm:space-y-2 min-w-0">
-                                        <h4 className="font-medium text-sm sm:text-base leading-tight">
-                                            {reward.title}
-                                        </h4>
-                                        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                                            {reward.description}
-                                        </p>
+                            {rewards.map((item) => {
+                                const isRedeemed = redeemedIds.includes(item.id);
+                                return (
+                                    <div
+                                        key={item.id}
+                                        className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border bg-card transition-all duration-200 hover:shadow-sm"
+                                    >
+                                        <div className="flex-1 space-y-1 sm:space-y-2 min-w-0">
+                                            <h4 className="font-medium text-sm sm:text-base leading-tight">
+                                                {item.reward.name}
+                                            </h4>
+                                            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                                                {item.reward.description}
+                                            </p>
+                                            {item.earned_on && (
+                                                <p className="text-[10px] sm:text-xs text-muted-foreground">
+                                                    Earned on: {new Date(item.earned_on).toLocaleString()}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="flex-shrink-0 self-start sm:self-center">
+                                            <Button
+                                                onClick={() => handleRedeem(item.id)}
+                                                disabled={!item.earned_on || isRedeemed}
+                                                className="w-full sm:w-auto bg-primary hover:bg-secondary text-primary-foreground min-w-[80px] text-xs sm:text-sm"
+                                                size="sm"
+                                            >
+                                                {isRedeemed ? 'Redeemed' : 'Redeem'}
+                                            </Button>
+                                        </div>
                                     </div>
-                                    <div className="flex-shrink-0 self-start sm:self-center">
-                                        <Button
-                                            onClick={() => handleRedeem(reward.id)}
-                                            disabled={reward.isRedeemed}
-                                            className="w-full sm:w-auto bg-primary hover:bg-secondary text-primary-foreground min-w-[80px] text-xs sm:text-sm"
-                                            size="sm"
-                                        >
-                                            {reward.isRedeemed ? 'Redeemed' : 'Redeem'}
-                                        </Button>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
                         <div className="text-center py-6 sm:py-8">

@@ -70,10 +70,10 @@ const GoalGetterPage = () => {
             error: undefined
         };
     } else if (error && error.message && error.message.toLowerCase().includes('not found')) {
-        // 404 error: just display empty stats, but do not render an error UI
+        
         statCardProps.error = "No summary available yet.";
     } else if (error) {
-        // Other errors: optionally show a message, but render the rest
+        
         statCardProps.error = error.message;
     }
 

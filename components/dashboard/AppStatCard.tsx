@@ -394,10 +394,6 @@ const AppStatCard = memo<AppStatCardProps>(({ kidId, insightStats }: AppStatCard
             ];
         }
 
-        // // For other pages, use the existing logic with manual calculations
-        // const totalChores = filteredChores.length;
-        // const completedChores = filteredChores.filter(chore => chore.status === "completed").length;
-        // const pendingChores = filteredChores.filter(chore => chore.status === "pending").length;
 
         // Use wallet dashboard stats for wallet pages
         if (isWalletPage && walletStats) {

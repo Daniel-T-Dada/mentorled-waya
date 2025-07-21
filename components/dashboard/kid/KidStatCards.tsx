@@ -9,7 +9,6 @@ import { formatNaira } from "@/lib/utils/currency";
 
 interface KidStatCardsProps {
     kidId?: string;
-
     section?: 'overview' | 'chore' | 'money-maze' | 'goal-getter' | 'earning-meter';
     totals?: {
         total_earned: string;
@@ -20,12 +19,11 @@ interface KidStatCardsProps {
         totalSaved: string;
         activeGoals: number;
         achievedGoals: number;
-        // error?: string;
     };
 }
 
 const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview', totals, summary }) => {
-    // Hardcoded kid and chores data
+    // Hardcoded kid and chores data for other cards
     const kidChores = [
         { id: 'c1', title: 'Sweep the living room', status: 'completed', reward: 500 },
         { id: 'c2', title: 'Do homework', status: 'completed', reward: 700 },
@@ -34,27 +32,16 @@ const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview', totals, su
         { id: 'c5', title: 'Feed the dog', status: 'completed', reward: 400 },
     ];
 
-    // Calculate stats
+    // Calculate stats for static cards
     const completedChores = kidChores.filter(chore => chore.status === 'completed').length;
-    const totalEarnings = kidChores
-        .filter(chore => chore.status === 'completed')
-        .reduce((sum, chore) => sum + chore.reward, 0);
 
     // Mock level calculation (based on completed chores)
     const currentLevel = Math.min(Math.floor(completedChores / 3) + 1, 10); // Level up every 3 chores
     const choresNeededForNextLevel = ((currentLevel) * 3) - completedChores;
     const progressToNextLevel = ((completedChores % 3) / 3) * 100;
 
-    // Get stats based on section
     const getStatCards = () => {
-            if (section === 'goal-getter' && summary) {
-                // if (summary.error) {
-                // return (
-                //     <div className="p-4 text-sm text-red-600 bg-red-50 rounded">
-                //         {summary.error}
-                //     </div>
-                // );
-            // }
+        if (section === 'goal-getter' && summary) {
             const totalSaved = Number(summary.totalSaved || 0);
             const activeGoals = summary.activeGoals ?? 0;
             const achievedGoals = summary.achievedGoals ?? 0;
@@ -118,13 +105,7 @@ const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview', totals, su
                     </Card>
                 </>
             );
-        }        
-        // Default overview stats (existing logic)
-        // Calculate stats
-        const completedChores = kidChores.filter(chore => chore.status === 'completed').length;
-
-        // Mock level calculation (based on completed chores)
-        const currentLevel = Math.min(Math.floor(completedChores / 3) + 1, 10); // Level up every 3 chores
+        }
 
         if (section === 'earning-meter' && totals) {
             return (
@@ -191,6 +172,7 @@ const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview', totals, su
             );
         }
 
+        // Default overview stats (existing logic except for Total Achievement card)
         return (
             <>
                 {/* Level Progress Card */}
@@ -226,8 +208,8 @@ const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview', totals, su
                     </CardHeader>
                     <CardContent>
                         <div className="flex items-center justify-between">
-                            <div className="text-2xl font-bold">
-                                {formatNaira(totalEarnings)}
+                            <div className="text-2xl font-bold text-green-600">
+                                {formatNaira(totals && totals.total_earned ? totals.total_earned : 0)}
                             </div>
                             <Badge className="bg-green-100 text-green-800 border-green-200">
                                 +20%
@@ -236,7 +218,7 @@ const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview', totals, su
                     </CardContent>
                 </Card>
 
-                {/* Total Achievement Card */}
+                {/* Total Achievement Card  */}
                 <Card className="border-2">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -247,15 +229,19 @@ const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview', totals, su
                         <div className="flex items-center gap-3">
                             <Trophy className="h-8 w-8 text-yellow-500" />
                             <div className="flex items-baseline gap-1">
-                                <span className="text-3xl font-bold text-gray-900">{completedChores}</span>
-                                <span className="text-sm text-muted-foreground">Chore Completed</span>
+                                <span className="text-3xl font-bold text-gray-900">
+                                    {summary?.achievedGoals ?? 0}
+                                </span>
+                                <span className="text-sm text-muted-foreground">Achieved goals</span>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
             </>
         );
-    }; return (
+    };
+
+    return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {getStatCards()}
         </div>
@@ -265,4 +251,3 @@ const KidStatCards = memo<KidStatCardsProps>(({ section = 'overview', totals, su
 KidStatCards.displayName = 'KidStatCards';
 
 export default KidStatCards;
-
