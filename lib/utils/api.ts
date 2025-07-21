@@ -112,10 +112,14 @@ export const API_ENDPOINTS = {
     // MoneyMaze (Educational) endpoints
     MONEYMAZE_CONCEPTS: '/api/moneymaze/concepts/',
     MONEYMAZE_CONCEPTS_PROGRESS: '/api/moneymaze/concepts/progress/',
+    MONEYMAZE_CONCEPT_SECTIONS: '/api/moneymaze/concepts/:conceptId/sections/',
+    MONEYMAZE_CONCEPT_SECTION_DETAIL: '/api/moneymaze/concepts/:conceptId/sections/:sectionId/',
     MONEYMAZE_QUIZ_DETAIL: '/api/moneymaze/quizzes/:quizId/',
     MONEYMAZE_QUIZ_SUBMIT: '/api/moneymaze/quizzes/submit/',
+    MONEYMAZE_CAN_ACCESS_QUIZ: '/api/moneymaze/concepts/:conceptId/can-access-quiz/',
     MONEYMAZE_REWARDS: '/api/moneymaze/rewards/',
     MONEYMAZE_DASHBOARD: '/api/moneymaze/dashboard/',
+    MONEYMAZE_WEEKLY_STREAK: '/api/moneymaze/weekly-streak/',
 
     // MoneyMaze Admin endpoints
     MONEYMAZE_ADMIN_CONCEPTS: '/api/moneymaze/admin/concepts/',

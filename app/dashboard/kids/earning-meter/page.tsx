@@ -48,7 +48,7 @@ const EarningMeterPage = () => {
                     />
                 </div>
                 <div className="lg:col-span-2">
-                    <KidBarChart bar_chart={data?.bar_chart} />
+                    <KidBarChart bar_chart={data?.bar_chart} variant="earning-meter" />
                 </div>
                 <div className="lg:col-span-1 self-start">
                     <KidPieChart pieChart={data?.pie_chart} variant="earning-meter" />
