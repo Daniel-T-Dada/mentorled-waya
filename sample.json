@@ -1,0 +1,139 @@
+{
+    "count": 18,
+    "next": "https://waya-mentorled.onrender.com/api/taskmaster/chores/?page=2",
+    "previous": null,
+    "chores": {
+        "pending": [
+            {
+                "id": "682e07f2-a998-4fa6-bb20-f95737d38ded",
+                "title": "Swagger Task 3",
+                "description": "Assigning chore from swagger 3",
+                "assignedTo": "eee509bb-4f60-48d7-b6d0-64765e364b90",
+                "assignedToUsername": "samuga",
+                "status": "pending",
+                "amount": "2500.00",
+                "createdAt": "2025-07-05T08:00:58.353101Z",
+                "completedAt": null,
+                "parentId": "32503157-f3ea-4f47-94d8-c34e29e711e1",
+                "category": "Household",
+                "isRedeemed": false
+            },
+            {
+                "id": "8e62e7d6-9229-4920-bc20-81bd137a0eaf",
+                "title": "Swagger Task 4",
+                "description": "Assigning chore from swagger 4",
+                "assignedTo": "71eb1ca5-0741-4b80-be11-a411d645e89a",
+                "assignedToUsername": "marvel",
+                "status": "pending",
+                "amount": "2500.00",
+                "createdAt": "2025-07-05T08:04:07.993738Z",
+                "completedAt": null,
+                "parentId": "32503157-f3ea-4f47-94d8-c34e29e711e1",
+                "category": "Household",
+                "isRedeemed": false
+            },
+            {
+                "id": "3aca5bae-3ede-49a2-8655-de3183607965",
+                "title": "Swagger Task 7",
+                "description": "Assigning chore from swagger 7",
+                "assignedTo": "71eb1ca5-0741-4b80-be11-a411d645e89a",
+                "assignedToUsername": "marvel",
+                "status": "pending",
+                "amount": "4000.00",
+                "createdAt": "2025-07-05T08:04:59.559201Z",
+                "completedAt": null,
+                "parentId": "32503157-f3ea-4f47-94d8-c34e29e711e1",
+                "category": "Household",
+                "isRedeemed": false
+            },
+            {
+                "id": "d31374d0-b462-40b3-a611-c9b18ed6a90b",
+                "title": "Swagger Task 8",
+                "description": "Assigning chore from swagger 8",
+                "assignedTo": "7a9d77e2-9bf4-4141-b82e-ea51ca5a4710",
+                "assignedToUsername": "toluwani",
+                "status": "pending",
+                "amount": "4500.00",
+                "createdAt": "2025-07-05T08:08:38.089941Z",
+                "completedAt": null,
+                "parentId": "32503157-f3ea-4f47-94d8-c34e29e711e1",
+                "category": "Household",
+                "isRedeemed": false
+            },
+            {
+                "id": "e81df8a7-7877-4e57-9225-9a1c5cf9a69b",
+                "title": "Swagger Task 9",
+                "description": "Assigning chore from swagger 9",
+                "assignedTo": "7a9d77e2-9bf4-4141-b82e-ea51ca5a4710",
+                "assignedToUsername": "toluwani",
+                "status": "pending",
+                "amount": "5000.00",
+                "createdAt": "2025-07-05T08:08:55.126740Z",
+                "completedAt": null,
+                "parentId": "32503157-f3ea-4f47-94d8-c34e29e711e1",
+                "category": "Household",
+                "isRedeemed": false
+            },
+            {
+                "id": "afa8ead0-503d-4331-aa1e-d962149bb054",
+                "title": "Chore For Praise",
+                "description": "The chore Praise have to do",
+                "assignedTo": "a0efe358-2a7c-487a-a5a6-c26c3044e426",
+                "assignedToUsername": "praise",
+                "status": "pending",
+                "amount": "3456.00",
+                "createdAt": "2025-07-22T15:34:39.718884Z",
+                "completedAt": null,
+                "parentId": "32503157-f3ea-4f47-94d8-c34e29e711e1",
+                "category": "Household",
+                "isRedeemed": false
+            },
+            {
+                "id": "5690e207-b357-4174-8a0a-d7cfdde26bca",
+                "title": "Praise's second chore",
+                "description": "Checking how long it takes for the chore to show on the UI",
+                "assignedTo": "a0efe358-2a7c-487a-a5a6-c26c3044e426",
+                "assignedToUsername": "praise",
+                "status": "pending",
+                "amount": "300.00",
+                "createdAt": "2025-07-22T15:52:57.607007Z",
+                "completedAt": null,
+                "parentId": "32503157-f3ea-4f47-94d8-c34e29e711e1",
+                "category": "Household",
+                "isRedeemed": false
+            },
+            {
+                "id": "18d14199-529f-44fd-9d3f-d23b649090ad",
+                "title": "For PostMan",
+                "description": "After Optimization",
+                "assignedTo": "88e53cd4-1c01-4a90-bbb9-937682f849da",
+                "assignedToUsername": "postman",
+                "status": "pending",
+                "amount": "5000.00",
+                "createdAt": "2025-07-09T22:18:47.179664Z",
+                "completedAt": null,
+                "parentId": "32503157-f3ea-4f47-94d8-c34e29e711e1",
+                "category": "Household",
+                "isRedeemed": false
+            }
+        ],
+        "completed": [
+            {
+                "id": "6eca7f32-fd7e-435c-8ec7-c0f1ad2fcc5b",
+                "title": "Swagger Task 1",
+                "description": "Assigning chore from swagger 1",
+                "assignedTo": "26825928-6eb4-4aaf-8a84-047529ac48f8",
+                "assignedToUsername": "maverick",
+                "status": "completed",
+                "amount": "1000.00",
+                "createdAt": "2025-07-05T07:59:27.141220Z",
+                "completedAt": "2025-07-16T12:39:45.356032Z",
+                "parentId": "32503157-f3ea-4f47-94d8-c34e29e711e1",
+                "category": "Household",
+                "isRedeemed": false
+            }
+        ],
+        "missed": [],
+        "approved": []
+    }
+}

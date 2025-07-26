@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { BarChart, ChartSpline, Clipboard, Goal, HandCoins, Home, List, LogOut, Settings, User, UsersRound, Wallet } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator, useSidebar } from "../ui/sidebar"
 
@@ -24,20 +23,6 @@ const AppSidebar = () => {
     const { user, isLoading } = useUser();
     const { isParent, isKid } = useRoleAccess();
 
-    // Debug: Log user avatar for troubleshooting
-    useEffect(() => {
-        if (user && !isLoading) {
-            const debugInfo = getAvatarDebugInfo(user.avatar);
-            console.log("AppSidebar - Avatar debug info:", debugInfo);
-            console.log("AppSidebar - User data:", {
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                id: user.id,
-                isChild: user.isChild
-            });
-        }
-    }, [user, isLoading]);
 
     // Determine navigation items based on user role
     const getNavItems = () => {
@@ -184,7 +169,7 @@ const AppSidebar = () => {
                                     <SidebarMenuItem key={item.name}>
                                         <SidebarMenuButton
                                             asChild
-                                            className={`text-lg hover:bg-primary hover:p-4 h-10 hover:text-primary-foreground ${pathname === item.href ? 'bg-primary text-primary-foreground' : ''
+                                            className={`text-lg hover:p-4 h-10 ${pathname === item.href ? 'bg-primary text-primary-foreground' : ''
                                                 }`}
                                         >
                                             <Link href={item.href}>

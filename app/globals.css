@@ -310,3 +310,8 @@ body,
 .dark .card-fill-translucent {
   background-color: rgba(41, 41, 42, 0.38); /* Cards fill (#292929 at 38%) */
 }
+
+body.paystack-open .fixed.inset-0.z-50,
+body.paystack-open .absolute.inset-0.z-50 {
+  display: none !important;
+}

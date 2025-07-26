@@ -1,10 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
-import { eventManager } from "@/lib/realtime/EventManager";
-import { API_ENDPOINTS, getApiUrl } from "@/lib/utils/api";
-
 import {
     Dialog,
     DialogContent,
@@ -21,57 +17,36 @@ interface SetPinProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
-    session?: { user: { accessToken: string } } | null;
+    isLoading: boolean;
+    error?: Error | null;
+    onSetPin: (pin: string) => void;
 }
-export function SetPin({ isOpen, onClose, onSuccess, session }: SetPinProps) {
 
+const SetPin = ({
+    isOpen,
+    onClose,
+    onSuccess,
+    isLoading,
+    error,
+    onSetPin
+}: SetPinProps) => {
     const [step, setStep] = useState<"form" | "success">("form");
     const [pin, setPin] = useState("");
     const [showPin, setShowPin] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
         setPin(value);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!session?.user?.accessToken) {
-            toast.error("Session not found. Please log in again.");
-            return;
-        }
-        if (pin.length !== 4) {
-            toast.error("PIN must be exactly 4 digits");
-            return;
-        }
-        setIsLoading(true);
-        try {
-            const response = await fetch(getApiUrl(API_ENDPOINTS.WALLET_SET_PIN), {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.user.accessToken}`,
-                },
-                body: JSON.stringify({ pin }),
-                credentials: 'include',
-            });
-            const data = await response.json();
-            console.log("Set PIN response:", data);
-            if (!response.ok) {
-                throw new Error(data?.message || "Failed to set PIN");
-            }
-            toast.success(data?.message || "PIN set successfully");
-            eventManager.emit({ type: "WALLET_UPDATE", payload: { action: "BALANCE_UPDATE" }, timestamp: Date.now() });
-            setStep("success");
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Failed to set PIN");
-        } finally {
-            setIsLoading(false);
-        }
+        if (pin.length !== 4) return;
+        onSetPin(pin);
+        setStep("success");
     };
 
+    // Reset state and close
     const closeAndReset = () => {
         onClose();
         setTimeout(() => {
@@ -130,6 +105,15 @@ export function SetPin({ isOpen, onClose, onSuccess, session }: SetPinProps) {
                                 >
                                     {isLoading ? 'Setting PIN...' : 'Set PIN'}
                                 </Button>
+                                {error && (
+                                    <div className="text-red-500 text-sm mt-2 text-center">
+                                        {typeof error.message === 'string'
+                                            ? error.message
+                                            : typeof error === 'string'
+                                                ? error
+                                                : JSON.stringify(error.message ?? error)}
+                                    </div>
+                                )}
                             </DialogFooter>
                         </form>
                     </>
@@ -153,4 +137,6 @@ export function SetPin({ isOpen, onClose, onSuccess, session }: SetPinProps) {
             </DialogContent>
         </Dialog>
     );
-}
+};
+
+export default SetPin;

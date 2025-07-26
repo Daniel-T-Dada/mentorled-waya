@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, memo } from 'react';
-import { useSession } from 'next-auth/react';
+import { useState, memo } from 'react';
 import {
     Table,
     TableBody,
@@ -18,13 +17,9 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination";
-import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
-import { enhanceTransactionDescriptions, formatTransactionForDisplay } from '@/lib/utils/transactionUtils';
 import { ClipboardList } from 'lucide-react';
-import { eventManager } from "@/lib/realtime";
-import { WalletUpdatePayload, TransactionUpdatePayload, WayaEvent } from "@/lib/realtime/types";
 
-interface ActivityRow {
+export interface ActivityRow {
     id: string;
     name: string;
     activity: string;
@@ -32,7 +27,6 @@ interface ActivityRow {
     status: "completed" | "pending" | "cancelled" | "paid" | "processing";
     date: string;
 }
-
 
 const InfoState = () => (
     <div className="flex flex-col items-center justify-center h-[400px] text-center p-6">
@@ -46,134 +40,15 @@ const InfoState = () => (
     </div>
 );
 
-const AppTable = memo(() => {
-    const { data: session } = useSession();
-    const [activities, setActivities] = useState<ActivityRow[]>([]);
+interface AppTableProps {
+    activities: ActivityRow[];
+    isLoading?: boolean;
+    isError?: boolean;
+}
 
-    const [needsRetry, setNeedsRetry] = useState(false);
+const AppTable = memo(({ activities, isLoading, isError }: AppTableProps) => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
-
-    const fetchActivities = useCallback(async () => {
-        if (!session?.user?.accessToken) {
-            return;
-        }
-
-        setNeedsRetry(false);
-
-        try {
-            // Fetch recent activities using the correct endpoint
-            const url = getApiUrl(API_ENDPOINTS.TRANSACTIONS_RECENT);
-            const response = await fetch(url, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.user.accessToken}`,
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch recent activities');
-            }
-
-            const transactions = await response.json();
-            console.log('Recent transactions:', transactions);
-
-            // Enhance transaction descriptions with actual chore titles
-            const enhancedTransactions = await enhanceTransactionDescriptions(
-                transactions,
-                session.user.accessToken
-            );
-
-            // Transform for display (transactions are already ordered from most recent to least recent)
-            const transformedActivities: ActivityRow[] = enhancedTransactions.map((transaction) =>
-                formatTransactionForDisplay(transaction)
-            );
-
-            setActivities(transformedActivities);
-        } catch (error) {
-            console.error('Error fetching activities:', error);
-            setNeedsRetry(true);
-        }
-    }, [session?.user?.accessToken]);
-
-    useEffect(() => {
-        fetchActivities();
-    }, [fetchActivities]);
-
-    // Set up real-time transaction updates subscription
-    useEffect(() => {
-        if (!session?.user?.accessToken) return;
-
-        const handleWalletUpdate = async (event: WayaEvent<WalletUpdatePayload>) => {
-            console.log('AppTable: Received wallet update event:', event);
-            const { payload } = event;
-
-            // When a wallet transaction occurs (ADD_FUNDS or MAKE_PAYMENT), create a transaction record
-            if (payload.action === "ADD_FUNDS" || payload.action === "MAKE_PAYMENT") {
-                try {
-                    // Create a new transaction record for real-time display
-                    const newTransaction = {
-                        id: payload.transactionId || `temp-${Date.now()}`,
-                        name: payload.action === "ADD_FUNDS" ? "Family Wallet" : "Payment to Child",
-                        activity: payload.action === "ADD_FUNDS" ? "Wallet Top-up" : "Payment Transfer",
-                        amount: payload.amount || 0,
-                        status: "completed" as const,
-                        date: new Date().toISOString()
-                    };
-
-                    setActivities(prev => {
-                        // Only add if not already present
-                        if (prev.some(a => a.id === newTransaction.id)) {
-                            return prev;
-                        }
-                        return [newTransaction, ...prev];
-                    });
-                } catch (error) {
-                    console.error('Error creating real-time transaction:', error);
-                }
-            }
-        };
-
-        const handleTransactionUpdate = (event: WayaEvent<TransactionUpdatePayload>) => {
-            console.log('AppTable: Received transaction update event:', event);
-            const { payload } = event;
-
-            setActivities(prev => {
-                switch (payload.action) {
-                    case "CREATE":
-                        if (payload.transaction) {
-                            const formattedTransaction = formatTransactionForDisplay(payload.transaction);
-                            // Only add if not already present
-                            if (prev.some(a => a.id === formattedTransaction.id)) {
-                                return prev;
-                            }
-                            return [formattedTransaction, ...prev];
-                        }
-                        break;
-                    case "UPDATE":
-                        if (payload.transaction && payload.transactionId) {
-                            return prev.map(activity =>
-                                activity.id === payload.transactionId
-                                    ? { ...activity, ...formatTransactionForDisplay(payload.transaction) }
-                                    : activity
-                            );
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                return prev;
-            });
-        };
-
-        const unsubscribeWallet = eventManager.subscribe('WALLET_UPDATE', handleWalletUpdate);
-        const unsubscribeTransaction = eventManager.subscribe('TRANSACTION_UPDATE', handleTransactionUpdate);
-
-        return () => {
-            unsubscribeWallet();
-            unsubscribeTransaction();
-        };
-    }, [session?.user?.accessToken]);
 
     const indexOfLastActivity = currentPage * itemsPerPage;
     const indexOfFirstActivity = indexOfLastActivity - itemsPerPage;
@@ -200,12 +75,8 @@ const AppTable = memo(() => {
         }
     };
 
-
-
-
-
     // Always show either the info state or the table, never a skeleton/loading state
-    if (needsRetry || activities.length === 0) {
+    if (isLoading || isError || activities.length === 0) {
         return (
             <div className="w-full border rounded-lg bg-card text-card-foreground shadow-sm p-8 min-h-[500px]">
                 <div className="flex items-center justify-between mb-10">
@@ -314,4 +185,4 @@ const AppTable = memo(() => {
 
 AppTable.displayName = 'AppTable';
 
-export default AppTable; 
+export default AppTable;

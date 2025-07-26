@@ -101,7 +101,7 @@ export function KidProvider({ children }: KidProviderProps) {
 
             // Fetch all pages of kids
             do {
-                console.log(`KidContext - Fetching page ${currentPage}...`);
+                // console.log(`KidContext - Fetching page ${currentPage}...`);
 
                 let kidsListResponse;
                 if (currentPage === 1) {
@@ -112,7 +112,7 @@ export function KidProvider({ children }: KidProviderProps) {
                     kidsListResponse = await ChildrenService.listChildrenFromUrl(nextUrl!, session.user.accessToken);
                 }
 
-                console.log(`KidContext - Page ${currentPage} response:`, kidsListResponse);
+                // console.log(`KidContext - Page ${currentPage} response:`, kidsListResponse);
 
                 // Extract kids array from paginated response
                 if (!kidsListResponse || !kidsListResponse.results || !Array.isArray(kidsListResponse.results)) {
@@ -125,20 +125,14 @@ export function KidProvider({ children }: KidProviderProps) {
                 nextUrl = kidsListResponse.next;
                 currentPage++;
 
-                console.log(`KidContext - Total kids so far: ${allKids.length}, Next URL: ${nextUrl}`);
+                // console.log(`KidContext - Total kids so far: ${allKids.length}, Next URL: ${nextUrl}`);
 
             } while (nextUrl);
 
-            console.log('KidContext - All kids collected:', allKids);
+            // console.log('KidContext - All kids collected:', allKids);
 
             // Map response to Kid interface, prioritizing backend-provided name
             const mappedKids: Kid[] = allKids.map((kid: any) => {
-                console.log('KidContext - Processing kid:', {
-                    id: kid.id,
-                    username: kid.username,
-                    name: kid.name,
-                    avatar: kid.avatar
-                });
                 return {
                     id: kid.id,
                     username: kid.username,
@@ -150,15 +144,15 @@ export function KidProvider({ children }: KidProviderProps) {
             });
 
             setKids(mappedKids);
-            console.log('KidContext - Successfully mapped kids:', mappedKids);
+            // console.log('KidContext - Successfully mapped kids:', mappedKids);
         } catch (error) {
-            console.error('KidContext - Failed to load kids:', error);
-            console.error('KidContext - Error details:', {
-                message: error instanceof Error ? error.message : 'Unknown error',
-                stack: error instanceof Error ? error.stack : undefined,
-                sessionValid: !!session?.user?.accessToken,
-                userRole: session?.user?.role
-            });
+            // console.error('KidContext - Failed to load kids:', error);
+            // console.error('KidContext - Error details:', {
+            //     message: error instanceof Error ? error.message : 'Unknown error',
+            //     stack: error instanceof Error ? error.stack : undefined,
+            //     sessionValid: !!session?.user?.accessToken,
+            //     userRole: session?.user?.role
+            // });
 
             // Handle token expiration (401 errors)
             if (error instanceof ApiError && error.status === 401) {
@@ -175,23 +169,23 @@ export function KidProvider({ children }: KidProviderProps) {
     }, [session?.user?.accessToken, session?.user?.role]);
     // Load kids when session is available and user is parent
     useEffect(() => {
-        console.log('KidContext - useEffect triggered:', {
-            status,
-            userRole: session?.user?.role,
-            isKidSession,
-            hasAccessToken: !!session?.user?.accessToken
-        });
+        // console.log('KidContext - useEffect triggered:', {
+        //     status,
+        //     userRole: session?.user?.role,
+        //     isKidSession,
+        //     hasAccessToken: !!session?.user?.accessToken
+        // });
 
         if (status === 'authenticated' && session?.user?.role === 'parent') {
-            console.log('KidContext - Calling refreshKids for parent');
+            // console.log('KidContext - Calling refreshKids for parent');
             refreshKids();
         } else if (status === 'authenticated' && isKidSession) {
             // For kid sessions, clear kids list
-            console.log('KidContext - Clearing kids for kid session');
+            // console.log('KidContext - Clearing kids for kid session');
             setKids([]);
             setActiveKid(null);
         } else {
-            console.log('KidContext - No action taken, conditions not met');
+            // console.log('KidContext - No action taken, conditions not met');
         }
     }, [refreshKids, status, session?.user?.role, isKidSession]);
 
@@ -199,7 +193,7 @@ export function KidProvider({ children }: KidProviderProps) {
     const fetchChildProfile = useCallback(async (childId: string, parentToken: string): Promise<Kid | null> => {
         try {
             const profile = await ChildrenService.getChildDetail(childId, parentToken);
-            console.log('KidContext - Fetched child profile:', profile);
+            // console.log('KidContext - Fetched child profile:', profile);
 
             const kid: Kid = {
                 id: profile.id,
@@ -247,12 +241,12 @@ export function KidProvider({ children }: KidProviderProps) {
 
     const getKidDisplayNameHelper = useCallback((kid: Kid): string => {
         const displayName = getKidDisplayName(kid);
-        console.log('KidContext - Getting display name for kid:', {
-            kidId: kid.id,
-            username: kid.username,
-            backendName: kid.name,
-            displayName
-        });
+        // console.log('KidContext - Getting display name for kid:', {
+        //     kidId: kid.id,
+        //     username: kid.username,
+        //     backendName: kid.name,
+        //     displayName
+        // });
         return displayName;
     }, []);
 
