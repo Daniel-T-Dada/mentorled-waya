@@ -9,19 +9,33 @@ import { SignUpButton } from "./auth/signup-button"
 import { useTheme } from "next-themes"
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Menu } from "lucide-react"
+import { useSession } from "next-auth/react"
 
-const Navbar = () => {
+type NavbarProps = {
+    authStatus: "authenticated" | "loading" | "unauthenticated";
+};
+
+const Navbar = ({ authStatus }: NavbarProps) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const { theme } = useTheme()
+    const { data: session } = useSession()
 
-    const getNavItems = () => {
-        return [
-            { name: "Home", path: "/" },
-            { name: "About Us", path: "/about" },
-            { name: "Features", path: "/features" },
-            { name: "Contact Us", path: "/contact" },
-        ]
+    // Get role from session, fallback to empty string if not available
+    const role = session?.user?.role || ""
+
+    const getDashboardPath = () => {
+        if (role === "parent") return "/dashboard/parents"
+        if (role === "kid") return "/dashboard/kids"
+        // fallback if role is missing or new
+        return "/"
     }
+
+    const getNavItems = () => [
+        { name: "Home", path: "/" },
+        { name: "About Us", path: "/about" },
+        { name: "Features", path: "/features" },
+        { name: "Contact Us", path: "/contact" }
+    ]
 
     return (
         <header className="fixed top-0 left-0 right-0 bg-background border-b z-10 shadow-sm">
@@ -39,31 +53,44 @@ const Navbar = () => {
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <nav className="hidden md:flex items-center  space-x-8">
-                        {getNavItems().map((item) => (
-                            <Link
-                                key={item.name}
-                                href={item.path}
-                                className="text-primary dark:text-foreground hover:text-primary/80 font-semibold">
-                                {item.name}
-                            </Link>
-                        ))}
+                    <nav className="hidden md:flex items-center space-x-8">
+                        {authStatus === "unauthenticated" &&
+                            getNavItems().map((item) => (
+                                <Link
+                                    key={item.name}
+                                    href={item.path}
+                                    className="text-primary dark:text-foreground hover:text-primary/80 font-semibold"
+                                >
+                                    {item.name}
+                                </Link>
+                            ))}
                     </nav>
 
-                    {/* Desktop Authentication Buttons */}
-                    <div className="hidden md:flex space-x-4">
-                        {/* <ThemeToggle /> */}
-                        <SignUpButton>
-                            <Button className="bg-primary dark:text-foreground hover:bg-primary/90 text-primary-foreground font-semibold mr-4">
-                                Sign Up
-                            </Button>
-                        </SignUpButton>
+                    <div className="hidden md:flex items-center space-x-4 ml-auto">
+                        {authStatus === "authenticated" && (
+                            <Link href={getDashboardPath()} className="text-primary dark:text-foreground hover:text-primary/80 font-semibold">
+                                Dashboard
+                            </Link>
+                        )}
 
-                        <SignInButton>
-                            <Button variant="outline" className="text-primary dark:text-foreground hover:bg-primary/10 border-primary font-semibold">
-                                Sign In
-                            </Button>
-                        </SignInButton>
+                        {authStatus === "unauthenticated" && (
+                            <>
+                                <SignUpButton>
+                                    <Button className="bg-primary dark:text-foreground hover:bg-primary/90 text-primary-foreground font-semibold mr-4">
+                                        Sign Up
+                                    </Button>
+                                </SignUpButton>
+
+                                <SignInButton>
+                                    <Button
+                                        variant="outline"
+                                        className="text-primary dark:text-foreground hover:bg-primary/10 border-primary font-semibold"
+                                    >
+                                        Sign In
+                                    </Button>
+                                </SignInButton>
+                            </>
+                        )}
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -82,28 +109,45 @@ const Navbar = () => {
                                 <SheetTitle>Menu</SheetTitle>
                             </SheetHeader>
                             <nav className="flex flex-col px-4 py-2">
-                                {getNavItems().map((item) => (
+                                {authStatus === "unauthenticated" &&
+                                    getNavItems().map((item) => (
+                                        <Link
+                                            key={item.name}
+                                            href={item.path}
+                                            onClick={() => { }}
+                                            className="py-2 text-primary hover:text-primary/80 font-semibold"
+                                        >
+                                            {item.name}
+                                        </Link>
+                                    ))}
+
+                                {authStatus === "authenticated" && (
                                     <Link
-                                        key={item.name}
-                                        href={item.path}
-                                        onClick={() => {
-                                        }}
+                                        href={getDashboardPath()}
                                         className="py-2 text-primary hover:text-primary/80 font-semibold"
                                     >
-                                        {item.name}
+                                        Dashboard
                                     </Link>
-                                ))}
+                                )}
+
                                 <div className="flex flex-col gap-2 py-4">
-                                    <SignUpButton>
-                                        <Button className="w-full bg-primary dark:text-foreground hover:bg-primary/90 text-primary-foreground font-semibold">
-                                            Sign Up
-                                        </Button>
-                                    </SignUpButton>
-                                    <SignInButton>
-                                        <Button variant="outline" className="w-full text-primary dark:text-foreground hover:bg-primary/10 border-primary font-semibold">
-                                            Sign In
-                                        </Button>
-                                    </SignInButton>
+                                    {authStatus === "unauthenticated" && (
+                                        <>
+                                            <SignUpButton>
+                                                <Button className="w-full bg-primary dark:text-foreground hover:bg-primary/90 text-primary-foreground font-semibold">
+                                                    Sign Up
+                                                </Button>
+                                            </SignUpButton>
+                                            <SignInButton>
+                                                <Button
+                                                    variant="outline"
+                                                    className="w-full text-primary dark:text-foreground hover:bg-primary/10 border-primary font-semibold"
+                                                >
+                                                    Sign In
+                                                </Button>
+                                            </SignInButton>
+                                        </>
+                                    )}
                                 </div>
                             </nav>
                         </SheetContent>

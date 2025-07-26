@@ -152,8 +152,8 @@ export function CreateGoal({
                             </Popover>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="category">Category</Label>
-                            <Input id="category" name="category" value={formData.category} onChange={handleChange} />
+                            {/* <Label htmlFor="category">Category</Label> */}
+                            {/* <Input id="category" name="category" value={formData.category} onChange={handleChange} /> */}
                         </div>
                         <DialogFooter className="mt-6">
                             <Button type="button" variant="outline" onClick={closeAndReset}>

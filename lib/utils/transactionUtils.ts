@@ -1,5 +1,3 @@
-import { getApiUrl, API_ENDPOINTS } from './api';
-
 /**
  * Enhanced transaction interface with better descriptions
  */
@@ -25,63 +23,13 @@ export const extractChoreId = (description: string): string | null => {
 };
 
 /**
- * Fetch chore details by ID
+ * Enhance transaction descriptions using a provided map of chore details
+ * (choreDetailsMap should be built in parent/page via useApiQuery for all needed chore IDs)
  */
-export const fetchChoreDetails = async (choreId: string, accessToken: string) => {
-    try {
-        const response = await fetch(getApiUrl(API_ENDPOINTS.TASK_DETAIL.replace(':taskId', choreId)), {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`,
-            },
-        });
-
-        if (response.ok) {
-            return await response.json();
-        }
-    } catch (error) {
-        console.warn(`Failed to fetch chore ${choreId}:`, error);
-    }
-    return null;
-};
-
-/**
- * Enhance transaction descriptions by replacing generic chore references with actual chore titles
- */
-export const enhanceTransactionDescriptions = async (
+export const enhanceTransactionDescriptions = (
     transactions: any[],
-    accessToken: string
-): Promise<EnhancedTransaction[]> => {
-    // Extract unique chore IDs
-    const choreIds = new Set<string>();
-    transactions.forEach((transaction) => {
-        const choreId = extractChoreId(transaction.description);
-        if (choreId) {
-            choreIds.add(choreId);
-        }
-    });
-
-    // Fetch chore details for all unique chore IDs
-    const choreDetailsMap = new Map<string, any>();
-    if (choreIds.size > 0) {
-        try {
-            const chorePromises = Array.from(choreIds).map(async (choreId) => {
-                const choreDetail = await fetchChoreDetails(choreId, accessToken);
-                return choreDetail ? { choreId, choreDetail } : null;
-            });
-
-            const choreResults = await Promise.all(chorePromises);
-            choreResults.forEach((result) => {
-                if (result) {
-                    choreDetailsMap.set(result.choreId, result.choreDetail);
-                }
-            });
-        } catch (error) {
-            console.warn('Error fetching chore details:', error);
-        }
-    }
-
-    // Transform transactions with enhanced descriptions
+    choreDetailsMap: Map<string, any>
+): EnhancedTransaction[] => {
     return transactions.map((transaction): EnhancedTransaction => {
         let description = transaction.description || 'Transaction';
         let childName = transaction.child_name || 'N/A';

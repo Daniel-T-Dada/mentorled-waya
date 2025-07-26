@@ -1,7 +1,7 @@
 'use client'
 
+import ParentStatsProvider from "@/components/providers/stats-providers";
 import AppKidsActivities from "../AppKidsActivities"
-import AppStatCard from "../AppStatCard"
 
 interface InsightStats {
     total_chores_assigned: number;
@@ -22,7 +22,7 @@ const InsightTrackerDashboard = ({ insightStats }: InsightTrackerDashboardProps)
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 ">
-                <AppStatCard insightStats={insightStats} />
+                <ParentStatsProvider insightStats={insightStats} />
 
                 <div className="lg:col-span-3 h-64 rounded">
                     <AppKidsActivities childActivities={insightStats?.child_activities || []} />

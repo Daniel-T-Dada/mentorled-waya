@@ -86,6 +86,11 @@ export const API_ENDPOINTS = {
     WALLET_SET_PIN: '/api/familywallet/wallet/set_pin/',
     WALLET_MAKE_PAYMENT: '/api/familywallet/wallet/make_payment/',
 
+    // New Family Wallet endpoints
+    WALLET_PIN_STATUS: '/api/familywallet/wallet/pin_status/',
+    WALLET_PAYSTACK_INITIATE: '/api/familywallet/wallet/paystack/initiate/',
+    WALLET_PAYSTACK_VERIFY: '/api/familywallet/wallet/paystack/verify/',
+
     // Child Wallet endpoints
     CHILDREN_WALLETS: '/api/familywallet/child-wallets/',
     CHILDREN_WALLETS_ANALYSIS: '/api/familywallet/child-wallets/analysis/',
