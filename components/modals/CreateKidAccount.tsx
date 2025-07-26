@@ -7,15 +7,68 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogClose
+  DialogClose,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { CheckIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { ChildrenService } from "@/lib/services/childrenService";
 import { useKid } from "@/contexts/KidContext";
+import {
+  useCreateChildMutation,
+  CreateChildRequest,
+  ApiError,
+  CreateChildResponse,
+} from "@/lib/services/childrenService";
+import { toast } from "sonner";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+// Removed unused import: Label
+
+// Optional: compress avatar image before sending (uses browser APIs)
+async function compressImage(file: File): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxSize = 256;
+        let width = img.width;
+        let height = img.height;
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          } else {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.75));
+      };
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// Form validation schema
+const createKidSchema = z.object({
+  name: z.string().min(2, "Name is required"),
+  username: z.string().min(2, "Username is required"),
+  pin: z.string().length(4, "PIN must be 4 digits").regex(/^\d{4}$/, "PIN must be 4 digits"),
+  avatar: z.string().optional().nullable(),
+  terms: z.boolean().refine(val => val === true, "You must accept the terms."),
+});
+
+type CreateKidFormValues = z.infer<typeof createKidSchema>;
 
 interface CreateKidAccountProps {
   isOpen: boolean;
@@ -28,136 +81,113 @@ interface KidData {
   name: string;
   username: string;
   parentId: string;
+  avatar?: string | null;
 }
 
-export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccountProps) {
+const CreateKidAccount = ({
+  isOpen,
+  onClose,
+  onSuccess,
+}: CreateKidAccountProps) => {
   const [step, setStep] = useState<"form" | "success">("form");
   const [showPin, setShowPin] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [createdKid, setCreatedKid] = useState<KidData | null>(null);
   const { data: session } = useSession();
   const { addKid } = useKid();
   const user = session?.user;
 
-  const [formData, setFormData] = useState({
-    name: "",
-    username: "",
-    pin: "",
-    avatar: "" as string | null,
+  const form = useForm<CreateKidFormValues>({
+    resolver: zodResolver(createKidSchema),
+    defaultValues: {
+      name: "",
+      username: "",
+      pin: "",
+      avatar: null,
+      terms: false,
+    },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, files } = e.target;
-
-    if (name === "avatar" && files && files.length > 0) {
-      const file = files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({
-          ...formData,
-          avatar: reader.result as string,
-        });
-      };
-      reader.readAsDataURL(file);
-      return;
-    }
-
-    // For PIN, only allow 4 digits
-    if (name === "pin" && value.length > 4) return;
-    if (name === "pin" && !/^\d*$/.test(value)) return;
-
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!user || user.role !== "parent") {
-      throw new Error("Parent authentication required. Please log in again.");
-    }
-
-    console.log("CreateKidAccount - User session:", {
-      id: user.id,
-      role: user.role,
-      accessToken: user.accessToken,
-      hasAccessToken: !!user.accessToken
-    });
-
-    setIsLoading(true);
-
-    try {
-      console.log("CreateKidAccount - About to send data:", {
-        username: formData.username,
-        name: formData.name,
-        pin: formData.pin ? "****" : "NOT SET"
-      });
-
-      const response = await ChildrenService.createChild({
-        username: formData.username,
-        name: formData.name, // Include the name field
-        pin: formData.pin,
-      }, session?.user?.accessToken || '');
-
-      if (!response) {
-        throw new Error("Failed to create kid account");
-      }
-
-      console.log("CreateKidAccount - Backend response:", response);
-
-      // Check if the backend response name is 'Unknown' and try to update it
-      if (response.name === 'Unknown' && formData.name && formData.name !== 'Unknown') {
-        console.warn("CreateKidAccount - Backend returned 'Unknown' name, attempting to update...");
-        try {
-          // Try to update the child's name using the update endpoint
-          await ChildrenService.updateChild(response.id, { name: formData.name }, session?.user?.accessToken || '');
-          // Update the response object to reflect the correct name
-          response.name = formData.name;
-          console.log("CreateKidAccount - Successfully updated child name to:", formData.name);
-        } catch (updateError) {
-          console.error("CreateKidAccount - Failed to update child name:", updateError);
-          // Continue with original response even if update fails
-        }
-      }
-
-      // Convert the response to match KidData interface
+  // Use TanStack mutation
+  const createKidMutation = useCreateChildMutation(session?.user?.accessToken || "", {
+    onSuccess: (response: CreateChildResponse) => {
+      const finalName = response.name; // Use const instead of let
       const kidData: KidData = {
         id: response.id,
-        name: response.name, // Use the name from backend response
+        name: finalName,
         username: response.username,
-        parentId: user.id,
+        parentId: user?.id || "",
+        avatar: response.avatar,
       };
-
-      // Add kid to context for immediate UI update
-      const newKid = {
+      addKid({
         id: response.id,
         username: response.username,
-        name: response.name, // Use the name from backend response
+        name: finalName,
         avatar: response.avatar,
-        parent: user.id,
-      };
-
-      addKid(newKid);
-
-      // Don't override backend name with local storage
-
+        parent: user?.id,
+      });
       setCreatedKid(kidData);
       setStep("success");
-    } catch (error) {
-      console.error("Error creating kid account:", error);
-      throw error;
-    } finally {
-      setIsLoading(false);
+      if (onSuccess) onSuccess(kidData);
+
+      // Update name in background if needed
+      if (
+        response.name === "Unknown" &&
+        form.getValues("name") &&
+        form.getValues("name") !== "Unknown"
+      ) {
+        import("@/lib/services/childrenService").then(async ({ ChildrenService }) => {
+          try {
+            await ChildrenService.updateChild(
+              response.id,
+              { name: form.getValues("name") },
+              session?.user?.accessToken || ""
+            );
+            toast.info("Child name updated in background.");
+          } catch {
+            toast.warning("Kid account created, but failed to update name. You can edit it later.");
+          }
+        });
+      }
+    },
+    onError: (error: unknown) => {
+      let errorMessage = "Failed to create kid account";
+      if (error instanceof ApiError) {
+        errorMessage = error.message;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
+    },
+  });
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      const compressedAvatar = await compressImage(file);
+      form.setValue("avatar", compressedAvatar);
     }
+  };
+
+  const handleSubmit = (values: CreateKidFormValues) => {
+    if (!user || user.role !== "parent") {
+      toast.error("Parent authentication required. Please log in again.");
+      return;
+    }
+    const kidPayload: CreateChildRequest = {
+      username: values.username,
+      name: values.name,
+      pin: values.pin,
+      // Optionally add avatar if backend supports
+      // avatar: values.avatar,
+    };
+    createKidMutation.mutate(kidPayload);
   };
 
   const closeAndReset = () => {
     onClose();
-    // Reset form after closing animation completes
     setTimeout(() => {
-      setFormData({ name: "", username: "", pin: "", avatar: null });
+      form.reset();
       setStep("form");
       setCreatedKid(null);
     }, 300);
@@ -165,7 +195,7 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
 
   const handleSuccess = () => {
     closeAndReset();
-    if (onSuccess && createdKid) onSuccess(createdKid);
+    // onSuccess is already fired in mutation onSuccess
   };
 
   return (
@@ -174,134 +204,171 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
         {step === "form" ? (
           <>
             <DialogHeader>
-              <DialogTitle className="text-center text-xl">Create Kid&apos;s account</DialogTitle>
+              <DialogTitle className="text-left text-xl">
+                Create Child&apos;s account
+              </DialogTitle>
             </DialogHeader>
-
-            <form onSubmit={handleSubmit} className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-medium">
-                  Name<span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="name"
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 py-4">
+                <FormField
+                  control={form.control}
                   name="name"
-                  placeholder="First Name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Name<span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="First Name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="username" className="text-sm font-medium">
-                  Kid&apos;s Username <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="username"
+                <FormField
+                  control={form.control}
                   name="username"
-                  placeholder="Username for login"
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Child&apos;s Username <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="Username for login" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="pin" className="text-sm font-medium">
-                  4 digit pin<span className="text-destructive">*</span>
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="pin"
-                    name="pin"
-                    type={showPin ? "text" : "password"}
-                    placeholder="Enter 4-digit PIN"
-                    value={formData.pin}
-                    onChange={handleChange}
-                    pattern="[0-9]{4}"
-                    maxLength={4}
-                    required
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                    onClick={() => setShowPin(!showPin)}
-                  >
-                    {showPin ? (
-                      <EyeOffIcon className="h-4 w-4" />
-                    ) : (
-                      <EyeIcon className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="avatar" className="text-sm font-medium">
-                  Avatar/Profile Picture
-                </Label>
-                <Input
-                  id="avatar"
+                <FormField
+                  control={form.control}
+                  name="pin"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        4 digit pin<span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPin ? "text" : "password"}
+                            placeholder="Enter 4-digit PIN"
+                            maxLength={4}
+                            {...field}
+                            onChange={e => {
+                              // Only allow digits, max 4
+                              const val = e.target.value.replace(/\D/g, "");
+                              field.onChange(val.slice(0, 4));
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                            onClick={() => setShowPin(!showPin)}
+                            tabIndex={-1}
+                          >
+                            {showPin ? (
+                              <EyeOffIcon className="h-4 w-4" />
+                            ) : (
+                              <EyeIcon className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="avatar"
-                  type="file"
-                  accept="image/*"
-                  className="cursor-pointer"
-                  onChange={handleChange}
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Profile Picture</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          className="cursor-pointer"
+                          onChange={handleAvatarChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-
-              <div className="flex items-start space-x-2 pt-2">
-                <div className="flex h-5 items-center">
-                  <input
-                    id="terms"
-                    type="checkbox"
-                    required
-                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                </div>
-                <div className="text-sm leading-none">
-                  <label htmlFor="terms" className="font-medium text-foreground">
-                    By signing up you agree to the{" "}
-                    <a href="#" className="text-primary hover:underline">
-                      Terms of Service
-                    </a>{" "}
-                    and{" "}
-                    <a href="#" className="text-primary hover:underline">
-                      Privacy Policy
-                    </a>
-                  </label>
-                </div>
-              </div>
-
-              <DialogFooter className="mt-6">
-                <DialogClose asChild>
-                  <Button type="button" variant="outline">
-                    Cancel
+                <FormField
+                  control={form.control}
+                  name="terms"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-start space-x-2 pt-2">
+                        <FormControl>
+                          <Input
+                            id="terms"
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="w-4 bg-amber-700"
+                          />
+                        </FormControl>
+                        <div className="text-sm leading-none">
+                          <label htmlFor="terms" className="font-medium text-foreground">
+                            By signing up you agree to the{" "}
+                            <a href="#" className="text-primary hover:underline">
+                              Terms of Service
+                            </a>{" "}
+                            and{" "}
+                            <a href="#" className="text-primary hover:underline">
+                              Privacy Policy
+                            </a>
+                          </label>
+                        </div>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <DialogFooter className="mt-6">
+                  <DialogClose asChild>
+                    <Button type="button" variant="outline">
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                  <Button
+                    type="submit"
+                    className="bg-primary hover:bg-primary/90"
+                    disabled={
+                      createKidMutation.isPending ||
+                      !form.watch("name") ||
+                      !form.watch("username") ||
+                      form.watch("pin").length !== 4 ||
+                      !form.watch("terms")
+                    }
+                  >
+                    {createKidMutation.isPending ? "Creating..." : "Create Account"}
                   </Button>
-                </DialogClose>
-                <Button
-                  type="submit"
-                  className="bg-primary hover:bg-primary/90"
-                  disabled={isLoading || !formData.name || !formData.username || formData.pin.length !== 4}
-                >
-                  {isLoading ? "Creating..." : "Create Account"}
-                </Button>
-              </DialogFooter>
-            </form>
+                </DialogFooter>
+              </form>
+            </Form>
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-8">
             <div className="mb-4 h-16 w-16 rounded-full bg-primary flex items-center justify-center">
               <CheckIcon className="h-8 w-8 text-white" />
             </div>
-            <h3 className="text-lg font-medium text-center mb-2">Kid&apos;s Account Created</h3>
+            <h3 className="text-lg font-medium text-center mb-2">
+              Kid&apos;s Account Created
+            </h3>
             <div className="text-center text-muted-foreground mb-6 space-y-2">
               <p>The account has been successfully created</p>
               {createdKid && (
                 <div className="bg-muted p-4 rounded-md">
                   <p className="font-medium">Login Details</p>
-                  <p>Username: <span className="font-medium">{createdKid.username}</span></p>
+                  <p>
+                    Username:{" "}
+                    <span className="font-medium">{createdKid.username}</span>
+                  </p>
                   <p>Name: {createdKid.name}</p>
                 </div>
               )}
@@ -317,4 +384,6 @@ export function CreateKidAccount({ isOpen, onClose, onSuccess }: CreateKidAccoun
       </DialogContent>
     </Dialog>
   );
-} 
+};
+
+export default CreateKidAccount;

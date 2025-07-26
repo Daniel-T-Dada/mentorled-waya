@@ -1046,3 +1046,593 @@ DELETE - 200
 DELETE "https://waya-mentorled.onrender.com/api/goalgetter/goals/c92b8b24-bb22-4916-b391-8fd5eda3e2eb/" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUyOTIyMTQwLCJpYXQiOjE3NTI4MzU3NDAsImp0aSI6IjhhZmQ2ODJkNGE1YzRjMTlhY2M3NDU2MzJhN2YyYjg5IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.uqAj05pEKgAXNs-3m3oSQ8phMOqRNgo6jIOtijaQlio" \
 | jq
+
+
+
+
+GET - 200
+┌──(doubledcode㉿Double-D-EDGE)-[/mnt/c/Users/simpl/Desktop/MentorLed/waya]
+└─$ curl -X GET "https://waya-mentorled.onrender.com/api/moneymaze/quizzes/" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMzQ0NTA0LCJpYXQiOjE3NTMyNTgxMDQsImp0aSI6ImFiNGVmYmU3Njc5MDQ4Zjk5YmQ4YzVmMDk3MGM1Yjc4IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0._PBZNU0eNcTqrMfkVA9-Zt97WNcZjIXYeoZGqFwHK7c" \
+  | jq
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  6678    0  6678    0     0    975      0 --:--:--  0:00:06 --:--:--  1881
+{
+  "count": 5,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "title": "Introduction to Money",
+      "questions": [
+        {
+          "id": 1,
+          "quiz": 1,
+          "text": "What do we use money for?",
+          "choices": [
+            {
+              "id": 1,
+              "question": 1,
+              "text": "To buy toys and food",
+              "is_correct": true
+            },
+            {
+              "id": 3,
+              "question": 1,
+              "text": "To throw away",
+              "is_correct": false
+            },
+            {
+              "id": 4,
+              "question": 1,
+              "text": "To hide under the bed",
+              "is_correct": false
+            },
+            {
+              "id": 5,
+              "question": 1,
+              "text": "To give to strangers",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "quiz": 1,
+          "text": "Which of these is money?",
+          "choices": [
+            {
+              "id": 6,
+              "question": 2,
+              "text": "A leaf",
+              "is_correct": false
+            },
+            {
+              "id": 8,
+              "question": 2,
+              "text": "A rock",
+              "is_correct": false
+            },
+            {
+              "id": 9,
+              "question": 2,
+              "text": "A stick",
+              "is_correct": false
+            },
+            {
+              "id": 7,
+              "question": 2,
+              "text": "A coin",
+              "is_correct": true
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "quiz": 1,
+          "text": "When you do chores and get paid, what should you do first?",
+          "choices": [
+            {
+              "id": 10,
+              "question": 3,
+              "text": "Spend it all immediately",
+              "is_correct": false
+            },
+            {
+              "id": 11,
+              "question": 3,
+              "text": "Thank your parents",
+              "is_correct": true
+            },
+            {
+              "id": 13,
+              "question": 3,
+              "text": "Give it to your friends",
+              "is_correct": false
+            },
+            {
+              "id": 12,
+              "question": 3,
+              "text": "Hide it from everyone",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "quiz": 1,
+          "text": "What is the safest place to keep your money?",
+          "choices": [
+            {
+              "id": 14,
+              "question": 4,
+              "text": "A) In your pocket",
+              "is_correct": false
+            },
+            {
+              "id": 15,
+              "question": 4,
+              "text": "Under your pillow",
+              "is_correct": false
+            },
+            {
+              "id": 16,
+              "question": 4,
+              "text": "In a piggy bank or wallet",
+              "is_correct": true
+            },
+            {
+              "id": 17,
+              "question": 4,
+              "text": "On the floor",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "quiz": 1,
+          "text": "If you have 5 coins and you spend 2 coins, how many do you have left?",
+          "choices": [
+            {
+              "id": 18,
+              "question": 5,
+              "text": "5 coins",
+              "is_correct": false
+            },
+            {
+              "id": 19,
+              "question": 5,
+              "text": "2 coins",
+              "is_correct": false
+            },
+            {
+              "id": 20,
+              "question": 5,
+              "text": "3 coins",
+              "is_correct": true
+            },
+            {
+              "id": 21,
+              "question": 5,
+              "text": "7 coins",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "quiz": 1,
+          "text": "one",
+          "choices": []
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Basic Saving",
+      "questions": [
+        {
+          "id": 6,
+          "quiz": 2,
+          "text": "What does \"saving money\" mean?",
+          "choices": [
+            {
+              "id": 22,
+              "question": 6,
+              "text": "Spending all your money today",
+              "is_correct": false
+            },
+            {
+              "id": 23,
+              "question": 6,
+              "text": "Keeping some money for later",
+              "is_correct": true
+            },
+            {
+              "id": 24,
+              "question": 6,
+              "text": "Giving all your money away",
+              "is_correct": false
+            },
+            {
+              "id": 25,
+              "question": 6,
+              "text": "Losing your money",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "quiz": 2,
+          "text": "Why is it good to save money?",
+          "choices": [
+            {
+              "id": 26,
+              "question": 7,
+              "text": "So you can buy something special later",
+              "is_correct": true
+            },
+            {
+              "id": 27,
+              "question": 7,
+              "text": "So you can forget about it",
+              "is_correct": false
+            },
+            {
+              "id": 28,
+              "question": 7,
+              "text": "So others can't see it",
+              "is_correct": false
+            },
+            {
+              "id": 29,
+              "question": 7,
+              "text": "So you can lose it",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "quiz": 2,
+          "text": "If you earn ₦100 from chores and save ₦30, how much can you spend?",
+          "choices": [
+            {
+              "id": 30,
+              "question": 8,
+              "text": "₦100",
+              "is_correct": false
+            },
+            {
+              "id": 31,
+              "question": 8,
+              "text": "₦30",
+              "is_correct": false
+            },
+            {
+              "id": 32,
+              "question": 8,
+              "text": "₦70",
+              "is_correct": true
+            },
+            {
+              "id": 33,
+              "question": 8,
+              "text": "₦130",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "quiz": 2,
+          "text": "What is a piggy bank used for?",
+          "choices": [
+            {
+              "id": 34,
+              "question": 9,
+              "text": "Feeding pigs",
+              "is_correct": false
+            },
+            {
+              "id": 35,
+              "question": 9,
+              "text": "Playing games",
+              "is_correct": false
+            },
+            {
+              "id": 36,
+              "question": 9,
+              "text": "Storing food",
+              "is_correct": false
+            },
+            {
+              "id": 37,
+              "question": 9,
+              "text": "Saving money",
+              "is_correct": true
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "quiz": 2,
+          "text": "Funmilayo wants to buy a ₦200 toy. She saves ₦50 each week. How many weeks will it take?",
+          "choices": [
+            {
+              "id": 38,
+              "question": 10,
+              "text": "2 weeks",
+              "is_correct": false
+            },
+            {
+              "id": 39,
+              "question": 10,
+              "text": "3 weeks",
+              "is_correct": false
+            },
+            {
+              "id": 40,
+              "question": 10,
+              "text": "5 weeks",
+              "is_correct": false
+            },
+            {
+              "id": 41,
+              "question": 10,
+              "text": "4 weeks",
+              "is_correct": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Introduction to Budgeting",
+      "questions": []
+    },
+    {
+      "id": 5,
+      "title": "Questions on Savings Concept",
+      "questions": [
+        {
+          "id": 12,
+          "quiz": 5,
+          "text": "What does savings mean?",
+          "choices": [
+            {
+              "id": 42,
+              "question": 12,
+              "text": "savings means keeping your money for future use",
+              "is_correct": true
+            },
+            {
+              "id": 43,
+              "question": 12,
+              "text": "savings means spending all your money",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "id": 13,
+          "quiz": 5,
+          "text": "Why is it important to save?",
+          "choices": [
+            {
+              "id": 44,
+              "question": 13,
+              "text": "To keep your money hidden from everyone.",
+              "is_correct": false
+            },
+            {
+              "id": 45,
+              "question": 13,
+              "text": "Saving helps you buy what you really want.",
+              "is_correct": true
+            }
+          ]
+        },
+        {
+          "id": 14,
+          "quiz": 5,
+          "text": "If you save ₦500 every week, how much will you have in 4 weeks?",
+          "choices": [
+            {
+              "id": 46,
+              "question": 14,
+              "text": "₦100",
+              "is_correct": false
+            },
+            {
+              "id": 47,
+              "question": 14,
+              "text": "₦2,000",
+              "is_correct": true
+            },
+            {
+              "id": 48,
+              "question": 14,
+              "text": "₦1,000",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "id": 15,
+          "quiz": 5,
+          "text": "Which is a smart saving habit?",
+          "choices": [
+            {
+              "id": 49,
+              "question": 15,
+              "text": "Save first, spend later",
+              "is_correct": true
+            },
+            {
+              "id": 50,
+              "question": 15,
+              "text": "Spend all, save nothing",
+              "is_correct": false
+            },
+            {
+              "id": 51,
+              "question": 15,
+              "text": "Wait for someone to give you more money",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "id": 16,
+          "quiz": 5,
+          "text": "What can you use to help you save?",
+          "choices": [
+            {
+              "id": 52,
+              "question": 16,
+              "text": "Candy box",
+              "is_correct": false
+            },
+            {
+              "id": 53,
+              "question": 16,
+              "text": "Piggy bank or savings jar",
+              "is_correct": true
+            },
+            {
+              "id": 54,
+              "question": 16,
+              "text": "TV remote",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Questions on Savings Concept",
+      "questions": [
+        {
+          "id": 17,
+          "quiz": 6,
+          "text": "What does savings mean?",
+          "choices": [
+            {
+              "id": 55,
+              "question": 17,
+              "text": "savings means keeping your money for future use",
+              "is_correct": true
+            },
+            {
+              "id": 56,
+              "question": 17,
+              "text": "savings means spending all your money",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "id": 18,
+          "quiz": 6,
+          "text": "Why is it important to save?",
+          "choices": [
+            {
+              "id": 57,
+              "question": 18,
+              "text": "To keep your money hidden from everyone.",
+              "is_correct": false
+            },
+            {
+              "id": 58,
+              "question": 18,
+              "text": "Saving helps you buy what you really want.",
+              "is_correct": true
+            }
+          ]
+        },
+        {
+          "id": 19,
+          "quiz": 6,
+          "text": "If you save ₦500 every week, how much will you have in 4 weeks?",
+          "choices": [
+            {
+              "id": 59,
+              "question": 19,
+              "text": "₦100",
+              "is_correct": false
+            },
+            {
+              "id": 60,
+              "question": 19,
+              "text": "₦2,000",
+              "is_correct": true
+            },
+            {
+              "id": 61,
+              "question": 19,
+              "text": "₦1,000",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "id": 20,
+          "quiz": 6,
+          "text": "Which is a smart saving habit?",
+          "choices": [
+            {
+              "id": 62,
+              "question": 20,
+              "text": "Save first, spend later",
+              "is_correct": true
+            },
+            {
+              "id": 63,
+              "question": 20,
+              "text": "Spend all, save nothing",
+              "is_correct": false
+            },
+            {
+              "id": 64,
+              "question": 20,
+              "text": "Wait for someone to give you more money",
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "id": 21,
+          "quiz": 6,
+          "text": "What can you use to help you save?",
+          "choices": [
+            {
+              "id": 65,
+              "question": 21,
+              "text": "Piggy bank or savings jar",
+              "is_correct": true
+            },
+            {
+              "id": 66,
+              "question": 21,
+              "text": "Candy box",
+              "is_correct": false
+            },
+            {
+              "id": 67,
+              "question": 21,
+              "text": "TV remote",
+              "is_correct": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

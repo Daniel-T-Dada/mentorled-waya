@@ -1,5 +1,4 @@
 'use client'
-import { useEffect } from 'react'
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getAvatarUrl, getAvatarDebugInfo } from "@/lib/utils/avatarUtils"
@@ -41,24 +40,9 @@ const DashboardNavbar = () => {
         return user.name.charAt(0).toUpperCase();
     };
 
-    // Debug: Log user avatar for troubleshooting
-    useEffect(() => {
-        if (user && !isLoading) {
-            const debugInfo = getAvatarDebugInfo(user.avatar);
-            console.log("DashboardNavbar - Avatar debug info:", debugInfo);
-            console.log("DashboardNavbar - User data:", {
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                id: user.id,
-                isChild: user.isChild,
-                emailVerified: user.emailVerified
-            });
-        }
-    }, [user, isLoading]);
 
     return (
-        <nav className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-12 sticky top-0 z-10 shrink-0 items-center gap-2 border-b bg-background transition-[width,height] ease-linear py-8">
+        <nav className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-12 sticky top-0 z-50 shrink-0 items-center gap-2 border-b bg-background transition-[width,height] ease-linear py-8">
             <div className="flex items-center justify-between w-full px-4">
                 {/* Left Side */}
                 <div className="flex items-center gap-2">

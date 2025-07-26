@@ -5,7 +5,7 @@ import { WebVitals } from "@/components/WebVitals";
 import { SessionProvider } from "next-auth/react";
 import { RealtimeProvider } from "@/contexts/RealtimeContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+
 import ClientWrapper from "@/components/ClientWrapper";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -34,7 +34,7 @@ export default function RootLayout({
         <SessionProvider>
           <RealtimeProvider>
             <SidebarProvider>
-              <ServiceWorkerRegistration />
+              
               <main className=" w-full">
                 <ClientWrapper>
                   <div className="">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
     Dialog,
     DialogContent,
@@ -12,17 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { CheckIcon, EyeIcon, EyeOffIcon } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { toast } from "sonner";
-import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
-import { useRealtimeWallet } from "@/hooks/useRealtime";
-import { eventManager } from "@/lib/realtime";
-
-interface MakePaymentProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSuccess?: () => void;
-}
 
 interface Kid {
     id: string;
@@ -49,16 +38,35 @@ interface Chore {
     isRedeemed: boolean;
 }
 
-export function MakePayment({ isOpen, onClose, onSuccess }: MakePaymentProps) {
-    const { data: session } = useSession();
-    const { emitWalletUpdate } = useRealtimeWallet();
+interface MakePaymentPayload {
+    child_id: string;
+    chore_id: string;
+    amount: string;
+    pin: string;
+}
+
+interface MakePaymentProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSuccess?: () => void;
+    kids: Kid[];
+    chores: Chore[];
+    isLoading: boolean;
+    error?: Error | null;
+    onMakePayment: (payload: MakePaymentPayload, kidName: string) => void;
+}
+
+const MakePayment = ({
+    isOpen,
+    onClose,
+    onSuccess,
+    kids,
+    chores,
+    isLoading,
+    error,
+    onMakePayment
+}: MakePaymentProps) => {
     const [step, setStep] = useState<"form" | "success">("form");
-    const [kids, setKids] = useState<Kid[]>([]);
-    const [chores, setChores] = useState<Chore[]>([]);
-    const [kidSpecificChores, setKidSpecificChores] = useState<Chore[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isLoadingChores, setIsLoadingChores] = useState(false);
-    const [isLoadingData, setIsLoadingData] = useState(false);
     const [showPin, setShowPin] = useState(false);
     const [formData, setFormData] = useState({
         kidId: "",
@@ -68,110 +76,18 @@ export function MakePayment({ isOpen, onClose, onSuccess }: MakePaymentProps) {
         pin: ""
     });
 
-    // Helper function to fetch all paginated data
-    const fetchAllPaginatedData = async (url: string, headers: any) => {
-        let allResults: any[] = [];
-        let nextUrl = url;
+    // Filter chores for selected kid
+    const kidSpecificChores = useMemo(() => {
+        if (!formData.kidId) return [];
+        return chores.filter((chore) => chore.assignedTo === formData.kidId);
+    }, [chores, formData.kidId]);
 
-        while (nextUrl) {
-            const response = await fetch(nextUrl, { headers });
-            if (!response.ok) {
-                throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            const results = data.results || data;
-
-            if (Array.isArray(results)) {
-                allResults = [...allResults, ...results];
-            } else if (data.results) {
-                allResults = [...allResults, ...data.results];
-            }
-
-            // Check if there's a next page
-            nextUrl = data.next ? data.next : null;
-        }
-
-        return allResults;
-    };
-
-    // Fetch kids and chores data when modal opens
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!session?.user?.id) return;
-
-            setIsLoadingData(true);
-            try {
-                const headers = {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.user.accessToken}`,
-                };
-
-                // Fetch ALL kids using pagination
-                console.log('Fetching all kids...');
-                const allKids = await fetchAllPaginatedData(getApiUrl('/api/children/list/'), headers);
-                console.log('All Kids fetched:', allKids);
-                console.log('Total kids count:', allKids.length);
-                setKids(allKids);
-
-                // Fetch ALL chores using pagination
-                console.log('Fetching all chores...');
-                const allChores = await fetchAllPaginatedData(getApiUrl(API_ENDPOINTS.LIST_TASKS), headers);
-                console.log('All Chores fetched:', allChores);
-                setChores(allChores);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                toast.error('Failed to load data', {
-                    description: 'Please try again or contact support if the problem persists.'
-                });
-                setKids([]);
-                setChores([]);
-            } finally {
-                setIsLoadingData(false);
-            }
-        };
-
-        if (isOpen) {
-            fetchData();
-        }
-    }, [isOpen, session?.user?.id, session?.user?.accessToken]);
-
-    // Fetch chores for specific kid when kid is selected
-    const fetchKidChores = async (kidId: string) => {
-        if (!session?.user?.accessToken || !kidId) return;
-
-        setIsLoadingChores(true);
-        try {
-            const headers = {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${session.user.accessToken}`,
-            };
-
-            // Fetch ALL chores using pagination, then filter for the specific kid
-            console.log('Fetching all chores for kid:', kidId);
-            const allChores = await fetchAllPaginatedData(getApiUrl(API_ENDPOINTS.LIST_TASKS), headers);
-            console.log('All chores fetched:', allChores);
-
-            // Filter chores for the specific kid
-            const kidChores = allChores.filter((chore: any) => chore.assignedTo === kidId);
-            console.log('Kid-specific chores filtered:', kidChores);
-            setKidSpecificChores(kidChores);
-        } catch (error) {
-            console.error('Error fetching kid chores:', error);
-            // Fallback to filtering from already loaded chores
-            const filteredChores = chores.filter(chore => chore.assignedTo === kidId);
-            setKidSpecificChores(filteredChores);
-        } finally {
-            setIsLoadingChores(false);
-        }
-    };
-
+    // Handle input changes
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         if (name === 'amount') {
             // Remove any non-numeric characters except commas
             const numericValue = value.replace(/[^0-9,]/g, '');
-
             // Format with commas for thousands separator
             if (numericValue) {
                 const formattedValue = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -200,32 +116,20 @@ export function MakePayment({ isOpen, onClose, onSuccess }: MakePaymentProps) {
         }
     };
 
+    // Handle select changes
     const handleSelectChange = (name: string, value: string) => {
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
-
-        // If kid is selected, fetch their specific chores and reset chore selection
         if (name === 'kidId') {
             const selectedKid = kids.find(k => k.id === value);
-            if (selectedKid) {
-                setFormData(prev => ({
-                    ...prev,
-                    kidId: value,
-                    kidName: selectedKid.name,
-                    choreActivity: "", // Reset chore selection when kid changes
-                    amount: "" // Reset amount when kid changes
-                }));
-                fetchKidChores(value);
-            }
-        }
-
-        // If chore is selected, auto-fill the amount with the chore's reward
-        if (name === 'choreActivity' && value !== 'custom' && value !== '') {
+            setFormData(prev => ({
+                ...prev,
+                kidId: value,
+                kidName: selectedKid?.name ?? "",
+                choreActivity: "",
+                amount: ""
+            }));
+        } else if (name === 'choreActivity' && value !== 'custom' && value !== '') {
             const selectedChore = kidSpecificChores.find(c => c.id === value);
             if (selectedChore) {
-                // Convert amount string to number for formatting
                 const amount = parseFloat(selectedChore.amount);
                 setFormData(prev => ({
                     ...prev,
@@ -233,110 +137,55 @@ export function MakePayment({ isOpen, onClose, onSuccess }: MakePaymentProps) {
                     amount: amount.toLocaleString()
                 }));
             }
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value,
+            }));
         }
     };
 
+    // Handle form submit
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!session?.user?.id) return;
-
-        setIsLoading(true);
-        try {
-            // Validate selected kid
-            if (!formData.kidId) throw new Error('Please select a kid');
-
-            // Convert amount string to number (remove commas)
-            const amount = parseInt(formData.amount.replace(/,/g, ''));
-            if (isNaN(amount)) throw new Error('Invalid amount');
-
-            // Validate required fields
-            if (!formData.pin) throw new Error('PIN is required for payments');
-
-            // Make payment using the make_payment endpoint
-            const paymentPayload = {
-                child_id: formData.kidId,
-                chore_id: formData.choreActivity !== 'custom' && formData.choreActivity ? formData.choreActivity : undefined,
-                amount: amount.toString(),
-                pin: formData.pin
-            };
-
-            console.log('Making payment with payload:', paymentPayload);
-
-            const response = await fetch(getApiUrl(API_ENDPOINTS.WALLET_MAKE_PAYMENT), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.user.accessToken}`,
-                },
-                body: JSON.stringify(paymentPayload),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                console.error('Payment API Error:', errorData);
-
-                // Handle specific error messages
-                if (errorData.detail) {
-                    throw new Error(errorData.detail);
-                }
-                throw new Error(`Failed to make payment: ${response.status} ${response.statusText}`);
-            }
-
-            const result = await response.json();
-            console.log('Payment successful:', result);
-
-            // Emit real-time wallet update event
-            emitWalletUpdate({
-                action: "MAKE_PAYMENT",
-                amount: amount,
-                kidId: formData.kidId,
-                kidNewBalance: result.child_new_balance,
-                parentNewBalance: result.parent_new_balance,
-                transactionId: result.transaction_id
-            });
-
-            // Emit transaction update event for transaction history
-            eventManager.emit({
-                type: "TRANSACTION_UPDATE",
-                payload: {
-                    action: "CREATE",
-                    transaction: {
-                        id: result.transaction_id,
-                        name: formData.kidName,
-                        activity: "Payment Transfer",
-                        amount: amount,
-                        status: "completed",
-                        date: new Date().toISOString(),
-                        description: `Payment of NGN ${amount.toLocaleString()} sent to ${formData.kidName}`
-                    },
-                    transactionId: result.transaction_id
-                },
-                timestamp: Date.now()
-            });
-
-            setStep("success");
-            toast.success('Payment successful', {
-                description: `NGN ${amount.toLocaleString()} has been sent to ${formData.kidName}`
-            });
-        } catch (error) {
-            console.error('Error processing payment:', error);
-
-            // Show proper error message
-            const errorMessage = error instanceof Error ? error.message : 'Failed to process payment. Please try again.';
-
-            toast.error("Payment failed", {
-                description: errorMessage
-            });
-
-            // Don't proceed to success step, keep the form open for retry
-        } finally {
-            setIsLoading(false);
+        // Validate selected kid
+        if (!formData.kidId) {
+            alert("Please select a child.");
+            return;
         }
+        // Validate chore selection
+        if (!formData.choreActivity || formData.choreActivity === "custom") {
+            alert("Please select a valid chore/activity.");
+            return;
+        }
+        // Convert amount string to number (remove commas)
+        const amount = parseInt(formData.amount.replace(/,/g, ''));
+        if (isNaN(amount) || amount <= 0) {
+            alert("Please enter a valid amount.");
+            return;
+        }
+        // Validate required fields
+        if (!formData.pin) {
+            alert("PIN is required.");
+            return;
+        }
+
+        // Build payload (chore_id is always present and required)
+        const paymentPayload: MakePaymentPayload = {
+            child_id: formData.kidId,
+            chore_id: formData.choreActivity,
+            amount: amount.toString(),
+            pin: formData.pin
+        };
+
+        // Call parent mutation
+        onMakePayment(paymentPayload, formData.kidName);
+        setStep("success");
     };
 
+    // Reset state and close
     const closeAndReset = () => {
         onClose();
-        // Reset form after closing animation completes
         setTimeout(() => {
             setFormData({
                 kidId: "",
@@ -345,9 +194,6 @@ export function MakePayment({ isOpen, onClose, onSuccess }: MakePaymentProps) {
                 amount: "",
                 pin: ""
             });
-            setKidSpecificChores([]);
-            setKids([]);
-            setChores([]);
             setStep("form");
         }, 300);
     };
@@ -379,11 +225,10 @@ export function MakePayment({ isOpen, onClose, onSuccess }: MakePaymentProps) {
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     value={formData.kidId}
                                     onChange={(e) => handleSelectChange("kidId", e.target.value)}
-                                    disabled={isLoadingData}
                                     required
                                 >
                                     <option value="" disabled>
-                                        {isLoadingData ? 'Loading children...' : kids.length === 0 ? 'No children found' : 'Select a child'}
+                                        {kids.length === 0 ? 'No children found' : 'Select a child'}
                                     </option>
                                     {kids.map((kid) => (
                                         <option key={kid.id} value={kid.id}>
@@ -402,20 +247,19 @@ export function MakePayment({ isOpen, onClose, onSuccess }: MakePaymentProps) {
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     value={formData.choreActivity}
                                     onChange={(e) => handleSelectChange("choreActivity", e.target.value)}
-                                    disabled={!formData.kidId || isLoadingChores}
+                                    disabled={!formData.kidId}
                                     required
                                 >
                                     <option value="" disabled>
-                                        {!formData.kidId ? 'Select a child first' :
-                                            isLoadingChores ? 'Loading chores...' :
-                                                'Select a chore/activity'}
+                                        {!formData.kidId ? 'Select a child first' : 'Select a chore/activity'}
                                     </option>
                                     {kidSpecificChores.map((chore) => (
                                         <option key={chore.id} value={chore.id}>
                                             {chore.title} - NGN {parseFloat(chore.amount).toLocaleString()}
                                         </option>
                                     ))}
-                                    <option value="custom">Custom Activity</option>
+                                    {/* Remove custom option if your backend does not support it */}
+                                    {/* <option value="custom">Custom Activity</option> */}
                                 </select>
                             </div>
 
@@ -475,6 +319,15 @@ export function MakePayment({ isOpen, onClose, onSuccess }: MakePaymentProps) {
                                 >
                                     {isLoading ? 'Processing...' : 'Make Payment'}
                                 </Button>
+                                {error && (
+                                    <div className="text-red-500 text-sm mt-2 text-center">
+                                        {typeof error.message === 'string'
+                                            ? error.message
+                                            : typeof error === 'string'
+                                                ? error
+                                                : JSON.stringify(error.message ?? error)}
+                                    </div>
+                                )}
                             </DialogFooter>
                         </form>
                     </>
@@ -499,3 +352,4 @@ export function MakePayment({ isOpen, onClose, onSuccess }: MakePaymentProps) {
         </Dialog>
     );
 }
+export default MakePayment;

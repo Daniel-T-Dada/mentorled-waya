@@ -57,6 +57,7 @@ interface Kid {
 }
 
 interface AppKidsManagementProps {
+    kids: Kid[];
     onCreateKidClick?: () => void;
     onAssignChore?: (kidId: string) => void;
     refreshTrigger?: number; // Add refresh trigger

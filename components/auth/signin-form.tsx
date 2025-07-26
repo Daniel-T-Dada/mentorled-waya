@@ -1,6 +1,5 @@
 'use client'
 
-
 import * as z from "zod"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
@@ -10,11 +9,7 @@ import { ParentSignInSchema, KidSignInSchema } from "@/schemas"
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { handleProviderSwitch } from "@/lib/utils/auth-utils";
-
-
-
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form"
-
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import FormError from "../form-error"
@@ -25,10 +20,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 import { parseLoginErrorEnhanced, parseKidLoginErrorEnhanced } from "@/lib/utils/auth-errors";
 
-
 type ParentFormValues = z.infer<typeof ParentSignInSchema>;
 type KidFormValues = z.infer<typeof KidSignInSchema>
-
 
 const SignInForm = () => {
     const router = useRouter();
@@ -41,7 +34,6 @@ const SignInForm = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showPin, setShowPin] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
-
 
     const parentForm = useForm<ParentFormValues>({
         resolver: zodResolver(ParentSignInSchema),
@@ -78,10 +70,6 @@ const SignInForm = () => {
 
     // Parent login submission
     async function onParentSubmit(values: ParentFormValues) {
-        console.log("Parent Form Values:", {
-            email: values.email,
-            password: values.password
-        });
         setIsLoading(true);
         setError(null);
         setSuccess("");
@@ -97,7 +85,6 @@ const SignInForm = () => {
                 callbackUrl: "/dashboard/parents"
             });
 
-            console.log("SignIn result:", result);
             if (result?.url) {
                 const redirectedUrl = new URL(result.url);
                 const errorParam = redirectedUrl.searchParams.get("error");
@@ -121,20 +108,14 @@ const SignInForm = () => {
                 setError("An unexpected error occurred during sign in.");
                 setIsLoading(false);
             }
-        } catch (e) {
-            console.error("Exception during sign in:", e);
+        } catch {
             setError("An unexpected error occurred.");
             setIsLoading(false);
         }
     }
 
-
     // Kid login submission
     async function onKidSubmit(values: KidFormValues) {
-        // console.log("Kid Form Values:", {
-        //     username: values.username,
-        //     pin: values.pin
-        // });
         setIsLoading(true);
         setError(null);
         setSuccess("");
@@ -148,12 +129,11 @@ const SignInForm = () => {
                 pin: values.pin,
                 redirect: false,
                 callbackUrl: "/dashboard/kids"
-            }); if (result?.error) {
-                console.log("Authentication error:", result.error);
-
-                // Use enhanced error parsing for kid login errors
+            });
+            if (result?.error) {
                 const errorMessage = parseKidLoginErrorEnhanced(result.error);
                 setError(errorMessage);
+                setIsLoading(false);
                 return;
             }
 
@@ -165,19 +145,12 @@ const SignInForm = () => {
             }
             router.refresh();
         } catch (error) {
-            console.error("Kid login error:", error);
             const errorMessage = parseKidLoginErrorEnhanced(error);
             setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
     }
-
-    // const onSubmit = (values: z.infer<typeof SignInSchema>) => {
-    //     startTransition(() => {
-    //         console.log(values)
-    //     })
-    // }
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -193,7 +166,7 @@ const SignInForm = () => {
             titleLabel="Welcome back!"
             backButtonLabel="Don't have an account? Sign up"
             backButtonHref="/auth/signup"
-            showSocial
+            showSocial={userType === "parent"} // Only show socials for parent tab
             className=""
         >
             <Tabs
@@ -370,7 +343,6 @@ const SignInForm = () => {
                 </Form>
             )}
         </CardWrapper>
-
     )
 }
 export default SignInForm
