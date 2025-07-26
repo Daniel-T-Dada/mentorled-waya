@@ -59,6 +59,23 @@ const FamilyWalletDashboard = ({
     onSetPinClick,
     pinSet
 }: FamilyWalletDashboardProps) => {
+    // Default values for Family Wallet and Child Wallet
+    // Assume ParentStatsProvider takes error/loading props or can be wrapped for fallback
+
+    // For Pie Chart, if there's an error or loading, default the chart to zeros
+    const safePieChartData = pieChartError || pieChartLoading
+        ? [
+            { name: "Saved", value: 0, color: "#7DE2D1" },
+            { name: "Spent", value: 0, color: "#FFB800" }
+        ]
+        : pieChartData;
+
+    // For activities table, if error/loading, pass empty array but still render the table
+    const safeActivities = activitiesError || activitiesLoading ? [] : activities;
+
+    // For bar chart, if error/loading, show empty chart
+    const safeBarChartData = barChartEarnersError || barChartEarnersLoading ? [] : barChartEarnersData;
+
     return (
         <main>
             <div className="mb-6 flex items-center justify-between">
@@ -90,11 +107,15 @@ const FamilyWalletDashboard = ({
                 </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                <ParentStatsProvider />
+                {/* You can enhance ParentStatsProvider to accept props for default values */}
+                <ParentStatsProvider
+                    familyWalletError={barChartEarnersError || barChartEarnersLoading}
+                    childWalletError={pieChartError || pieChartLoading}
+                />
 
                 <div className="lg:col-span-2">
                     <BarChartEarners
-                        data={barChartEarnersData}
+                        data={safeBarChartData}
                         range={barChartRange}
                         onRangeChange={onBarChartRangeChange}
                         isLoading={barChartEarnersLoading}
@@ -105,7 +126,7 @@ const FamilyWalletDashboard = ({
                 <div className="lg:col-span-1 self-start">
                     <AppPieChart
                         chartType="savings"
-                        chartData={pieChartData}
+                        chartData={safePieChartData}
                         isLoading={pieChartLoading}
                         isError={pieChartError}
                     />
@@ -113,7 +134,7 @@ const FamilyWalletDashboard = ({
 
                 <div className="lg:col-span-3">
                     <AppTable
-                        activities={activities}
+                        activities={safeActivities}
                         isLoading={activitiesLoading}
                         isError={activitiesError}
                     />
