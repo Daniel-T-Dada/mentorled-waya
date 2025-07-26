@@ -7,10 +7,6 @@ import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 
 import { formatNaira } from "@/lib/utils/currency";
 import AppStatCard, { StatItem } from "../dashboard/AppStatCard";
-// import { useState } from "react";
-// import StatCardSkeleton from "../skeletons/StatCardSkeleton";
-// import StatCardError from "../errorState/StatCardError";
-// import { Button } from "../ui/button";
 
 // Types
 interface ChoreSummary {
@@ -34,6 +30,8 @@ interface InsightStats {
 
 interface ParentStatsProviderProps {
     insightStats?: InsightStats | null;
+    familyWalletError?: boolean;
+    childWalletError?: boolean;
 }
 
 /**
@@ -41,8 +39,11 @@ interface ParentStatsProviderProps {
  * for taskmaster/parent, wallet, insight, or dashboard (based on pathname).
  * Use this as a wrapper or call getStatsForPage elsewhere for more flexibility.
  */
-const ParentStatsProvider = ({ insightStats }: ParentStatsProviderProps) => {
-
+const ParentStatsProvider = ({
+    insightStats,
+    familyWalletError,
+    // childWalletError,
+}: ParentStatsProviderProps) => {
 
     const pathname = usePathname();
     const { data: session } = useSession();
@@ -62,12 +63,22 @@ const ParentStatsProvider = ({ insightStats }: ParentStatsProviderProps) => {
         refetchInterval: 5000,
     });
 
-    // Loading/Error handling
-    if (choreSummaryQuery.isLoading || walletStatsQuery.isLoading) return <div>Loading...</div>;
-    if (choreSummaryQuery.error || walletStatsQuery.error) return <div>Error loading stats.</div>;
+    // If error flags are set (from parent), override error/loading handling
+    const familyWalletValue = familyWalletError
+        ? 0
+        : Number(walletStatsQuery.data?.family_wallet_balance ?? 0);
+
+    const totalRewardsSent = familyWalletError
+        ? 0
+        : Number(walletStatsQuery.data?.total_rewards_sent ?? 0);
+
+    const totalRewardsPending = familyWalletError
+        ? 0
+        : Number(walletStatsQuery.data?.total_rewards_pending ?? 0);
+
 
     const choreSummary = choreSummaryQuery.data;
-    const walletStats = walletStatsQuery.data;
+    // const walletStats = walletStatsQuery.data;
 
     // -- Stat Calculation Functions --
 
@@ -94,15 +105,15 @@ const ParentStatsProvider = ({ insightStats }: ParentStatsProviderProps) => {
         return [
             {
                 title: 'Total Amount in Family Wallet',
-                value: formatNaira(walletStats?.family_wallet_balance ?? 0),
+                value: formatNaira(familyWalletValue),
             },
             {
                 title: 'Total Rewards Sent',
-                value: formatNaira(walletStats?.total_rewards_sent ?? 0),
+                value: formatNaira(totalRewardsSent),
             },
             {
                 title: 'Total Rewards Pending',
-                value: formatNaira(walletStats?.total_rewards_pending ?? 0),
+                value: formatNaira(totalRewardsPending),
             },
         ];
     }
@@ -130,7 +141,7 @@ const ParentStatsProvider = ({ insightStats }: ParentStatsProviderProps) => {
         return [
             {
                 title: 'Total Amount in Family Wallet',
-                value: formatNaira(walletStats?.family_wallet_balance ?? 0),
+                value: formatNaira(familyWalletValue),
                 percentageChange: 15,
                 trend: 'up'
             },
@@ -161,10 +172,8 @@ const ParentStatsProvider = ({ insightStats }: ParentStatsProviderProps) => {
         stats = getDefaultDashboardStats();
     }
 
+    // Always render the cards with safe fallback values
     return <AppStatCard stats={stats} />;
 };
 
 export default ParentStatsProvider;
-
-
-
