@@ -95,7 +95,7 @@ const UserProfile = memo(function UserProfile({
                             ) : (
                                 <>
                                     <span className="font-medium leading-tight">
-                                        {user?.name ? user.name.split(" ")[0] : "User"}
+                                        {user?.name || "User"}
                                     </span>
                                     <span className="truncate text-xs text-muted-foreground leading-tight">
                                         {user?.isChild ? `@${user.childUsername}` : user?.email || "No email"}
@@ -219,8 +219,8 @@ const AppSidebar = () => {
                                         <SidebarMenuButton
                                             asChild
                                             className={`text-lg hover:p-4 h-10 ${pathname === item.href
-                                                    ? "bg-primary text-primary-foreground"
-                                                    : ""
+                                                ? "bg-primary text-primary-foreground"
+                                                : ""
                                                 }`}
                                         >
                                             <Link href={item.href}>

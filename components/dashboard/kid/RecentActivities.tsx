@@ -2,12 +2,10 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
 import { useState } from "react";
-
 
 const statusColor: Record<string, string> = {
     completed: "bg-green-100 text-green-800",
@@ -19,11 +17,11 @@ const statusColor: Record<string, string> = {
 };
 
 interface RecentActivitiesProps {
-        name: string;
-        activity: string;
-        amount: string;
-        status: string;
-        date: string;
+    name: string;
+    activity: string;
+    amount: string;
+    status: string;
+    date: string;
 }
 
 export default function RecentActivities({ activities = [] }: { activities?: RecentActivitiesProps[] }) {
@@ -53,18 +51,16 @@ export default function RecentActivities({ activities = [] }: { activities?: Rec
                     </TableHeader>
                     <TableBody>
                         {paginated.map((activity, idx) => (
-                            <TableRow key={idx}>                                
-                            <TableCell className="flex items-center gap-2">
-                                <Avatar className="w-7 h-7">
-                                    {/* <AvatarImage src={activity.avatar} alt={activity.name} /> */}
-                                    <AvatarFallback>{activity.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <span className="font-medium">{activity.name}</span>
-                            </TableCell>
+                            <TableRow key={idx}>
+                                <TableCell className="flex items-center gap-2">
+                                    <span className="font-medium">{activity.name}</span>
+                                </TableCell>
                                 <TableCell>{activity.activity}</TableCell>
-                                <TableCell className="font-semibold">NGN {activity.amount.toLocaleString()}</TableCell>
+                                <TableCell className="font-semibold">{activity.amount.toLocaleString()}</TableCell>
                                 <TableCell>
-                                    <Badge className={`${statusColor[activity.status.toLowerCase()]} px-2 py-1 text-xs`}>{activity.status}</Badge>
+                                    <Badge className={`${statusColor[activity.status.toLowerCase()] || "bg-gray-200 text-gray-700"} px-2 py-1 text-xs`}>
+                                        {activity.status}
+                                    </Badge>
                                 </TableCell>
                                 <TableCell>{activity.date}</TableCell>
                             </TableRow>
@@ -93,4 +89,4 @@ export default function RecentActivities({ activities = [] }: { activities?: Rec
             </CardContent>
         </Card>
     );
-} 
+}

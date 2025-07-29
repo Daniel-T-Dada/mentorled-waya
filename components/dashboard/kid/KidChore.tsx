@@ -57,7 +57,7 @@ const KidChore = memo(function KidChore({ kidId: propKidId, refreshTrigger }: Ki
                 // Map backend fields to local Task type
                 const mappedChores = processedChores.map((chore: any) => ({
                     id: chore.id,
-                    title: chore.description,
+                    title: chore.title,
                     description: chore.description,
                     status: chore.status,
                     reward: Number(chore.reward),

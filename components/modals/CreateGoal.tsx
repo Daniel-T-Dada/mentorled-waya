@@ -73,7 +73,13 @@ export function CreateGoal({
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleDateChange = (date: Date) => setFormData(prev => ({ ...prev, deadline: date }));
+    // Popover state for calendar
+    const [calendarOpen, setCalendarOpen] = useState(false);
+
+    const handleDateChange = (date: Date) => {
+        setFormData(prev => ({ ...prev, deadline: date }));
+        setCalendarOpen(false); // Close calendar when a date is selected
+    };
 
     const [step, setStep] = useState<"form" | "success">("form");
 
@@ -98,6 +104,10 @@ export function CreateGoal({
         resetForm();
         onClose();
     };
+
+    // Disable dates in the past (everything before today)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     return (
         <Dialog open={isOpen} onOpenChange={closeAndReset}>
@@ -124,7 +134,7 @@ export function CreateGoal({
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="deadline">Deadline<span className="text-destructive">*</span></Label>
-                            <Popover>
+                            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                                 <PopoverTrigger asChild>
                                     <Button
                                         variant={"outline"}
@@ -147,6 +157,7 @@ export function CreateGoal({
                                         selected={formData.deadline}
                                         onSelect={date => date && handleDateChange(date)}
                                         initialFocus
+                                        disabled={(date) => date < today}
                                     />
                                 </PopoverContent>
                             </Popover>

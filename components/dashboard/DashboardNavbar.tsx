@@ -44,6 +44,9 @@ const Greeting = memo(function Greeting({ name, isLoading }: { name?: string; is
             </>
         );
     }
+    if (!name) {
+        console.log("First name not found in user object, falling back to name split:", { isLoading, name });
+    }
     return (
         <>
             <h1 className="text-xl md:text-2xl font-semibold leading-tight">
@@ -80,7 +83,6 @@ function getAvatarFallback(name?: string) {
 }
 
 const DashboardNavbar = () => {
-
     const { user, isLoading } = useUser();
     const [avatarError, setAvatarError] = useState(false);
     const router = useRouter();
@@ -101,6 +103,9 @@ const DashboardNavbar = () => {
         router.push("/dashboard/parents/settings");
     }, [router]);
 
+    // Derive firstName from name if not present
+    const displayName = user?.firstName || (user?.name ? user.name.split(" ")[0] : undefined);
+
     return (
         <nav className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-12 sticky top-0 z-50 shrink-0 items-center gap-2 border-b bg-background transition-[width,height] ease-linear py-8">
             <div className="flex items-center justify-between w-full px-4">
@@ -112,7 +117,7 @@ const DashboardNavbar = () => {
                         className="ml-2 data-[orientation=vertical]:h-4 hidden sm:block"
                     />
                     <div className="hidden sm:flex sm:flex-col sm:justify-center min-h-[52px]">
-                        <Greeting name={user?.firstName} isLoading={isLoading} />
+                        <Greeting name={displayName} isLoading={isLoading} />
                     </div>
                 </div>
 
