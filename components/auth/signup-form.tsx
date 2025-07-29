@@ -1,28 +1,25 @@
 'use client'
 
 import * as z from "zod"
-import { useState } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import CardWrapper from "./card-wrapper"
 import { SignUpSchema } from "@/schemas"
-
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form"
-
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import FormError from "../form-error"
 import FormSuccess from "../form-sucess"
-// Use the router for client-side navigation
 import { useRouter, useSearchParams } from "next/navigation"
 import { signIn, signOut } from "next-auth/react"
 import Link from "next/link"
 import { Checkbox } from "../ui/checkbox"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { parseSignupErrorEnhanced } from "@/lib/utils/auth-errors"
-import { sendVerificationEmail } from '@/lib/utils/sendVerificationEmail';
+import { sendVerificationEmail } from '@/lib/utils/sendVerificationEmail'
 
-type SignUpFormValues = z.infer<typeof SignUpSchema>;
+type SignUpFormValues = z.infer<typeof SignUpSchema>
 
 interface SignInResult {
     error?: string;
@@ -40,119 +37,138 @@ interface SignInResult {
         verification_email_sent?: boolean;
         message?: string;
         verification?: {
-            token: string;
-            uidb64: string;
-            email_sent: boolean;
+            token?: string;
+            uidb64?: string;
+            email_sent?: boolean;
+            needsVerification?: boolean;
+            failedToSend?: boolean;
+            message?: string;
         };
     };
+    // allow for direct verification object at top level in result for flexibility
+    verification?: {
+        token?: string;
+        uidb64?: string;
+        email_sent?: boolean;
+        needsVerification?: boolean;
+        failedToSend?: boolean;
+        message?: string;
+    }
 }
 
+// ... (all your imports and code remain the same above) ...
+
 const SignUpForm = () => {
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const urlError = searchParams.get("error")
 
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const urlError = searchParams.get("error");
-
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false)
     const [success, setSuccess] = useState<string | undefined>("")
-    const [error, setError] = useState<string | null>(urlError ? decodeURIComponent(urlError) : null);
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [error, setError] = useState<string | null>(urlError ? decodeURIComponent(urlError) : null)
+    const [showPassword, setShowPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
     const signUpForm = useForm<SignUpFormValues>({
         resolver: zodResolver(SignUpSchema),
-        defaultValues: {
+        defaultValues: useMemo(() => ({
             email: "",
             password: "",
             fullName: "",
             confirmPassword: "",
             agreeToTerms: false,
-        },
+        }), []),
         mode: "onChange"
     })
 
-    // Sign up submission
-    async function onSignUpSubmit(values: SignUpFormValues) {
-        console.log('Starting signup submission with values:', values);
-        setIsLoading(true);
-        setError(null);
-        setSuccess("");
+    // Helper to get verification object regardless of backend shape
+    const getVerification = (result: any) => {
+        if (result?.data?.verification) return result.data.verification;
+        if (result?.verification) return result.verification;
+        return null;
+    };
 
+    // Sign up submission
+    const onSignUpSubmit = useCallback(async (values: SignUpFormValues) => {
+        setIsLoading(true)
+        setError(null)
+        setSuccess("")
         try {
-            // Call Auth.js signup
             const result = await signIn("parent-credentials", {
                 name: values.fullName,
                 email: values.email,
                 password: values.password,
                 confirmPassword: values.confirmPassword,
                 redirect: false,
-            }) as SignInResult;
+            }) as SignInResult
 
-            console.log("SignIn result:", result);
-            console.log("Form values:", values); if (result?.error) {
-                console.error("Signup error:", result.error);
+            if (result?.error) {
 
-                // Use the enhanced error parsing that handles backend-specific errors
-                const errorMessage = parseSignupErrorEnhanced(result.error);
-                setError(errorMessage);
-                return;
+                const enhancedError = parseSignupErrorEnhanced(result.error)
+
+                if (
+                    enhancedError.toLowerCase().includes('verification email failed to send') ||
+                    enhancedError.toLowerCase().includes('try resending from the verification page')
+                ) {
+                    const verification_link = `${window.location.origin}/auth/verify-email?email=${encodeURIComponent(values.email)}&verified=1`
+                    try {
+                        await sendVerificationEmail({ email: values.email, fullName: values.fullName, verification_link })
+                        setSuccess("Verification email has been sent. Please check your inbox.")
+                        setError(null)
+                        await signOut({ redirect: false })
+                        setTimeout(() => {
+                            router.push(`/auth/verify-email?email=${encodeURIComponent(values.email)}`)
+                        }, 1500)
+                    } catch {
+                        setSuccess("Tried to resend, but something went wrong. Please try again from the verification page.")
+                        setError(null)
+                    }
+                    return
+                }
+
+                setError(enhancedError)
+                return
             }
 
-            // Get verification data from the response
-            const userData = result?.data || result || {};
-            const email = ('email' in userData ? userData.email : undefined) || values.email;
-            const fullName = values.fullName;
-            // Check for verification token and uidb64
+            // Prefer userData from .data, but fallback to direct result object
+            const userData = (result?.data || result || {}) as any
+            const email = ('email' in userData ? userData.email : undefined) || values.email
+            const fullName = values.fullName
 
+            const verification = getVerification(result);
+            const needsVerification = verification?.needsVerification;
+            const failedToSend = verification?.failedToSend;
 
-            // Simulate verification email for user experience
-            const verification_link = `${window.location.origin}/auth/verify-email?email=${encodeURIComponent(email)}&verified=1`;
-            try {
-                await sendVerificationEmail({ email, fullName, verification_link });
-                console.log('Simulated verification email sent via EmailJS:', { email, fullName, verification_link });
-            } catch (emailError) {
-                console.error('Failed to send simulated verification email via EmailJS:', emailError);
+            // Only trigger sendVerificationEmail if backend failed to send it
+            if (needsVerification && failedToSend) {
+                const verification_link = `${window.location.origin}/auth/verify-email?email=${encodeURIComponent(email)}&verified=1`
+                try {
+                    await sendVerificationEmail({ email, fullName, verification_link })
+                    setSuccess("Verification email has been resent. Please check your inbox.")
+                    setError(null)
+                } catch {
+                    setError(null)
+                    // setSuccess("Tried to resend, but something went wrong. Please try again from the verification page.")
+                }
             }
 
-            // Check if we have a success message from the backend
-            const successMessage = ('message' in userData ? userData.message : undefined) || "Account created successfully! Please verify your email.";
-            setSuccess(successMessage);
+            const successMessage = ('message' in userData ? userData.message : undefined) || "Account created successfully! Please verify your email."
+            setSuccess(successMessage)
 
-            console.log('Account created successfully, redirecting to verification page');
-            console.log('Email being used:', email);
-            console.log('Backend response:', userData);
-            console.log('Full result object:', result);
+            await signOut({ redirect: false })
 
-            // Sign out the user first to ensure they need to explicitly log in after verification
-            await signOut({ redirect: false });
-
-            // Redirect to verification page after a short delay
             setTimeout(() => {
-                console.log('Now redirecting to verification page...');
-
-
-
-                // Since the backend only returns a message and sends verification via email,
-                // we just redirect to the verification page with the email parameter
-                // The user will need to click the link in their email to get token and uidb64
-                router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
-            }, 1500);
+                router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`)
+            }, 1500)
         } catch (error) {
-            console.error("Registration failed:", error);
-            const errorMessage = parseSignupErrorEnhanced(error);
-            setError(errorMessage);
+            setError(parseSignupErrorEnhanced(error))
         } finally {
-            setIsLoading(false);
+            setIsLoading(false)
         }
-    }
+    }, [router])
 
-    const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
-    };
-
-    const toggleConfirmPasswordVisibility = () => {
-        setShowConfirmPassword(!showConfirmPassword);
-    };
+    const togglePasswordVisibility = useCallback(() => setShowPassword(v => !v), [])
+    const toggleConfirmPasswordVisibility = useCallback(() => setShowConfirmPassword(v => !v), [])
 
     return (
         <CardWrapper
@@ -218,6 +234,8 @@ const SignUpForm = () => {
                                                 type="button"
                                                 onClick={togglePasswordVisibility}
                                                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                                                tabIndex={-1}
+                                                aria-label={showPassword ? "Hide password" : "Show password"}
                                             >
                                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                             </button>
@@ -244,6 +262,8 @@ const SignUpForm = () => {
                                                 type="button"
                                                 onClick={toggleConfirmPasswordVisibility}
                                                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                                                tabIndex={-1}
+                                                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
                                             >
                                                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                             </button>
@@ -300,4 +320,5 @@ const SignUpForm = () => {
         </CardWrapper>
     )
 }
+
 export default SignUpForm

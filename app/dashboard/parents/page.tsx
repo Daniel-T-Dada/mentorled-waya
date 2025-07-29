@@ -1,3 +1,4 @@
+
 'use client'
 
 import ParentDashboardOverview from '@/components/dashboard/parent/ParentDashboardOverview';
@@ -8,8 +9,6 @@ import { useApiQuery } from "@/hooks/useApiQuery";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { usePaginatedApiQuery } from "@/hooks/usePagination";
 import { toast } from "sonner";
-// import { useQueryClient } from "@tanstack/react-query";
-// import { useChoreApi } from "@/hooks/use-authenticated-api";
 import { usePathname } from 'next/navigation';
 
 // --- Types ---
@@ -37,9 +36,32 @@ export interface ChartDataPoint {
     allowanceSpent: number;
 }
 
+interface WalletDashboardStats {
+    family_wallet_balance: string;
+    total_rewards_sent: string;
+    total_rewards_pending: string;
+    children_count: number;
+    total_children_balance: string;
+}
+
+interface ChoreSummary {
+    pending: number;
+    completed: number;
+    missed?: number;
+    total: number;
+}
+
 const CHORES_PER_PAGE = 10;
 const FRONTEND_KIDS_PER_PAGE = 3;
 const BACKEND_KIDS_PER_PAGE = 10;
+
+const ZERO_WALLET_STATS = {
+    family_wallet_balance: "0",
+    total_rewards_sent: "0",
+    total_rewards_pending: "0",
+    children_count: 0,
+    total_children_balance: "0"
+};
 
 const fetchChores = async (page: number, accessToken?: string) => {
     const res = await fetch(getApiUrl(API_ENDPOINTS.LIST_TASKS) + `?page=${page}`, {
@@ -51,11 +73,9 @@ const fetchChores = async (page: number, accessToken?: string) => {
 
 const ParentsPage = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const { data: session } = useSession();
+    const { data: session, status: sessionStatus } = useSession();
     const [page, setPage] = useState(1);        // chores page
     const [kidsPage, setKidsPage] = useState(1);// kids frontend page
-    // const queryClient = useQueryClient();
-    // const { makeAuthenticatedCall } = useChoreApi();
     const pathname = usePathname();
     const isWalletPage = pathname.includes('/wallet');
     const [barChartRange, setBarChartRange] = useState("7");
@@ -69,7 +89,7 @@ const ParentsPage = () => {
         enabled: !!session?.user?.accessToken,
     });
 
-    const choreSummaryQuery = useApiQuery({
+    const choreSummaryQuery = useApiQuery<ChoreSummary>({
         endpoint: getApiUrl(API_ENDPOINTS.CHORE_SUMMARY),
         queryKey: ['chore-summary'],
         enabled: !!session?.user?.accessToken,
@@ -95,7 +115,7 @@ const ParentsPage = () => {
         enabled: !!session?.user?.accessToken,
     });
 
-    const walletStatsQuery = useApiQuery({
+    const walletStatsQuery = useApiQuery<WalletDashboardStats>({
         endpoint: getApiUrl(API_ENDPOINTS.WALLET_DASHBOARD_STATS),
         queryKey: ['wallet-dashboard-stats'],
         enabled: !!session?.user?.accessToken,
@@ -115,11 +135,56 @@ const ParentsPage = () => {
         refetchInterval: 5000,
     });
 
+    // Debug logging for query states
+    useEffect(() => {
+        console.log('Session Status:', sessionStatus, 'Access Token:', !!session?.user?.accessToken);
+        console.log('Query States:', {
+            paginatedKidsQuery: { isLoading: paginatedKidsQuery.isLoading, isError: paginatedKidsQuery.isError, error: paginatedKidsQuery.error },
+            choreSummaryQuery: { isLoading: choreSummaryQuery.isLoading, isError: choreSummaryQuery.isError, error: choreSummaryQuery.error },
+            walletStatsQuery: { isLoading: walletStatsQuery.isLoading, isError: walletStatsQuery.isError, error: walletStatsQuery.error },
+            choresQuery: { isLoading: choresQuery.isLoading, isError: choresQuery.isError, error: choresQuery.error },
+            childrenWalletsQuery: { isLoading: childrenWalletsQuery.isLoading, isError: childrenWalletsQuery.isError, error: childrenWalletsQuery.error },
+            transactionsQuery: { isLoading: transactionsQuery.isLoading, isError: transactionsQuery.isError, error: transactionsQuery.error },
+            allowancesQuery: { isLoading: allowancesQuery.isLoading, isError: allowancesQuery.isError, error: allowancesQuery.error },
+            savingsBreakdownQuery: { isLoading: savingsBreakdownQuery.isLoading, isError: savingsBreakdownQuery.isError, error: savingsBreakdownQuery.error },
+        });
+    }, [
+        sessionStatus,
+        session?.user?.accessToken,
+        paginatedKidsQuery.isLoading,
+        paginatedKidsQuery.isError,
+        paginatedKidsQuery.error,
+        choreSummaryQuery.isLoading,
+        choreSummaryQuery.isError,
+        choreSummaryQuery.error,
+        walletStatsQuery.isLoading,
+        walletStatsQuery.isError,
+        walletStatsQuery.error,
+        choresQuery.isLoading,
+        choresQuery.isError,
+        choresQuery.error,
+        childrenWalletsQuery.isLoading,
+        childrenWalletsQuery.isError,
+        childrenWalletsQuery.error,
+        transactionsQuery.isLoading,
+        transactionsQuery.isError,
+        transactionsQuery.error,
+        allowancesQuery.isLoading,
+        allowancesQuery.isError,
+        allowancesQuery.error,
+        savingsBreakdownQuery.isLoading,
+        savingsBreakdownQuery.isError,
+        savingsBreakdownQuery.error,
+    ]);
+
     // --- Data ---
     const kidsCount = paginatedKidsQuery.data?.count || 0;
     const kidsTotalPages = Math.max(1, Math.ceil(kidsCount / FRONTEND_KIDS_PER_PAGE));
     const childrenWallets = (childrenWalletsQuery.data?.results || childrenWalletsQuery.data || []);
     const totalPages = choresQuery.data ? Math.ceil(choresQuery.data.count / CHORES_PER_PAGE) : 1;
+
+    // Normalize walletStats
+    const walletStats: WalletDashboardStats = walletStatsQuery.data || ZERO_WALLET_STATS;
 
     const backendKidsResults = paginatedKidsQuery.data?.results || [];
 
@@ -285,6 +350,8 @@ const ParentsPage = () => {
 
     // --- General Loading/Error ---
     const isLoading =
+        sessionStatus === 'loading' ||
+        paginatedKidsQuery.isLoading ||
         choreSummaryQuery.isLoading ||
         walletStatsQuery.isLoading ||
         choresQuery.isLoading ||
@@ -292,10 +359,11 @@ const ParentsPage = () => {
 
     const isError =
         !!choreSummaryQuery.error ||
-        !!walletStatsQuery.error ||
         !!choresQuery.error ||
-        !!childrenWalletsQuery.error;
+        !!childrenWalletsQuery.error ||
+        !!walletStatsQuery.error;
 
+    // Even on error/loading, supply fallbacks to static props for overview
     return (
         <div className="">
             <ParentDashboardOverview
@@ -308,8 +376,8 @@ const ParentsPage = () => {
                 kidsTotalPages={kidsTotalPages}
                 onKidsPageChange={handleKidsPageChange}
                 choreSummary={!isWalletPage ? choreSummaryQuery.data : undefined}
-                walletStats={walletStatsQuery.data}
-                savingsBreakdown={isWalletPage ? savingsBreakdownQuery.data : undefined}
+                walletStats={walletStats}
+                savingsBreakdown={isWalletPage ? savingsBreakdownQuery.data ?? null : undefined}
                 page={page}
                 totalPages={totalPages}
                 onPageChange={setPage}

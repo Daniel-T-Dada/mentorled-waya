@@ -8,6 +8,7 @@ interface User {
     name: string
     email: string
     role: string
+    firstName?: string;
     avatar?: string | null
     emailVerified?: Date | null
     parentId?: string

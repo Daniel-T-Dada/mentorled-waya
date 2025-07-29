@@ -1,10 +1,10 @@
+
 'use client'
 
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useApiQuery } from "@/hooks/useApiQuery";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
-
 import { formatNaira } from "@/lib/utils/currency";
 import AppStatCard, { StatItem } from "../dashboard/AppStatCard";
 
@@ -34,28 +34,20 @@ interface ParentStatsProviderProps {
     childWalletError?: boolean;
 }
 
-/**
- * This component handles fetching all summary data and renders the correct stats
- * for taskmaster/parent, wallet, insight, or dashboard (based on pathname).
- * Use this as a wrapper or call getStatsForPage elsewhere for more flexibility.
- */
+const ZERO_CHORE_SUMMARY = {
+    pending: 0,
+    completed: 0,
+    missed: 0,
+    total: 0
+};
+
 const ParentStatsProvider = ({
     insightStats,
-    familyWalletError,
-    // childWalletError,
 }: ParentStatsProviderProps) => {
-
     const pathname = usePathname();
     const { data: session } = useSession();
 
-    // Fetch all needed data
-    const choreSummaryQuery = useApiQuery<ChoreSummary>({
-        endpoint: getApiUrl(API_ENDPOINTS.CHORE_SUMMARY),
-        queryKey: ['chore-summary'],
-        enabled: !!session?.user?.accessToken,
-        refetchInterval: 5000,
-    });
-
+    // Wallet Stats Query
     const walletStatsQuery = useApiQuery<WalletDashboardStats>({
         endpoint: getApiUrl(API_ENDPOINTS.WALLET_DASHBOARD_STATS),
         queryKey: ['wallet-dashboard-stats'],
@@ -63,62 +55,60 @@ const ParentStatsProvider = ({
         refetchInterval: 5000,
     });
 
-    // If error flags are set (from parent), override error/loading handling
-    const familyWalletValue = familyWalletError
-        ? 0
-        : Number(walletStatsQuery.data?.family_wallet_balance ?? 0);
+    // Defensive fallback for wallet stats
+    const walletStats: WalletDashboardStats = walletStatsQuery.data || {
+        family_wallet_balance: "0",
+        total_rewards_sent: "0",
+        total_rewards_pending: "0",
+        children_count: 0,
+        total_children_balance: "0"
+    };
 
-    const totalRewardsSent = familyWalletError
-        ? 0
-        : Number(walletStatsQuery.data?.total_rewards_sent ?? 0);
+    // Chore Summary Query
+    const choreSummaryQuery = useApiQuery<ChoreSummary>({
+        endpoint: getApiUrl(API_ENDPOINTS.CHORE_SUMMARY),
+        queryKey: ['chore-summary'],
+        enabled: !!session?.user?.accessToken,
+        refetchInterval: 5000,
+    });
 
-    const totalRewardsPending = familyWalletError
-        ? 0
-        : Number(walletStatsQuery.data?.total_rewards_pending ?? 0);
+    const choreSummary: ChoreSummary = choreSummaryQuery.data || ZERO_CHORE_SUMMARY;
 
-
-    const choreSummary = choreSummaryQuery.data;
-    // const walletStats = walletStatsQuery.data;
-
-    // -- Stat Calculation Functions --
-
-    // 1. Taskmaster page (parent summary)
+    // --- Stat Calculation Functions ---
     function getTaskmasterStats(): StatItem[] {
         return [
             {
                 title: 'Total Number of Chores Assigned',
-                value: `${choreSummary?.total ?? 0} Chores`
+                value: `${choreSummary.total} Chores`
             },
             {
                 title: 'Total Number of Completed Chores',
-                value: `${choreSummary?.completed ?? 0} Chores`
+                value: `${choreSummary.completed} Chores`
             },
             {
                 title: 'Total Number of Pending Chores',
-                value: `${choreSummary?.pending ?? 0} Chores`
+                value: `${choreSummary.pending} Chores`
             },
         ];
     }
 
-    // 2. Wallet Dashboard page
     function getWalletStats(): StatItem[] {
         return [
             {
                 title: 'Total Amount in Family Wallet',
-                value: formatNaira(familyWalletValue),
+                value: formatNaira(walletStats.family_wallet_balance),
             },
             {
                 title: 'Total Rewards Sent',
-                value: formatNaira(totalRewardsSent),
+                value: formatNaira(walletStats.total_rewards_sent),
             },
             {
                 title: 'Total Rewards Pending',
-                value: formatNaira(totalRewardsPending),
+                value: formatNaira(walletStats.total_rewards_pending),
             },
         ];
     }
 
-    // 3. Insight page
     function getInsightStats(): StatItem[] {
         return [
             {
@@ -136,31 +126,30 @@ const ParentStatsProvider = ({
         ];
     }
 
-    // 4. Default/parents dashboard
     function getDefaultDashboardStats(): StatItem[] {
         return [
             {
                 title: 'Total Amount in Family Wallet',
-                value: formatNaira(familyWalletValue),
+                value: formatNaira(walletStats.family_wallet_balance),
                 percentageChange: 15,
                 trend: 'up'
             },
             {
                 title: 'Total Number of Chores Assigned',
-                value: `${choreSummary?.total ?? 0} Chores`,
+                value: `${choreSummary.total} Chores`,
                 percentageChange: -5,
                 trend: 'down'
             },
             {
                 title: 'Total Number of Pending Chores',
-                value: `${choreSummary?.pending ?? 0} Chores`,
+                value: `${choreSummary.pending} Chores`,
                 percentageChange: 12,
                 trend: 'up'
             },
         ];
     }
 
-    // -- Choose which stats to show based on page --
+    // --- Choose which stats to show based on page ---
     let stats: StatItem[];
     if (pathname.includes('/taskmaster')) {
         stats = getTaskmasterStats();
@@ -172,8 +161,11 @@ const ParentStatsProvider = ({
         stats = getDefaultDashboardStats();
     }
 
-    // Always render the cards with safe fallback values
-    return <AppStatCard stats={stats} />;
+    return (
+        <>
+            <AppStatCard stats={stats} />
+        </>
+    );
 };
 
 export default ParentStatsProvider;

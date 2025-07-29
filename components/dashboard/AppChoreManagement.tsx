@@ -63,13 +63,13 @@ interface AppChoreManagementProps {
         missed?: number;
         total: number
     };
-    // walletStats?: {
-    //     family_wallet_balance: string;
-    //     total_rewards_sent: string;
-    //     total_rewards_pending: string;
-    //     children_count: number;
-    //     total_children_balance: string
-    // };
+    walletStats?: {
+        family_wallet_balance: string;
+        total_rewards_sent: string;
+        total_rewards_pending: string;
+        children_count: number;
+        total_children_balance: string
+    };
 }
 
 function mapTasks(tasks: Task[]): Task[] {
@@ -209,6 +209,7 @@ export default function AppChoreManagement({
                                                 <div className="flex items-start justify-between">
                                                     <div>
                                                         <h3 className="font-medium">{task.title}</h3>
+                                                        
                                                         <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
                                                     </div>
                                                     <div className="flex items-center gap-2">

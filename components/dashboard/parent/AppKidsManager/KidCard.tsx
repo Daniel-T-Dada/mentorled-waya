@@ -22,6 +22,8 @@ interface Kid {
 interface KidCardProps {
     kid: Kid;
     onAssignChore: (kidId: string) => void;
+    showActionButtons?: boolean;
+    mobile?: boolean;
 }
 
 

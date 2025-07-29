@@ -1,3 +1,4 @@
+
 'use client'
 
 import { Button } from "@/components/ui/button"
@@ -25,21 +26,18 @@ interface FamilyWalletDashboardProps {
     onBarChartRangeChange: (range: string) => void;
     barChartEarnersLoading?: boolean;
     barChartEarnersError?: boolean;
-
     pieChartData: ChartDataItem[];
     pieChartLoading?: boolean;
     pieChartError?: boolean;
-
     activities: ActivityRow[];
     activitiesLoading?: boolean;
     activitiesError?: boolean;
-
     onAddAllowanceClick?: () => void;
     onAddFundsClick?: () => void;
     onSetPinClick?: () => void;
-
-    pinSet?: boolean; 
-    
+    pinSet?: boolean;
+    isLoading?: boolean;
+    isError?: boolean;
 }
 
 const FamilyWalletDashboard = ({
@@ -57,12 +55,11 @@ const FamilyWalletDashboard = ({
     onAddAllowanceClick,
     onAddFundsClick,
     onSetPinClick,
-    pinSet
+    pinSet,
+    isLoading,
+    isError,
 }: FamilyWalletDashboardProps) => {
-    // Default values for Family Wallet and Child Wallet
-    // Assume ParentStatsProvider takes error/loading props or can be wrapped for fallback
-
-    // For Pie Chart, if there's an error or loading, default the chart to zeros
+    // Use safe fallbacks for rendering
     const safePieChartData = pieChartError || pieChartLoading
         ? [
             { name: "Saved", value: 0, color: "#7DE2D1" },
@@ -70,14 +67,22 @@ const FamilyWalletDashboard = ({
         ]
         : pieChartData;
 
-    // For activities table, if error/loading, pass empty array but still render the table
     const safeActivities = activitiesError || activitiesLoading ? [] : activities;
 
-    // For bar chart, if error/loading, show empty chart
     const safeBarChartData = barChartEarnersError || barChartEarnersLoading ? [] : barChartEarnersData;
 
     return (
         <main>
+            {isError && (
+                <div className="text-red-500 mb-4">
+                    Some data failed to load, but you can still manage funds and payments.
+                </div>
+            )}
+            {isLoading && (
+                <div className="text-gray-500 mb-4">
+                    Loading some data, please wait...
+                </div>
+            )}
             <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Overview</h2>
                 <div className="flex gap-3">
@@ -107,12 +112,10 @@ const FamilyWalletDashboard = ({
                 </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                {/* You can enhance ParentStatsProvider to accept props for default values */}
                 <ParentStatsProvider
                     familyWalletError={barChartEarnersError || barChartEarnersLoading}
                     childWalletError={pieChartError || pieChartLoading}
                 />
-
                 <div className="lg:col-span-2">
                     <BarChartEarners
                         data={safeBarChartData}
@@ -122,7 +125,6 @@ const FamilyWalletDashboard = ({
                         isError={barChartEarnersError}
                     />
                 </div>
-
                 <div className="lg:col-span-1 self-start">
                     <AppPieChart
                         chartType="savings"
@@ -131,7 +133,6 @@ const FamilyWalletDashboard = ({
                         isError={pieChartError}
                     />
                 </div>
-
                 <div className="lg:col-span-3">
                     <AppTable
                         activities={safeActivities}

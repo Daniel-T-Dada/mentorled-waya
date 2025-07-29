@@ -3,7 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, Label, ResponsiveContainer } from "recharts";
 import { Wallet, ClipboardList } from 'lucide-react';
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface ChartDataItem {
     name: string;
@@ -18,8 +17,6 @@ interface AppPieChartProps {
     isError?: boolean;
 }
 
-// chartConfigs is no longer used, so it's removed.
-
 const AppPieChart = ({
     chartData,
     chartType,
@@ -29,21 +26,8 @@ const AppPieChart = ({
     const isWallet = chartType === "savings";
     const totalValue = chartData.reduce((acc, curr) => acc + curr.value, 0);
 
-    if (isLoading) {
-        return (
-            <Card className="lg:h-[400px] xl:h-[420px] flex flex-col">
-                <CardHeader className="pb-2 flex-shrink-0">
-                    <CardTitle className="text-base font-semibold">
-                        {isWallet ? 'Savings Breakdown' : 'Chore Breakdown'}
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="flex-1 flex items-center justify-center">
-                    <Skeleton className="w-[180px] h-[180px] rounded-full mb-4" />
-                </CardContent>
-            </Card>
-        );
-    }
-    if (isError || chartData.length === 0) {
+    // Always show info state if loading, error, or no data
+    if (isLoading || isError || chartData.length === 0) {
         return (
             <Card className="lg:h-[400px] xl:h-[420px] flex flex-col">
                 <CardHeader className="pb-2 flex-shrink-0">

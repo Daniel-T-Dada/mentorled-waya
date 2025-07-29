@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import EmptyState from "./EmptyState";
 import KidsList from "./KidsList";
 import KidsPagination from "./KidsPagination";
+import { usePathname } from "next/navigation";
 
 // Local Kid interface (match ParentDashboardOverview and ParentsPage)
 interface Kid {
@@ -44,11 +45,17 @@ const AppKidsManager = ({
     onKidsPageChange,
     isLoading,
     isError,
-    onCreateKid = () => {},
-    onAssignChore = () => {},
+    onCreateKid = () => { },
+    onAssignChore = () => { },
 }: AppKidsManagerProps) => {
+    const pathname = usePathname();
+    const showActionButtons = pathname.includes('/dashboard/parents/taskmaster');
+
     const goToPrevious = () => onKidsPageChange(Math.max(1, kidsPage - 1));
     const goToNext = () => onKidsPageChange(Math.min(kidsTotalPages, kidsPage + 1));
+
+    // Info state: show EmptyState for both error and empty states
+    const showInfoState = isError || kidsCount === 0 || isLoading;
 
     return (
         <Card className="h-full flex flex-col">
@@ -58,17 +65,13 @@ const AppKidsManager = ({
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
-                    {isLoading ? (
-                        <div className="h-40 flex items-center justify-center text-muted-foreground">Loading...</div>
-                    ) : isError ? (
-                        <div className="h-40 flex items-center justify-center text-red-500">Error loading kids.</div>
-                    ) : kidsCount === 0 ? (
+                    {showInfoState ? (
                         <EmptyState onCreateKid={onCreateKid} />
                     ) : (
                         <div className="space-y-4 pr-4">
                             {/* Desktop */}
                             <div className="hidden xl:block">
-                                <KidsList kids={kids} onAssignChore={onAssignChore} />
+                                <KidsList kids={kids} onAssignChore={onAssignChore} showActionButtons={showActionButtons} />
                                 {kidsTotalPages > 1 && (
                                     <KidsPagination
                                         currentPage={kidsPage}
@@ -81,7 +84,7 @@ const AppKidsManager = ({
                             </div>
                             {/* Tablet */}
                             <div className="hidden md:block xl:hidden">
-                                <KidsList kids={kids} onAssignChore={onAssignChore} />
+                                <KidsList kids={kids} onAssignChore={onAssignChore} showActionButtons={showActionButtons} />
                                 {kidsTotalPages > 1 && (
                                     <KidsPagination
                                         currentPage={kidsPage}
@@ -95,7 +98,7 @@ const AppKidsManager = ({
                             </div>
                             {/* Mobile */}
                             <div className="block md:hidden">
-                                <KidsList kids={kids} onAssignChore={onAssignChore} mobile />
+                                <KidsList kids={kids} onAssignChore={onAssignChore} showActionButtons={showActionButtons} mobile />
                             </div>
                         </div>
                     )}
