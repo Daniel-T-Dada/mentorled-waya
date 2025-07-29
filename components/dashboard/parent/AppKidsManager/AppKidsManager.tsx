@@ -31,7 +31,7 @@ interface AppKidsManagerProps {
     kidsTotalPages: number;
     onKidsPageChange: (page: number) => void;
     isLoading: boolean;
-    isError: boolean;
+    // isError: boolean;
     onCreateKid?: () => void;
     onAssignChore?: (kidId: string) => void;
 }
@@ -43,8 +43,8 @@ const AppKidsManager = ({
     kidsTotalPages,
     onKidsPageChange,
     isLoading,
-    isError,
-    onCreateKid = () => { },
+    // isError,
+    // onCreateKid = () => { },
     onAssignChore = () => { },
 }: AppKidsManagerProps) => {
     const pathname = usePathname();
@@ -54,7 +54,7 @@ const AppKidsManager = ({
     const goToPrevious = () => onKidsPageChange(Math.max(1, kidsPage - 1));
     const goToNext = () => onKidsPageChange(Math.min(kidsTotalPages, kidsPage + 1));
 
-    const showInfoState = isError || kidsCount === 0 || isLoading;
+    const showInfoState =  kidsCount === 0 || isLoading;
 
     return (
         <Card className="h-full flex flex-col">
@@ -65,7 +65,7 @@ const AppKidsManager = ({
             <CardContent className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
                     {showInfoState ? (
-                        <EmptyState onCreateKid={onCreateKid} />
+                        <EmptyState />
                     ) : (
                         <div className="space-y-4 pr-4">
                             <div className="hidden xl:block">

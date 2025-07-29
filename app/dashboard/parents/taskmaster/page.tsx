@@ -342,7 +342,7 @@ const TaskMasterPage = () => {
                 choreSummary={fallbackChoreSummary}
                 // walletStats={fallbackWalletStats}
                 isLoading={isLoading}
-                isError={isError}
+                // isError={isError}
                 tasks={fallbackTasks}
                 kids={fallbackKids}
                 pagedKids={fallbackPagedKids}

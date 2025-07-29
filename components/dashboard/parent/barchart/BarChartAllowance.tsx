@@ -5,7 +5,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { Wallet } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+// import { Skeleton } from "@/components/ui/skeleton";
 
 export interface ChartDataPoint {
     date: string;
@@ -17,7 +17,7 @@ export interface BarChartAllowanceProps {
     data: ChartDataPoint[];
     range: string;
     onRangeChange: (range: string) => void;
-    isLoading?: boolean;
+    // isLoading?: boolean;
     isError?: boolean;
 }
 
@@ -61,24 +61,24 @@ const BarChartAllowance = ({
     data,
     range,
     onRangeChange,
-    isLoading,
+    // isLoading,
     isError,
 }: BarChartAllowanceProps) => {
-    if (isLoading) {
-        return (
-            <Card className="min-h-[320px] max-h-[420px] h-full flex flex-col overflow-hidden">
-                <CardHeader className="flex-shrink-0">
-                    <CardTitle>Allowance Breakdown</CardTitle>
-                    <CardDescription>
-                        <Skeleton className="w-1/2 h-6 mb-2" />
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1 h-full flex items-center justify-center overflow-hidden">
-                    <Skeleton className="w-[200px] h-[120px] rounded mb-4" />
-                </CardContent>
-            </Card>
-        );
-    }
+    // if (isLoading) {
+    //     return (
+    //         <Card className="min-h-[320px] max-h-[420px] h-full flex flex-col overflow-hidden">
+    //             <CardHeader className="flex-shrink-0">
+    //                 <CardTitle>Allowance Breakdown</CardTitle>
+    //                 <CardDescription>
+    //                     <Skeleton className="w-1/2 h-6 mb-2" />
+    //                 </CardDescription>
+    //             </CardHeader>
+    //             <CardContent className="flex-1 h-full flex items-center justify-center overflow-hidden">
+    //                 <Skeleton className="w-[200px] h-[120px] rounded mb-4" />
+    //             </CardContent>
+    //         </Card>
+    //     );
+    // }
 
     if (isError || !data || data.length === 0) {
         return <InfoState />;

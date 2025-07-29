@@ -102,7 +102,7 @@ const ParentDashboardOverview = memo<ParentDashboardProps>(({
     barChartData,
     barChartRange,
     onBarChartRangeChange,
-    barChartLoading,
+    // barChartLoading,
     barChartError,
 }: ParentDashboardProps) => {
     const pieChartType: "chores" | "savings" = savingsBreakdown ? "savings" : "chores";
@@ -130,7 +130,7 @@ const ParentDashboardOverview = memo<ParentDashboardProps>(({
                         data={barChartData}
                         range={barChartRange}
                         onRangeChange={onBarChartRangeChange}
-                        isLoading={barChartLoading}
+                        // isLoading={barChartLoading}
                         isError={barChartError}
                     />
                 </div>
@@ -166,7 +166,7 @@ const ParentDashboardOverview = memo<ParentDashboardProps>(({
                         kidsTotalPages={kidsTotalPages}
                         onKidsPageChange={onKidsPageChange}
                         isLoading={!!isLoading}
-                        isError={!!isError}
+                        // isError={!!isError}
                     />
                 </div>
             </div>
