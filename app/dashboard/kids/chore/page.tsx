@@ -5,6 +5,7 @@ import { useApiQuery } from '@/hooks/useApiQuery';
 import { API_ENDPOINTS, getApiUrl } from '@/lib/utils/api';
 import { useMutation } from '@tanstack/react-query';
 import { useSession } from "next-auth/react";
+import { useState } from 'react';
 
 const ChoreQuestPage = () => {
     const { data: session } = useSession();
@@ -13,12 +14,14 @@ const ChoreQuestPage = () => {
         endpoint: getApiUrl(API_ENDPOINTS.CHILD_CHORES + '?page=1'),
         queryKey: ['child-chores'],
         enabled: true,
-        refetchInterval: 10000,
+        refetchInterval: 5000,
     });
+    const [loadingChores, setLoadingChores] = useState<{ [key: string]: boolean }>({});
 
     // Mutation for updating chore status
     const mutation = useMutation({
         mutationFn: async ({ choreId }: { choreId: string }) => {
+            setLoadingChores((prev) => ({ ...prev, [choreId]: true }));
             const res = await fetch(getApiUrl(API_ENDPOINTS.CHILD_CHORE_COMPLETE), {
                 method: 'POST',
                 headers: {
@@ -30,7 +33,12 @@ const ChoreQuestPage = () => {
             if (!res.ok) throw new Error('Failed to update chore status');
             return res.json();
         },
-        onSuccess: () => refetch(),
+        onSuccess: () => {
+            refetch();
+        },
+        onSettled: (_, __, { choreId }) => {
+            setLoadingChores((prev) => ({ ...prev, [choreId]: false }));
+        },
     });
 
     if (isLoading) return <div>Loading...</div>;
@@ -39,7 +47,7 @@ const ChoreQuestPage = () => {
     const chores = Array.isArray(data?.results)
         ? data.results.map((chore: any) => ({
             id: chore.id,
-            title: chore.description,
+            title: chore.title,
             description: chore.description,
             status: chore.status,
             reward: chore.reward?.toString() ?? "",
@@ -48,12 +56,13 @@ const ChoreQuestPage = () => {
             dueDate: chore.due_date,
             assignedTo: chore.assigned_to,
             createdAt: chore.created_at,
+            loading: loadingChores[chore.id] || false,
         }))
         : [];
 
     // Handler passed to child
     const handleStatusChange = (choreId: string) => {
-        if (mutation.isPending) return; // Prevent multiple clicks
+        if (loadingChores[choreId]) return; // Prevent multiple clicks
         mutation.mutate({ choreId });
     };
 
@@ -62,7 +71,6 @@ const ChoreQuestPage = () => {
             <KidChoreQuest
                 chores={chores}
                 onStatusChange={handleStatusChange}
-                loading={mutation.isPending}
             />
         </div>
     );

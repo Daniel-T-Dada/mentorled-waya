@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import ParentStatsProvider from "@/components/providers/stats-providers";
 import AppChoreManagement from "../AppChoreManagement";
@@ -10,7 +10,6 @@ interface TaskMasterDashboardProps {
     onCreateChoreClick?: () => void;
     onAssignChore?: (kidId: string) => void;
     choreSummary?: any;
-    walletStats?: any;
     tasks?: any[];
     kids?: any[];
     isLoading?: boolean;
@@ -25,14 +24,12 @@ interface TaskMasterDashboardProps {
     onKidsPageChange: (page: number) => void;
     pagedKids: any[];
     kidsCount: number;
-
 }
 
 const TaskMasterDashboard = ({
     onCreateChoreClick,
     onAssignChore,
     choreSummary,
-    // walletStats,
     tasks = [],
     kids = [],
     onEditTask,
@@ -47,9 +44,47 @@ const TaskMasterDashboard = ({
     onKidsPageChange,
     pagedKids = [],
 }: TaskMasterDashboardProps) => {
-
-    if (isLoading) return <div>Loading...</div>;
-    if (isError) return <div>Error loading dashboard data.</div>;
+    if (isLoading) return (
+        <>
+            <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Overview</h2>
+                <Button
+                    className="bg-primary hover:bg-primary/90"
+                    disabled
+                >
+                    Create Chore
+                </Button>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <ParentStatsProvider />
+                <div className="lg:col-span-2 rounded h-full flex flex-col">
+                    <AppChoreManagement
+                        tasks={[]}
+                        kids={[]}
+                        page={page}
+                        totalPages={totalPages}
+                        onPageChange={onPageChange}
+                        onEditTask={onEditTask}
+                        onDeleteTask={onDeleteTask}
+                        choreSummary={choreSummary}
+                    />
+                </div>
+                <div className="lg:col-span-1 flex flex-col">
+                    <AppKidsManager
+                        kids={[]}
+                        kidsCount={0}
+                        kidsPage={kidsPage}
+                        kidsTotalPages={kidsTotalPages}
+                        isLoading={true}
+                        isError={false}
+                        onCreateKid={onCreateChoreClick}
+                        onAssignChore={onAssignChore}
+                        onKidsPageChange={onKidsPageChange}
+                    />
+                </div>
+            </div>
+        </>
+    );
 
     return (
         <>
@@ -64,7 +99,6 @@ const TaskMasterDashboard = ({
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <ParentStatsProvider />
-
                 <div className="lg:col-span-2 rounded h-full flex flex-col">
                     <AppChoreManagement
                         tasks={tasks}
@@ -75,26 +109,24 @@ const TaskMasterDashboard = ({
                         onEditTask={onEditTask}
                         onDeleteTask={onDeleteTask}
                         choreSummary={choreSummary}
-                        // walletStats={walletStats}
                     />
                 </div>
-                <div className="lg:col-span-1  flex flex-col">
+                <div className="lg:col-span-1 flex flex-col">
                     <AppKidsManager
                         kids={pagedKids}
                         kidsCount={kids.length}
                         kidsPage={kidsPage}
                         kidsTotalPages={kidsTotalPages}
-                        isLoading={!!isLoading}
-                        isError={!!isError}
-                        onCreateKid={onCreateChoreClick ?? (() => { })}
-                        onAssignChore={onAssignChore ?? (() => { })}
+                        isLoading={false}
+                        isError={isError ?? false} // Default to false if undefined
+                        onCreateKid={onCreateChoreClick}
+                        onAssignChore={onAssignChore}
                         onKidsPageChange={onKidsPageChange}
-
                     />
                 </div>
             </div>
         </>
-    )
-}
+    );
+};
 
 export default TaskMasterDashboard

@@ -19,7 +19,6 @@ const KidsPage = () => {
         refetchInterval: 10000,
     });
 
-    // Fetch weekly streak
     const weeklyStreakQuery = useApiQuery({
         endpoint: getApiUrl(API_ENDPOINTS.MONEYMAZE_WEEKLY_STREAK),
         queryKey: ['moneymaze-weekly-streak'],
@@ -34,21 +33,37 @@ const KidsPage = () => {
         refetchInterval: 10000,
     });
 
-    if (isLoading || weeklyStreakQuery.isLoading || rewardsQuery.isLoading) return <div>Loading...</div>;
-    if (error || weeklyStreakQuery.error || rewardsQuery.error) return <div>Error loading data</div>;
+    // Provide fallback data in case of errors
+    const dashboardData = error ? { bar_chart: [], pie_chart: {}, summary: { totalSaved: "0", activeGoals: 0, achievedGoals: 0 } } : data;
+    const totalsData = totalsQuery.error ? { total_earned: "0", total_saved: "0", total_spent: "0" } : totalsQuery.data;
+    const weeklyStreakData = weeklyStreakQuery.error ? { week_start_date: "", streak: { mon: false, tue: false, wed: false, thu: false, fri: false, sat: false, sun: false } } : weeklyStreakQuery.data;
+    const rewardsData = rewardsQuery.error ? [] : rewardsQuery.data?.results || [];
+
+    if (isLoading || weeklyStreakQuery.isLoading || rewardsQuery.isLoading) return (
+        <div className="">
+            <KidDashboardOverview
+                bar_chart={[]}
+                pie_chart={{}}
+                summary={{ totalSaved: "0", activeGoals: 0, achievedGoals: 0 }}
+                totals={{ total_earned: "0", total_saved: "0", total_spent: "0" }}
+                weeklyStreak={{ week_start_date: "", streak: { mon: false, tue: false, wed: false, thu: false, fri: false, sat: false, sun: false } }}
+                rewards={[]}
+            />
+        </div>
+    );
 
     return (
         <div className="">
             <KidDashboardOverview
-                bar_chart={data?.bar_chart}
-                pie_chart={data?.pie_chart}
-                summary={data?.summary}
-                totals={totalsQuery.data}
-                weeklyStreak={weeklyStreakQuery.data}
-                rewards={rewardsQuery.data?.results || []}
+                bar_chart={dashboardData?.bar_chart}
+                pie_chart={dashboardData?.pie_chart}
+                summary={dashboardData?.summary}
+                totals={totalsData}
+                weeklyStreak={weeklyStreakData}
+                rewards={rewardsData}
             />
         </div>
-    )
-}
+    );
+};
 
 export default KidsPage

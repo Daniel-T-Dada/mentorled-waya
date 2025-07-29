@@ -7,7 +7,6 @@ import KidsList from "./KidsList";
 import KidsPagination from "./KidsPagination";
 import { usePathname } from "next/navigation";
 
-// Local Kid interface (match ParentDashboardOverview and ParentsPage)
 interface Kid {
     id: string;
     username: string;
@@ -49,12 +48,12 @@ const AppKidsManager = ({
     onAssignChore = () => { },
 }: AppKidsManagerProps) => {
     const pathname = usePathname();
-    const showActionButtons = pathname.includes('/dashboard/parents/taskmaster');
+
+    const showActionButtons = pathname === '/dashboard/parents/taskmaster';
 
     const goToPrevious = () => onKidsPageChange(Math.max(1, kidsPage - 1));
     const goToNext = () => onKidsPageChange(Math.min(kidsTotalPages, kidsPage + 1));
 
-    // Info state: show EmptyState for both error and empty states
     const showInfoState = isError || kidsCount === 0 || isLoading;
 
     return (
@@ -69,7 +68,6 @@ const AppKidsManager = ({
                         <EmptyState onCreateKid={onCreateKid} />
                     ) : (
                         <div className="space-y-4 pr-4">
-                            {/* Desktop */}
                             <div className="hidden xl:block">
                                 <KidsList kids={kids} onAssignChore={onAssignChore} showActionButtons={showActionButtons} />
                                 {kidsTotalPages > 1 && (
@@ -82,7 +80,6 @@ const AppKidsManager = ({
                                     />
                                 )}
                             </div>
-                            {/* Tablet */}
                             <div className="hidden md:block xl:hidden">
                                 <KidsList kids={kids} onAssignChore={onAssignChore} showActionButtons={showActionButtons} />
                                 {kidsTotalPages > 1 && (
@@ -96,7 +93,6 @@ const AppKidsManager = ({
                                     />
                                 )}
                             </div>
-                            {/* Mobile */}
                             <div className="block md:hidden">
                                 <KidsList kids={kids} onAssignChore={onAssignChore} showActionButtons={showActionButtons} mobile />
                             </div>

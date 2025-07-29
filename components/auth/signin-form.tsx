@@ -148,8 +148,8 @@ const SignInForm = () => {
         <CardWrapper
             headerLabel="Welcome to Waya!"
             titleLabel="Welcome back!"
-            backButtonLabel="Don't have an account? Sign up"
-            backButtonHref="/auth/signup"
+            backButtonLabel={userType === "parent" ? "Don't have an account? Sign up" : "Let's go!"}
+            backButtonHref={userType === "parent" ? "/auth/signup" : ""}
             showSocial={userType === "parent"}
             className=""
         >
@@ -164,8 +164,7 @@ const SignInForm = () => {
                 </TabsList>
             </Tabs>
 
-            {/* Only show the error above the button, not at the top */}
-            {/* Only show the error above the button, not at the top */}
+        
             {userType === "parent" && (
                 <Form {...parentForm}>
                     <form onSubmit={parentForm.handleSubmit(onParentSubmit)} className="space-y-3 sm:space-y-4">

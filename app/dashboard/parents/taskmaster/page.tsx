@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useApiQuery } from "@/hooks/useApiQuery";
 import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createTaskRequest } from "@/lib/utils/taskTransforms";
 import { useChoreApi } from "@/hooks/use-authenticated-api";
@@ -83,21 +82,18 @@ const TaskMasterPage = () => {
     const queryClient = useQueryClient();
     const { makeAuthenticatedCall } = useChoreApi();
 
-    // Separate pagination for chores and kids
-    const [page, setPage] = useState(1); // chores page
+    const [page, setPage] = useState(1);
     const [kidsPage, setKidsPage] = useState(1);
 
-    // Calculate which backend page to fetch for the current frontend page
     const backendKidsPage = Math.floor((kidsPage - 1) * FRONTEND_KIDS_PER_PAGE / BACKEND_KIDS_PER_PAGE) + 1;
 
-    // Fetch paginated kids list (NEW)
     const paginatedKidsQuery = useApiQuery<PaginatedResponse<Kid>>({
         endpoint: getApiUrl(API_ENDPOINTS.LIST_CHILDREN) + `?page=${backendKidsPage}&page_size=${BACKEND_KIDS_PER_PAGE}`,
         queryKey: ['paginated-kids', backendKidsPage, BACKEND_KIDS_PER_PAGE],
         enabled: !!session?.user?.accessToken,
+        refetchInterval: 5000,
     });
 
-    // Other queries
     const choreSummaryQuery = useApiQuery({
         endpoint: getApiUrl(API_ENDPOINTS.CHORE_SUMMARY),
         queryKey: ['chore-summary'],
@@ -118,7 +114,6 @@ const TaskMasterPage = () => {
         page
     );
 
-    // This can still be used for wallet balances, not for kids list
     const childrenWalletsQuery = useApiQuery({
         endpoint: getApiUrl(API_ENDPOINTS.CHILDREN_WALLETS),
         queryKey: ['children-wallets'],
@@ -126,7 +121,6 @@ const TaskMasterPage = () => {
         refetchInterval: 5000,
     });
 
-    // Flatten paginated results if necessary
     const tasks = (choresQuery.data?.results || []) as TaskType[];
     const kidsRaw = (paginatedKidsQuery.data?.results || []) as Kid[];
     const kidsCount = paginatedKidsQuery.data?.count || 0;
@@ -134,10 +128,8 @@ const TaskMasterPage = () => {
     const childrenWallets = (childrenWalletsQuery.data?.results || childrenWalletsQuery.data || []) as ChildWallet[];
     const totalPages = choresQuery.data ? Math.ceil(choresQuery.data.count / CHORES_PER_PAGE) : 1;
 
-    // Slice backend results for the current frontend page
     const backendKidsResults = paginatedKidsQuery.data?.results || [];
 
-    // --- Compose processedKids for the current backend page only ---
     const processedKids: Kid[] = backendKidsResults.map((kid) => {
         const displayName = kid.name || kid.displayName || kid.child_name || kid.username || "";
         const firstName = displayName.trim().split(" ")[0];
@@ -182,7 +174,6 @@ const TaskMasterPage = () => {
         };
     });
 
-    // Sort kids by created_at (descending, newest first)
     const sortedKids = [...processedKids].sort((a, b) => {
         const dateA = new Date(a.created_at || 0).getTime();
         const dateB = new Date(b.created_at || 0).getTime();
@@ -193,7 +184,6 @@ const TaskMasterPage = () => {
     const end = start + FRONTEND_KIDS_PER_PAGE;
     const pagedKids = sortedKids.slice(start, end);
 
-    // --- Chore create mutation
     const createChoreMutation = useMutation({
         mutationFn: async (choreData: {
             title: string;
@@ -236,7 +226,6 @@ const TaskMasterPage = () => {
         },
     });
 
-    // Edit mutation
     const editChoreMutation = useMutation({
         mutationFn: async (updatedTask: Task) => {
             return await makeAuthenticatedCall({
@@ -263,7 +252,6 @@ const TaskMasterPage = () => {
         }
     });
 
-    // Delete mutation
     const deleteChoreMutation = useMutation({
         mutationFn: async (taskId: string) => {
             return await makeAuthenticatedCall({
@@ -280,7 +268,6 @@ const TaskMasterPage = () => {
         }
     });
 
-    // --- Handlers ---
     const handleCreateChore = () => {
         setSelectedKid("");
         setIsCreateChoreOpen(true);
@@ -296,7 +283,6 @@ const TaskMasterPage = () => {
         setIsEditChoreOpen(true);
     };
 
-    // Merge ChoreFormValues with Task for updating
     const handleEditChoreSubmit = (formData: ChoreFormValues) => {
         if (!editingTask) return;
         const updatedTask: Task = {
@@ -325,7 +311,6 @@ const TaskMasterPage = () => {
         setKidsPage(nextPage);
     };
 
-    // Loading/Error
     const isLoading =
         choreSummaryQuery.isLoading ||
         walletStatsQuery.isLoading ||
@@ -340,24 +325,33 @@ const TaskMasterPage = () => {
         !!paginatedKidsQuery.error ||
         !!childrenWalletsQuery.error;
 
+    const fallbackChoreSummary = isError ? { pending: 0, completed: 0, total: 0 } : choreSummaryQuery.data;
+    // const fallbackWalletStats = isError ? { family_wallet_balance: "0", total_rewards_sent: "0", total_rewards_pending: "0", children_count: 0, total_children_balance: "0" } : walletStatsQuery.data;
+    const fallbackTasks = isError ? [] : tasks;
+    const fallbackKids = isError ? [] : processedKids;
+    const fallbackPagedKids = isError ? [] : pagedKids;
+    const fallbackKidsCount = isError ? 0 : kidsCount;
+    const fallbackKidsTotalPages = isError ? 1 : kidsTotalPages;
+    const fallbackTotalPages = isError ? 1 : totalPages;
+
     return (
         <div className="">
             <TaskMasterDashboard
                 onCreateChoreClick={handleCreateChore}
                 onAssignChore={handleAssignChore}
-                choreSummary={choreSummaryQuery.data}
-                walletStats={walletStatsQuery.data}
+                choreSummary={fallbackChoreSummary}
+                // walletStats={fallbackWalletStats}
                 isLoading={isLoading}
                 isError={isError}
-                tasks={tasks}
-                kids={processedKids}
-                pagedKids={pagedKids}
-                kidsCount={kidsCount}
+                tasks={fallbackTasks}
+                kids={fallbackKids}
+                pagedKids={fallbackPagedKids}
+                kidsCount={fallbackKidsCount}
                 kidsPage={kidsPage}
-                kidsTotalPages={kidsTotalPages}
+                kidsTotalPages={fallbackKidsTotalPages}
                 onKidsPageChange={handleKidsPageChange}
                 page={page}
-                totalPages={totalPages}
+                totalPages={fallbackTotalPages}
                 onPageChange={setPage}
                 onEditTask={handleEditTask}
                 onDeleteTask={handleDeleteTask}
@@ -374,7 +368,6 @@ const TaskMasterPage = () => {
                 onSubmit={(formData) => createChoreMutation.mutate(formData)}
             />
 
-            {/* Edit Chore Modal */}
             {isEditChoreOpen && editingTask && (
                 <EditChore
                     isOpen={isEditChoreOpen}

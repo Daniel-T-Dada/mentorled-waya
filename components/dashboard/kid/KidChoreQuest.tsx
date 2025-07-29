@@ -21,19 +21,18 @@ interface Task {
     dueDate?: string;
     assignedTo?: string;
     createdAt?: string;
+    loading?: boolean;
 }
 
 interface KidChoreQuestProps {
     chores: Task[];
     onStatusChange: (choreId: string, newStatus: "completed" | "pending") => void;
-    loading?: boolean;
     kidId?: string;
 }
 
 const KidChoreQuest = ({
     chores,
     onStatusChange,
-    loading = false,
     kidId: propKidId,
 }: KidChoreQuestProps) => {
     const { data: session } = useSession();
@@ -78,7 +77,7 @@ const KidChoreQuest = ({
                                         chores.map((chore) => (
                                             <div
                                                 key={chore.id}
-                                                className="border-b border-gray-200 pb-4 last:border-b-0"
+                                                className={`border-b border-gray-200 pb-4 last:border-b-0 ${chore.loading ? 'opacity-50 pointer-events-none' : ''}`}
                                             >
                                                 <div className="flex justify-between items-start">
                                                     <div className="flex-1">
@@ -95,7 +94,7 @@ const KidChoreQuest = ({
                                                                     onStatusChange(chore.id, value as "completed" | "pending")
                                                                 }
                                                                 className="flex flex-col gap-1"
-                                                                disabled={loading}
+                                                                disabled={chore.loading}
                                                             >
                                                                 <div className="flex items-center gap-1">
                                                                     <RadioGroupItem
@@ -125,46 +124,45 @@ const KidChoreQuest = ({
                                                                 </div>
                                                             </RadioGroup>
                                                         </div>
-                                                        <div className="text-right">
-                                                            <div className="font-semibold text-sm pb-2">
+                                                        <div className="text-right ">
+                                                            <div className="font-semibold text-sm pb-4">
                                                                 {chore.status.charAt(0).toUpperCase() + chore.status.slice(1)}
                                                             </div>
-                                                            <div className="text-base font-semibold text-teal-600">
-                                                                {chore.reward.toLocaleString()}
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
-                                                                {(() => {
-                                                                    let avatarPath: string | undefined;
-                                                                    const kid = kids.find((k) => k.id === kidId);
-                                                                    if (kid && kid.avatar) avatarPath = kid.avatar;
-                                                                    const avatarUrl = getAvatarUrl(avatarPath);
-                                                                    const name = chore.kidName;
-                                                                    if (avatarUrl) {
-                                                                        return (
-                                                                            <Image
-                                                                                src={avatarUrl}
-                                                                                alt={name || ""}
-                                                                                className="w-4 h-4 rounded-full object-cover mr-1 border border-gray-200"
-                                                                            />
-                                                                        );
-                                                                    } else {
-                                                                        return (
-                                                                            <span className="w-4 h-4 flex items-center justify-center rounded-full bg-teal-100 text-teal-700 font-bold text-xs mr-1">
-                                                                                {name?.charAt(0).toUpperCase() || ""}
-                                                                            </span>
-                                                                        );
-                                                                    }
-                                                                })()}
-                                                                <span className="text-xs text-gray-500">
-                                                                    {chore.kidName?.split(" ")[0] || ""}
-                                                                </span>
+                                                            <div className="flex gap-4">
+                                                                <div className="text-base font-semibold text-teal-600">
+                                                                    {Number(chore.reward).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                                                </div>
+                                                                <div className="flex items-center  gap-2">
+                                                                    {(() => {
+                                                                        let avatarPath: string | undefined;
+                                                                        const kid = kids.find((k) => k.id === kidId);
+                                                                        if (kid && kid.avatar) avatarPath = kid.avatar;
+                                                                        const avatarUrl = getAvatarUrl(avatarPath);
+                                                                        const name = chore.kidName;
+                                                                        if (avatarUrl) {
+                                                                            return (
+                                                                                <Image
+                                                                                    src={avatarUrl}
+                                                                                    alt={name || ""}
+                                                                                    className="w-4 h-4 rounded-full object-cover mr-1 border border-gray-200"
+                                                                                />
+                                                                            );
+                                                                        } else {
+                                                                            return (
+                                                                                <span className="w-4 h-4 flex items-center justify-center rounded-full bg-teal-100 text-teal-700 font-bold text-xs mr-1">
+                                                                                    {name?.charAt(0).toUpperCase() || ""}
+                                                                                </span>
+                                                                            );
+                                                                        }
+                                                                    })()}
+                                                                    <span className="text-xs text-gray-500">
+                                                                        {chore.kidName?.split(" ")[0] || ""}
+                                                                    </span>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                {loading && (
-                                                    <div className="pt-2 text-xs text-muted-foreground">Updating...</div>
-                                                )}
                                             </div>
                                         ))
                                     )}
@@ -184,7 +182,7 @@ const KidChoreQuest = ({
                                         completedChores.map((chore) => (
                                             <div
                                                 key={chore.id}
-                                                className="border-b border-gray-200 pb-4 last:border-b-0"
+                                                className={`border-b border-gray-200 pb-4 last:border-b-0 ${chore.loading ? 'opacity-50 pointer-events-none' : ''}`}
                                             >
                                                 <div className="flex justify-between items-start">
                                                     <div className="flex-1">
@@ -197,10 +195,10 @@ const KidChoreQuest = ({
                                                         <div className="flex items-center gap-3">
                                                             <span className="text-sm font-medium">Completed</span>
                                                         </div>
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="text-right">
+                                                        <div className="flex items-center gap-4 ">
+                                                            <div className="text-right flex gap-4">
                                                                 <div className="text-base font-semibold text-teal-600">
-                                                                    {chore.reward.toLocaleString()}
+                                                                    {Number(chore.reward).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                                                 </div>
                                                                 <div className="flex items-center gap-2">
                                                                     {(() => {
@@ -233,9 +231,6 @@ const KidChoreQuest = ({
                                                         </div>
                                                     </div>
                                                 </div>
-                                                {loading && (
-                                                    <div className="pt-2 text-xs text-muted-foreground">Updating...</div>
-                                                )}
                                             </div>
                                         ))
                                     )}

@@ -4,14 +4,13 @@ import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback /*, AvatarImage */ } from "@/components/ui/avatar"; // AvatarImage unused, comment out
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Pencil, Trash } from "lucide-react";
 import { usePathname } from 'next/navigation';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from '@/hooks/use-mobile';
 import Pagination from "@/components/Pagination";
 
-// Types for tasks and kids
 export interface Task {
     id: string;
     title: string;
@@ -25,7 +24,6 @@ export interface Task {
     assignedToUsername?: string;
     status: "pending" | "completed";
     createdAt: string;
-    
 }
 
 export interface Kid {
@@ -49,12 +47,12 @@ export interface Kid {
 }
 
 interface AppChoreManagementProps {
-    tasks: Task[]; // This is a backend page (10 tasks max)
+    tasks: Task[];
     kids: Kid[];
     kidId?: string;
     onEditTask?: (task: Task) => void;
     onDeleteTask?: (taskId: string) => void;
-    page: number; // frontend page (1-based)
+    page: number;
     totalPages: number;
     onPageChange: (page: number) => void;
     choreSummary?: {
@@ -79,19 +77,16 @@ function mapTasks(tasks: Task[]): Task[] {
     }));
 }
 
-// Map assignedTo (task) to child_id (kid)
 function getKidByTask(task: Task, kids: Kid[]): Kid | undefined {
     return (
         kids.find(k => k.child_id === task.assignedTo) ||
         kids.find(k => k.id === task.assignedTo) ||
         kids.find(k => k.username === task.assignedTo) ||
-        kids.find(k => k.displayName === task.assignedToName) || // fallback
+        kids.find(k => k.displayName === task.assignedToName) ||
         kids.find(k => k.name === task.assignedToName)
-
     );
 }
 
-// Get the 3 most recent unique kids (by child_id) who have tasks
 function getRecentKids(tasks: Task[], kids: Kid[]): Kid[] {
     const sortedTasks = [...tasks].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     const seen = new Set<string>();
@@ -120,13 +115,10 @@ export default function AppChoreManagement({
     totalPages,
     onPageChange,
     choreSummary,
-    // walletStats,
 }: AppChoreManagementProps) {
     const pathname = usePathname();
     const isMobile = useIsMobile();
 
-    // --- PAGINATION LOGIC ---
-    // Calculate where to slice the backend 10-task page for the current frontend 5-task page
     const start = ((page - 1) % (BACKEND_CHORES_PER_PAGE / FRONTEND_CHORES_PER_PAGE)) * FRONTEND_CHORES_PER_PAGE;
     const end = start + FRONTEND_CHORES_PER_PAGE;
     const pagedTasks = tasks.slice(start, end);
@@ -137,7 +129,6 @@ export default function AppChoreManagement({
 
     const kidsForTabs = useMemo(() => getRecentKids(mappedTasks, kids), [mappedTasks, kids]);
 
-    // Filter tasks by kid tab or kidId
     const filteredTasks = useMemo(() => {
         let filtered = mappedTasks;
         if (!kidId && activeKidTab !== "all") {
@@ -155,7 +146,6 @@ export default function AppChoreManagement({
         return filtered.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }, [mappedTasks, activeKidTab, kidId, kids]);
 
-    // Pagination using FRONTEND_CHORES_PER_PAGE (already sliced!)
     const pendingTasks = filteredTasks.filter(task => task.status === "pending");
     const completedTasks = filteredTasks.filter(task => task.status === "completed");
 
@@ -192,7 +182,6 @@ export default function AppChoreManagement({
                         </TabsTrigger>
                     </TabsList>
 
-                    {/* Pending */}
                     <TabsContent value="pending" className="flex-1 flex flex-col mt-4 overflow-hidden ">
                         <ScrollArea className="flex-1">
                             <div className="space-y-4 pr-4">
@@ -209,7 +198,6 @@ export default function AppChoreManagement({
                                                 <div className="flex items-start justify-between">
                                                     <div>
                                                         <h3 className="font-medium">{task.title}</h3>
-                                                        
                                                         <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
                                                     </div>
                                                     <div className="flex items-center gap-2">
@@ -260,7 +248,6 @@ export default function AppChoreManagement({
                             />
                         )}
                     </TabsContent>
-                    {/* Completed */}
                     <TabsContent value="completed" className="flex-1 flex flex-col mt-4 overflow-hidden">
                         <ScrollArea className="flex-1">
                             <div className="space-y-4 pr-4">

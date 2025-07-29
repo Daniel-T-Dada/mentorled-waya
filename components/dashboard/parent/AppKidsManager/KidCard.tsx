@@ -1,7 +1,6 @@
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-import { formatNaira } from "@/lib/utils/currency";
 import KidsStatsGrid from "./KidsStatsGrid";
 import KidsActionButtons from "./KidsActionButton";
 
@@ -26,10 +25,7 @@ interface KidCardProps {
     mobile?: boolean;
 }
 
-
-
-const KidCard = ({ kid, onAssignChore }: KidCardProps) => {
-    // Responsive: use Tailwind or custom classes for breakpoints
+const KidCard = ({ kid, onAssignChore, showActionButtons }: KidCardProps) => {
     return (
         <div className="border rounded-md p-4 mb-6 bg-background">
             <div className="flex items-center gap-6">
@@ -49,9 +45,6 @@ const KidCard = ({ kid, onAssignChore }: KidCardProps) => {
                                 Level {kid.level}
                             </p>
                         </div>
-                        <div className="text-sm text-muted-foreground xl:text-sm md:text-base font-medium">
-                            {formatNaira(kid.balance)}
-                        </div>
                     </div>
                     <Progress value={kid.progress} className="w-full mt-2 md:mt-3 md:h-2" />
                 </div>
@@ -65,10 +58,12 @@ const KidCard = ({ kid, onAssignChore }: KidCardProps) => {
             />
 
             {/* Action Buttons */}
-            <KidsActionButtons
-                kidId={kid.id}
-                onAssignChore={onAssignChore}
-            />
+            {showActionButtons && (
+                <KidsActionButtons
+                    kidId={kid.id}
+                    onAssignChore={onAssignChore}
+                />
+            )}
         </div>
     );
 };

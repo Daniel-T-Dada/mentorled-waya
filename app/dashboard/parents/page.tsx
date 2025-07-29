@@ -1,4 +1,3 @@
-
 'use client'
 
 import ParentDashboardOverview from '@/components/dashboard/parent/ParentDashboardOverview';
@@ -10,6 +9,7 @@ import { getApiUrl, API_ENDPOINTS } from '@/lib/utils/api';
 import { usePaginatedApiQuery } from "@/hooks/usePagination";
 import { toast } from "sonner";
 import { usePathname } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 
 // --- Types ---
 interface Kid {
@@ -79,6 +79,7 @@ const ParentsPage = () => {
     const pathname = usePathname();
     const isWalletPage = pathname.includes('/wallet');
     const [barChartRange, setBarChartRange] = useState("7");
+    const queryClient = useQueryClient();
 
     const backendKidsPage = Math.floor((kidsPage - 1) * FRONTEND_KIDS_PER_PAGE / BACKEND_KIDS_PER_PAGE) + 1;
 
@@ -88,6 +89,13 @@ const ParentsPage = () => {
         queryKey: ['paginated-kids', backendKidsPage, BACKEND_KIDS_PER_PAGE],
         enabled: !!session?.user?.accessToken,
     });
+
+    const handleKidCreateSuccess = () => {
+        toast.success("Kid account created successfully");
+        queryClient.invalidateQueries({
+            queryKey: ['paginated-kids', backendKidsPage, BACKEND_KIDS_PER_PAGE],
+        });
+    };
 
     const choreSummaryQuery = useApiQuery<ChoreSummary>({
         endpoint: getApiUrl(API_ENDPOINTS.CHORE_SUMMARY),
@@ -134,48 +142,6 @@ const ParentsPage = () => {
         enabled: !!session?.user?.accessToken,
         refetchInterval: 5000,
     });
-
-    // Debug logging for query states
-    useEffect(() => {
-        console.log('Session Status:', sessionStatus, 'Access Token:', !!session?.user?.accessToken);
-        console.log('Query States:', {
-            paginatedKidsQuery: { isLoading: paginatedKidsQuery.isLoading, isError: paginatedKidsQuery.isError, error: paginatedKidsQuery.error },
-            choreSummaryQuery: { isLoading: choreSummaryQuery.isLoading, isError: choreSummaryQuery.isError, error: choreSummaryQuery.error },
-            walletStatsQuery: { isLoading: walletStatsQuery.isLoading, isError: walletStatsQuery.isError, error: walletStatsQuery.error },
-            choresQuery: { isLoading: choresQuery.isLoading, isError: choresQuery.isError, error: choresQuery.error },
-            childrenWalletsQuery: { isLoading: childrenWalletsQuery.isLoading, isError: childrenWalletsQuery.isError, error: childrenWalletsQuery.error },
-            transactionsQuery: { isLoading: transactionsQuery.isLoading, isError: transactionsQuery.isError, error: transactionsQuery.error },
-            allowancesQuery: { isLoading: allowancesQuery.isLoading, isError: allowancesQuery.isError, error: allowancesQuery.error },
-            savingsBreakdownQuery: { isLoading: savingsBreakdownQuery.isLoading, isError: savingsBreakdownQuery.isError, error: savingsBreakdownQuery.error },
-        });
-    }, [
-        sessionStatus,
-        session?.user?.accessToken,
-        paginatedKidsQuery.isLoading,
-        paginatedKidsQuery.isError,
-        paginatedKidsQuery.error,
-        choreSummaryQuery.isLoading,
-        choreSummaryQuery.isError,
-        choreSummaryQuery.error,
-        walletStatsQuery.isLoading,
-        walletStatsQuery.isError,
-        walletStatsQuery.error,
-        choresQuery.isLoading,
-        choresQuery.isError,
-        choresQuery.error,
-        childrenWalletsQuery.isLoading,
-        childrenWalletsQuery.isError,
-        childrenWalletsQuery.error,
-        transactionsQuery.isLoading,
-        transactionsQuery.isError,
-        transactionsQuery.error,
-        allowancesQuery.isLoading,
-        allowancesQuery.isError,
-        allowancesQuery.error,
-        savingsBreakdownQuery.isLoading,
-        savingsBreakdownQuery.isError,
-        savingsBreakdownQuery.error,
-    ]);
 
     // --- Data ---
     const kidsCount = paginatedKidsQuery.data?.count || 0;
@@ -393,9 +359,7 @@ const ParentsPage = () => {
             <CreateKidAccount
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
-                onSuccess={() => {
-                    toast.success("Kid account created successfully");
-                }}
+                onSuccess={handleKidCreateSuccess}
             />
         </div>
     );
