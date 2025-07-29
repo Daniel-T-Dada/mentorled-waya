@@ -1,0 +1,131 @@
+Moneymaze
+
+curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/concepts/ \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
+
+curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/concepts/progress/ \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
+
+curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/concepts/8e8298f8-ea79-4f79-9e08-a75169300336/sections/ \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
+
+curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/concepts/e778df4e-a1b5-4fe9-9cbc-372b4484d7d5/sections/1/ \
+ -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
+
+curl -X GET https://waya-mentorled.onrender.com//api/moneymaze/concepts/8e8298f8-ea79-4f79-9e08-a75169300336/sections/e778df4e-a1b5-4fe9-9cbc-372b4484d7d5/ \
+ -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
+
+curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/quizzes/3fa85f64-5717-4562-b3fc-2c963f66afa6/ \
+   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
+
+curl -X GET "https://waya-mentorled.onrender.com/api/moneymaze/quizzes/" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMzQ0NTA0LCJpYXQiOjE3NTMyNTgxMDQsImp0aSI6ImFiNGVmYmU3Njc5MDQ4Zjk5YmQ4YzVmMDk3MGM1Yjc4IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0._PBZNU0eNcTqrMfkVA9-Zt97WNcZjIXYeoZGqFwHK7c" \
+  | jq
+
+curl -X POST https://waya-mentorled.onrender.com/api/moneymaze/quizzes/submit/ \
+  -H "Authorization: Bearer YOUR_CHILD_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "quiz_id": "YOUR_QUIZ_UUID",
+        "answers": {"QUESTION_UUID_1": "ANSWER_CHOICE_UUID", "QUESTION_UUID_2": "ANSWER_CHOICE_UUID"}
+      }'
+
+curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/concepts/8e8298f8-ea79-4f79-9e08-a75169300336/can-access-quiz/ \
+   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
+
+curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/rewards/ \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
+
+curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/dashboard/ \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
+
+curl -X GET https://waya-mentorled.onrender.com/api/moneymaze/weekly-streak/ \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTE2MDUwLCJpYXQiOjE3NTMwMjk2NTAsImp0aSI6IjYyZWY0MzdkY2UyNzRlNmNiNzZhZTg0MGRiNjdlZDg3IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.9sxsJlto4ZzcvEqkrrRoTEoKcT1-cMQpHkmfE3mHjJE" \
+  | jq
+
+
+
+
+
+
+
+
+
+
+
+
+Earning meter
+
+curl -X GET "https://waya-mentorled.onrender.com/api/earningmeter/dashboard/" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMDExNDI5LCJpYXQiOjE3NTI5MjUwMjksImp0aSI6ImQzM2EwNjMyZTBiYTQyYjA4NmYwZDliYjRiYWRjYWYzIiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.mfTOULa6f9p8JUsEwep_uEf58GqPSD69ExZMFshgyzI" \
+  | jq
+
+curl -X GET "https://waya-mentorled.onrender.com/api/earningmeter/summary/" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUyOTIyMTQwLCJpYXQiOjE3NTI4MzU3NDAsImp0aSI6IjhhZmQ2ODJkNGE1YzRjMTlhY2M3NDU2MzJhN2YyYjg5IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.uqAj05pEKgAXNs-3m3oSQ8phMOqRNgo6jIOtijaQlio" \
+| jq
+
+curl -X GET "https://waya-mentorled.onrender.com/api/earningmeter/totals/" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUyOTk5ODEzLCJpYXQiOjE3NTI5MTM0MTMsImp0aSI6ImI4YjRhODVjZjZiYjRiNGY4YzhiNjMyYzA0YzE0NTFjIiwiY2hpbGRfaWQiOiI1ZGNkNzYyNC1iZjcyLTQyYmEtYjZkMi1lZTRjNWY1YWY2NTkiLCJjaGlsZF91c2VybmFtZSI6Im9yZWJveSJ9.UzQ8K4f-IjRWqhPoGswn8s8Ty_4P7FnyTbQIjI6oEac" \
+| jq
+
+
+
+Goalgetter
+
+curl -X GET "https://waya-mentorled.onrender.com/api/goalgetter/goals/" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMDExNDI5LCJpYXQiOjE3NTI5MjUwMjksImp0aSI6ImQzM2EwNjMyZTBiYTQyYjA4NmYwZDliYjRiYWRjYWYzIiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.mfTOULa6f9p8JUsEwep_uEf58GqPSD69ExZMFshgyzI" \
+  | jq
+
+curl -X POST "https://waya-mentorled.onrender.com/api/goalgetter/goals/" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUyOTIyMTQwLCJpYXQiOjE3NTI4MzU3NDAsImp0aSI6IjhhZmQ2ODJkNGE1YzRjMTlhY2M3NDU2MzJhN2YyYjg5IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.uqAj05pEKgAXNs-3m3oSQ8phMOqRNgo6jIOtijaQlio" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "title": "Progess",
+        "target_amount": "10.00",
+        "target_duration_months": 1,
+        "due_date": "2025-07-19"
+      }' | jq
+
+curl -X GET "https://waya-mentorled.onrender.com/api/goalgetter/goals/5cad8ed0-2482-4d13-a312-72d8928898bb/" \
+   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUyOTIyMTQwLCJpYXQiOjE3NTI4MzU3NDAsImp0aSI6IjhhZmQ2ODJkNGE1YzRjMTlhY2M3NDU2MzJhN2YyYjg5IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.uqAj05pEKgAXNs-3m3oSQ8phMOqRNgo6jIOtijaQlio" \  | jq
+
+
+curl -X PATCH "https://waya-mentorled.onrender.com/api/goalgetter/goals/5cad8ed0-2482-4d13-a312-72d8928898bb/" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUyOTIyMTQwLCJpYXQiOjE3NTI4MzU3NDAsImp0aSI6IjhhZmQ2ODJkNGE1YzRjMTlhY2M3NDU2MzJhN2YyYjg5IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.uqAj05pEKgAXNs-3m3oSQ8phMOqRNgo6jIOtijaQlio" \
+  -d '{"title": "Buy a Hair Relaxer"}' | jq
+
+curl -X DELETE "https://waya-mentorled.onrender.com/api/goalgetter/goals/c92b8b24-bb22-4916-b391-8fd5eda3e2eb/" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUyOTIyMTQwLCJpYXQiOjE3NTI4MzU3NDAsImp0aSI6IjhhZmQ2ODJkNGE1YzRjMTlhY2M3NDU2MzJhN2YyYjg5IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.uqAj05pEKgAXNs-3m3oSQ8phMOqRNgo6jIOtijaQlio" \
+| jq
+
+"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUyOTIyMTQwLCJpYXQiOjE3NTI4MzU3NDAsImp0aSI6IjhhZmQ2ODJkNGE1YzRjMTlhY2M3NDU2MzJhN2YyYjg5IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.uqAj05pEKgAXNs-3m3oSQ8phMOqRNgo6jIOtijaQlio" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "goal": "5cad8ed0-2482-4d13-a312-72d8928898bb",
+        "amount": "1500.00"
+      }' | jq
+
+curl -X GET "https://waya-mentorled.onrender.com/api/goalgetter/goals/summary/" \
+   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUyOTIyMTQwLCJpYXQiOjE3NTI4MzU3NDAsImp0aSI6IjhhZmQ2ODJkNGE1YzRjMTlhY2M3NDU2MzJhN2YyYjg5IiwiY2hpbGRfaWQiOiIyNjgyNTkyOC02ZWI0LTRhYWYtOGE4NC0wNDc1MjlhYzQ4ZjgiLCJjaGlsZF91c2VybmFtZSI6Im1hdmVyaWNrIn0.uqAj05pEKgAXNs-3m3oSQ8phMOqRNgo6jIOtijaQlio" | jq
+
+
+GET "https://waya-mentorled.onrender.com/api/goalgetter/goals/summary/" 
+{
+  "total_saved": "2500.00",
+  "active_goals": 2,
+  "achieved_goals": 1
+}
+
+
+
+
+

@@ -5,7 +5,7 @@ export function sendVerificationEmail({ email, fullName, verification_link }: { 
         'service_vweurph',
         'template_92dvmic',
         {
-            to_email: email, 
+            to_email: email, // Use correct variable name for EmailJS template
             fullName,
             verification_link,
         },

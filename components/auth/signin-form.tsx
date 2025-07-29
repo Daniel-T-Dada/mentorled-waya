@@ -165,6 +165,7 @@ const SignInForm = () => {
             </Tabs>
 
             {/* Only show the error above the button, not at the top */}
+            {/* Only show the error above the button, not at the top */}
             {userType === "parent" && (
                 <Form {...parentForm}>
                     <form onSubmit={parentForm.handleSubmit(onParentSubmit)} className="space-y-3 sm:space-y-4">
@@ -242,6 +243,7 @@ const SignInForm = () => {
                         </div>
 
                         <FormError message={error} />
+                        <FormError message={error} />
                         <FormSuccess message={success} />
                         <Button
                             disabled={isLoading}
@@ -313,6 +315,7 @@ const SignInForm = () => {
                                 )}
                             />
                         </div>
+                        <FormError message={error} />
                         <FormError message={error} />
                         <FormSuccess message={success} />
                         <Button

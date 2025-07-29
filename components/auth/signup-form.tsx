@@ -302,6 +302,7 @@ const SignUpForm = () => {
                         />
                     </div>
                     <FormError message={error} />
+                    <FormError message={error} />
                     <FormSuccess message={success} />
                     <Button
                         disabled={isLoading}

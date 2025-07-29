@@ -5,7 +5,6 @@ import { Eye, EyeOff, UserPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import Image from "next/image"; // <-- Import next/image
 
 export default function UserProfile() {
     const [showPassword, setShowPassword] = useState(false);
@@ -35,14 +34,11 @@ export default function UserProfile() {
                     <CardContent className="p-0">
                         {/* Profile Avatar + Name */}
                         <div className="flex flex-col items-center mt-2 mb-6">
-                            <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-md mb-3 relative">
-                                <Image
+                            <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-md mb-3">
+                                <img
                                     src="https://randomuser.me/api/portraits/women/44.jpg"
                                     alt="User avatar"
-                                    fill
-                                    style={{ objectFit: "cover" }}
-                                    sizes="160px"
-                                    priority
+                                    className="object-cover w-full h-full"
                                 />
                             </div>
                             <div className="text-center">

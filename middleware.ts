@@ -13,7 +13,6 @@ export default auth((req) => {
     const userRole = req.auth?.user?.role;
 
 
-
     const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
     const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
     const isAuthRoute = authRoutes.includes(nextUrl.pathname);
