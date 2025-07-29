@@ -31,7 +31,7 @@ export const getApiUrl = (endpoint: string) => {
  * - MoneyMaze Educational System
  * - Analytics & Insights
  * - Notifications
- * - Settings (Currently not accessible - requires URL config)
+ * - Settings 
  */
 export const API_ENDPOINTS = {
     // Authentication endpoints

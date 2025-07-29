@@ -1,3 +1,4 @@
+
 'use client'
 
 import BarChartAllowance from "./barchart/BarChartAllowance"
@@ -15,29 +16,31 @@ interface ChartDataItem {
     color: string;
 }
 
+interface ChoreSummary {
+    pending: number;
+    completed: number;
+    missed?: number;
+    total: number;
+}
+
 interface ParentDashboardProps {
     onCreateKidClick?: () => void;
-    kids?: Kid[];
-    pagedKids?: Kid[];
+    kids: Kid[];
+    pagedKids: Kid[];
     kidsCount: number;
     kidsPage: number;
     kidsTotalPages: number;
     onKidsPageChange: (page: number) => void;
-    tasks?: Task[];
-    choreSummary?: {
-        pending: number;
-        completed: number;
-        missed?: number;
-        total: number;
-    };
-    walletStats?: {
+    tasks: Task[];
+    choreSummary?: ChoreSummary;
+    walletStats: {
         family_wallet_balance: string;
         total_rewards_sent: string;
         total_rewards_pending: string;
         children_count: number;
         total_children_balance: string;
     };
-    savingsBreakdown?: any[];
+    savingsBreakdown?: any[] | null;
     page: number;
     totalPages: number;
     onPageChange: (page: number) => void;
@@ -45,7 +48,6 @@ interface ParentDashboardProps {
     onDeleteTask?: (taskId: string) => void;
     isLoading?: boolean;
     isError?: boolean;
-
     barChartData: ChartDataPoint[];
     barChartRange: string;
     onBarChartRangeChange: (range: string) => void;
@@ -59,7 +61,7 @@ export interface ChartDataPoint {
     allowanceSpent: number;
 }
 
-function getPieChartData(choreSummary?: ParentDashboardProps["choreSummary"], savingsBreakdown?: ParentDashboardProps["savingsBreakdown"]): ChartDataItem[] {
+function getPieChartData(choreSummary?: ChoreSummary, savingsBreakdown?: any[] | null): ChartDataItem[] {
     if (savingsBreakdown && Array.isArray(savingsBreakdown)) {
         // Savings chart
         const totalSaved = savingsBreakdown.reduce((sum, child) => sum + (child.reward_saved || 0), 0);
@@ -80,15 +82,15 @@ function getPieChartData(choreSummary?: ParentDashboardProps["choreSummary"], sa
 
 const ParentDashboardOverview = memo<ParentDashboardProps>(({
     onCreateKidClick,
-    kids = [],
-    pagedKids = [],
+    kids,
+    pagedKids,
     kidsCount,
     kidsPage,
     kidsTotalPages,
     onKidsPageChange,
-    tasks = [],
+    tasks,
     choreSummary,
-    // walletStats,
+    walletStats,
     page,
     totalPages,
     onPageChange,
@@ -103,15 +105,11 @@ const ParentDashboardOverview = memo<ParentDashboardProps>(({
     barChartLoading,
     barChartError,
 }: ParentDashboardProps) => {
-
     const pieChartType: "chores" | "savings" = savingsBreakdown ? "savings" : "chores";
     const pieChartData = useMemo(
         () => getPieChartData(choreSummary, savingsBreakdown),
         [choreSummary, savingsBreakdown]
     );
-
-    if (isLoading) return <div>Loading...</div>;
-    if (isError) return <div>Error loading dashboard data.</div>;
 
     return (
         <main className="">
@@ -125,7 +123,6 @@ const ParentDashboardOverview = memo<ParentDashboardProps>(({
                 </Button>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-
                 <ParentStatsProvider />
 
                 <div className="lg:col-span-2 relative z-0">
@@ -157,7 +154,7 @@ const ParentDashboardOverview = memo<ParentDashboardProps>(({
                         onEditTask={onEditTask}
                         onDeleteTask={onDeleteTask}
                         choreSummary={choreSummary}
-                        // walletStats={walletStats}
+                        walletStats={walletStats}
                     />
                 </div>
 
@@ -174,9 +171,9 @@ const ParentDashboardOverview = memo<ParentDashboardProps>(({
                 </div>
             </div>
         </main>
-    )
+    );
 });
 
 ParentDashboardOverview.displayName = 'ParentDashboardOverview';
 
-export default ParentDashboardOverview
+export default ParentDashboardOverview;

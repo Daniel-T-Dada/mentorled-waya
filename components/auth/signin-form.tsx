@@ -1,164 +1,148 @@
 'use client'
 
 import * as z from "zod"
-import { useState } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import CardWrapper from "./card-wrapper"
 import { ParentSignInSchema, KidSignInSchema } from "@/schemas"
-import { signIn } from "next-auth/react";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { handleProviderSwitch } from "@/lib/utils/auth-utils";
+import { signIn } from "next-auth/react"
+import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { handleProviderSwitch } from "@/lib/utils/auth-utils"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import FormError from "../form-error"
 import FormSuccess from "../form-sucess"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
-import { parseLoginErrorEnhanced, parseKidLoginErrorEnhanced } from "@/lib/utils/auth-errors";
+import { parseLoginErrorEnhanced, parseKidLoginErrorEnhanced } from "@/lib/utils/auth-errors"
 
-type ParentFormValues = z.infer<typeof ParentSignInSchema>;
+type ParentFormValues = z.infer<typeof ParentSignInSchema>
 type KidFormValues = z.infer<typeof KidSignInSchema>
 
 const SignInForm = () => {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const urlError = searchParams.get("error");
-    const [isLoading, setIsLoading] = useState(false);
-    const [userType, setUserType] = useState<"parent" | "kid">("parent");
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const urlError = searchParams.get("error")
+    const [isLoading, setIsLoading] = useState(false)
+    const [userType, setUserType] = useState<"parent" | "kid">("parent")
     const [success, setSuccess] = useState<string | undefined>("")
-    const [error, setError] = useState<string | null>(urlError ? decodeURIComponent(urlError) : null);
-    const [showPassword, setShowPassword] = useState(false);
-    const [showPin, setShowPin] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
+    const [error, setError] = useState<string | null>(urlError ? decodeURIComponent(urlError) : null)
+    const [showPassword, setShowPassword] = useState(false)
+    const [showPin, setShowPin] = useState(false)
+    const [rememberMe, setRememberMe] = useState(false)
 
     const parentForm = useForm<ParentFormValues>({
         resolver: zodResolver(ParentSignInSchema),
-        defaultValues: {
+        defaultValues: useMemo(() => ({
             email: "",
             password: "",
-        },
+        }), []),
         mode: "onChange"
     })
 
-    // The Kid Login Form Implementation
     const kidForm = useForm<KidFormValues>({
         resolver: zodResolver(KidSignInSchema),
-        defaultValues: {
+        defaultValues: useMemo(() => ({
             username: "",
             pin: "",
-        },
+        }), []),
         mode: "onChange"
     })
 
     // Handle tab change
-    const handleTabChange = (value: string) => {
-        const newUserType = value as "parent" | "kid";
-        setUserType(newUserType);
-        setError(null);
-
-        // Reset only the form being switched to
+    const handleTabChange = useCallback((value: string) => {
+        const newUserType = value as "parent" | "kid"
+        setUserType(newUserType)
+        setError(null)
         if (newUserType === "parent") {
-            parentForm.reset();
+            parentForm.reset()
         } else {
-            kidForm.reset();
+            kidForm.reset()
         }
-    };
+    }, [parentForm, kidForm])
 
     // Parent login submission
-    async function onParentSubmit(values: ParentFormValues) {
-        setIsLoading(true);
-        setError(null);
-        setSuccess("");
+    const onParentSubmit = useCallback(async (values: ParentFormValues) => {
+        setIsLoading(true)
+        setError(null)
+        setSuccess("")
 
         try {
-            // Clear auth cache when switching to credentials
-            handleProviderSwitch('credentials');
-
+            handleProviderSwitch("credentials")
             const result = await signIn("parent-credentials", {
                 email: values.email,
                 password: values.password,
                 redirect: false,
                 callbackUrl: "/dashboard/parents"
-            });
+            })
 
             if (result?.url) {
-                const redirectedUrl = new URL(result.url);
-                const errorParam = redirectedUrl.searchParams.get("error");
+                const redirectedUrl = new URL(result.url)
+                const errorParam = redirectedUrl.searchParams.get("error")
                 if (errorParam) {
-                    setError(decodeURIComponent(errorParam));
-                    setIsLoading(false);
-                    return;
+                    setError(decodeURIComponent(errorParam))
+                    setIsLoading(false)
+                    return
                 }
             }
             if (result?.error) {
-                setError(parseLoginErrorEnhanced(result.error));
-                setIsLoading(false);
-                return;
+                setError(parseLoginErrorEnhanced(result.error))
+                setIsLoading(false)
+                return
             }
             if (result?.ok && result?.url) {
-                router.push(result.url);
+                router.push(result.url)
             } else if (result?.ok) {
-                setSuccess("Sign in successful!");
-                router.push("/dashboard/parents");
+                setSuccess("Sign in successful!")
+                router.push("/dashboard/parents")
             } else {
-                setError("An unexpected error occurred during sign in.");
-                setIsLoading(false);
+                setError("An unexpected error occurred during sign in.")
+                setIsLoading(false)
             }
         } catch {
-            setError("An unexpected error occurred.");
-            setIsLoading(false);
+            setError("An unexpected error occurred.")
+            setIsLoading(false)
         }
-    }
+    }, [router])
 
     // Kid login submission
-    async function onKidSubmit(values: KidFormValues) {
-        setIsLoading(true);
-        setError(null);
-        setSuccess("");
-
+    const onKidSubmit = useCallback(async (values: KidFormValues) => {
+        setIsLoading(true)
+        setError(null)
+        setSuccess("")
         try {
-            // Clear auth cache when switching to credentials
-            handleProviderSwitch('credentials');
-
+            handleProviderSwitch("credentials")
             const result = await signIn("kid-credentials", {
                 username: values.username,
                 pin: values.pin,
                 redirect: false,
                 callbackUrl: "/dashboard/kids"
-            });
+            })
             if (result?.error) {
-                const errorMessage = parseKidLoginErrorEnhanced(result.error);
-                setError(errorMessage);
-                setIsLoading(false);
-                return;
+                setError(parseKidLoginErrorEnhanced(result.error))
+                setIsLoading(false)
+                return
             }
-
-            setSuccess("Successfully signed in!");
-            if (result?.url) {
-                router.push(result.url);
-            } else {
-                router.push("/dashboard/kids");
+            setSuccess("Successfully signed in!")
+            if (result?.ok && result?.url) {
+                router.push(result.url)
+            } else if (result?.ok) {
+                router.push("/dashboard/kids")
             }
-            router.refresh();
+            // Note: do NOT call router.refresh here!
         } catch (error) {
-            const errorMessage = parseKidLoginErrorEnhanced(error);
-            setError(errorMessage);
+            setError(parseKidLoginErrorEnhanced(error))
         } finally {
-            setIsLoading(false);
+            setIsLoading(false)
         }
-    }
+    }, [router])
 
-    const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
-    };
-
-    const togglePinVisibility = () => {
-        setShowPin(!showPin);
-    };
+    const togglePasswordVisibility = useCallback(() => setShowPassword(v => !v), [])
+    const togglePinVisibility = useCallback(() => setShowPin(v => !v), [])
 
     return (
         <CardWrapper
@@ -166,7 +150,7 @@ const SignInForm = () => {
             titleLabel="Welcome back!"
             backButtonLabel="Don't have an account? Sign up"
             backButtonHref="/auth/signup"
-            showSocial={userType === "parent"} // Only show socials for parent tab
+            showSocial={userType === "parent"}
             className=""
         >
             <Tabs
@@ -181,11 +165,10 @@ const SignInForm = () => {
             </Tabs>
 
             {/* Only show the error above the button, not at the top */}
+            {/* Only show the error above the button, not at the top */}
             {userType === "parent" && (
                 <Form {...parentForm}>
-                    <form onSubmit={parentForm.handleSubmit(onParentSubmit)}
-                        className="space-y-3 sm:space-y-4"
-                    >
+                    <form onSubmit={parentForm.handleSubmit(onParentSubmit)} className="space-y-3 sm:space-y-4">
                         <div className="space-y-2 sm:space-y-3">
                             <FormField
                                 control={parentForm.control}
@@ -198,6 +181,7 @@ const SignInForm = () => {
                                                 placeholder="Enter your email"
                                                 type="email"
                                                 className="h-8 sm:h-9 text-xs sm:text-sm"
+                                                autoComplete="username"
                                             />
                                         </FormControl>
                                         <FormMessage className="text-[10px] sm:text-xs" />
@@ -216,11 +200,14 @@ const SignInForm = () => {
                                                     placeholder="******"
                                                     type={showPassword ? "text" : "password"}
                                                     className="h-8 sm:h-9 text-xs sm:text-sm"
+                                                    autoComplete="current-password"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={togglePasswordVisibility}
                                                     className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                                                    tabIndex={-1}
+                                                    aria-label={showPassword ? "Hide password" : "Show password"}
                                                 >
                                                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                                 </button>
@@ -237,7 +224,7 @@ const SignInForm = () => {
                                 <Checkbox
                                     id="remember-me"
                                     checked={rememberMe}
-                                    onCheckedChange={(checked) => setRememberMe(!!checked)}
+                                    onCheckedChange={(checked) => setRememberMe(Boolean(checked))}
                                     className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                                 />
                                 <label
@@ -255,6 +242,7 @@ const SignInForm = () => {
                             </Link>
                         </div>
 
+                        <FormError message={error} />
                         <FormError message={error} />
                         <FormSuccess message={success} />
                         <Button
@@ -276,9 +264,7 @@ const SignInForm = () => {
             {/* Kid Form */}
             {userType === "kid" && (
                 <Form {...kidForm}>
-                    <form onSubmit={kidForm.handleSubmit(onKidSubmit)}
-                        className="space-y-3 sm:space-y-4"
-                    >
+                    <form onSubmit={kidForm.handleSubmit(onKidSubmit)} className="space-y-3 sm:space-y-4">
                         <div className="space-y-2 sm:space-y-3">
                             <FormField
                                 control={kidForm.control}
@@ -291,6 +277,7 @@ const SignInForm = () => {
                                                 placeholder="Enter your username"
                                                 type="text"
                                                 className="h-8 sm:h-9 text-xs sm:text-sm"
+                                                autoComplete="username"
                                             />
                                         </FormControl>
                                         <FormMessage className="text-[10px] sm:text-xs" />
@@ -310,11 +297,14 @@ const SignInForm = () => {
                                                     type={showPin ? "text" : "password"}
                                                     maxLength={4}
                                                     className="h-8 sm:h-9 text-xs sm:text-sm"
+                                                    autoComplete="current-password"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={togglePinVisibility}
                                                     className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                                                    tabIndex={-1}
+                                                    aria-label={showPin ? "Hide pin" : "Show pin"}
                                                 >
                                                     {showPin ? <EyeOff size={16} /> : <Eye size={16} />}
                                                 </button>
@@ -325,6 +315,7 @@ const SignInForm = () => {
                                 )}
                             />
                         </div>
+                        <FormError message={error} />
                         <FormError message={error} />
                         <FormSuccess message={success} />
                         <Button

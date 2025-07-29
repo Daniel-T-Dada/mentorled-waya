@@ -3,7 +3,6 @@ import "./globals.css";
 import { metadata, viewport } from "./metadata";
 import { WebVitals } from "@/components/WebVitals";
 import { SessionProvider } from "next-auth/react";
-import { RealtimeProvider } from "@/contexts/RealtimeContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 import ClientWrapper from "@/components/ClientWrapper";
@@ -32,19 +31,19 @@ export default function RootLayout({
         <WebVitals />
         {/* <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange> */}
         <SessionProvider>
-          <RealtimeProvider>
-            <SidebarProvider>
-              
-              <main className=" w-full">
-                <ClientWrapper>
-                  <div className="">
-                    {children}
-                  </div>
-                </ClientWrapper>
-              </main>
-              <Toaster position="top-center" />
-            </SidebarProvider>
-          </RealtimeProvider>
+
+          <SidebarProvider>
+
+            <main className=" w-full">
+              <ClientWrapper>
+                <div className="">
+                  {children}
+                </div>
+              </ClientWrapper>
+            </main>
+            <Toaster position="top-center" />
+          </SidebarProvider>
+
         </SessionProvider>
         {/* </ThemeProvider> */}
       </body>

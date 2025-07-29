@@ -3,10 +3,12 @@
 import KidChoreQuest from "@/components/dashboard/kid/KidChoreQuest";
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { API_ENDPOINTS, getApiUrl } from '@/lib/utils/api';
-import { useMutation } from '@tanstack/react-query'; // or your custom useApiMutation
-
+import { useMutation } from '@tanstack/react-query';
+import { useSession } from "next-auth/react";
 
 const ChoreQuestPage = () => {
+    const { data: session } = useSession();
+    const token = session?.user?.accessToken;
     const { data, isLoading, error, refetch } = useApiQuery({
         endpoint: getApiUrl(API_ENDPOINTS.CHILD_CHORES + '?page=1'),
         queryKey: ['child-chores'],
@@ -19,7 +21,10 @@ const ChoreQuestPage = () => {
         mutationFn: async ({ choreId }: { choreId: string }) => {
             const res = await fetch(getApiUrl(API_ENDPOINTS.CHILD_CHORE_COMPLETE), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({ chore_id: choreId }),
             });
             if (!res.ok) throw new Error('Failed to update chore status');

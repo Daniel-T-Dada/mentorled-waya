@@ -12,6 +12,7 @@ import FormError from "@/components/form-error"
 import FormSuccess from "@/components/form-sucess"
 import { Loader2 } from "lucide-react"
 import { parsePasswordResetError } from "@/lib/utils/auth-errors"
+import { AuthService } from "@/lib/services/authService"
 
 // Schema for email validation
 const ForgotPasswordSchema = z.object({
@@ -39,22 +40,21 @@ export default function ForgotPasswordPage() {
         setSuccess("")
 
         try {
-            // TODO: Implement actual password reset functionality
-            // This is a placeholder for now
-            console.log("Reset password for:", values.email)
-
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000))
-
+            // Call the real forgot password API
+            const { error: apiError } = await AuthService.forgotPassword({ email: values.email });
+            if (apiError) {
+                const parsedError = parsePasswordResetError(apiError)
+                if (parsedError.includes("If an account exists")) {
+                    setSuccess(parsedError)
+                } else {
+                    setError(parsedError)
+                }
+                return
+            }
             setSuccess("If an account exists with that email, we've sent password reset instructions.")
         } catch (error) {
-            console.error("Password reset request failed:", error)
-
-            // Use the utility function to parse password reset errors
             const errorMessage = error instanceof Error ? error.message : String(error)
             const parsedError = parsePasswordResetError(errorMessage)
-
-            // Special case: if the "error" is actually a success message for security reasons
             if (parsedError.includes("If an account exists")) {
                 setSuccess(parsedError)
             } else {
@@ -131,4 +131,4 @@ export default function ForgotPasswordPage() {
             )}
         </CardWrapper>
     )
-} 
+}

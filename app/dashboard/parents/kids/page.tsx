@@ -1,3 +1,0 @@
-export default function TasksKidPage() {
-  // ...your component code...
-}

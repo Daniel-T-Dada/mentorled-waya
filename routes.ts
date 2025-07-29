@@ -21,7 +21,12 @@ export const publicRoutes = [
     '/not-found',
     '/offline',
     '/debug',
-    '/auth/error'
+    '/auth/error',
+    '/auth/forgot-password',
+    '/auth/reset-password',
+    '/dashboard/parents/profile',
+    '/dashboard/kids/profile',
+
 ]
 
 /**
