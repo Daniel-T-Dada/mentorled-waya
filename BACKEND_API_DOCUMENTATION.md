@@ -58,8 +58,8 @@ ALLOWED_HOSTS=your-domain.com
 # JWT Settings
 JWT_SECRET_KEY=your-jwt-secret
 JWT_ALGORITHM=HS256
-ACCESS_TOKEN_LIFETIME=60  # minutes
-REFRESH_TOKEN_LIFETIME=1440  # minutes (24 hours)
+ACCESS_TOKEN_LIFETIME=60  // minutes
+REFRESH_TOKEN_LIFETIME=1440  // minutes (24 hours)
 
 # Email Configuration
 EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
@@ -255,135 +255,135 @@ Authorization: Bearer <access_token>
 ## Data Models & Schemas
 
 ### User Model (Parent)
-```python
+```javascript
 {
-  "id": "uuid",                    # Primary key (UUID)
-  "email": "string",               # Unique, required
-  "full_name": "string",           # Required
-  "role": "string",                # 'parent' or 'child'
-  "is_verified": "boolean",        # Email verification status
-  "avatar": "string (url)",        # Optional profile picture
+  "id": "uuid",                    // Primary key (UUID)
+  "email": "string",               // Unique, required
+  "full_name": "string",           // Required
+  "role": "string",                // 'parent' or 'child'
+  "is_verified": "boolean",        // Email verification status
+  "avatar": "string (url)",        // Optional profile picture
   "created_at": "datetime",
   "updated_at": "datetime"
 }
 ```
 
 ### Child Model
-```python
+```javascript
 {
-  "id": "uuid",                    # Primary key (UUID)
-  "parent": "uuid",                # Foreign key to User (parent)
-  "username": "string",            # Unique, required
-  "name": "string",                # Display name, optional
-  "pin": "string",                 # 4-digit PIN (hashed)
-  "avatar": "string (url)",        # Optional profile picture
+  "id": "uuid",                    // Primary key (UUID)
+  "parent": "uuid",                // Foreign key to User (parent)
+  "username": "string",            // Unique, required
+  "name": "string",                // Display name, optional
+  "pin": "string",                 // 4-digit PIN (hashed)
+  "avatar": "string (url)",        // Optional profile picture
   "created_at": "datetime"
 }
 ```
 
 ### Task/Chore Model
-```python
+```javascript
 {
-  "id": "uuid",                    # Primary key (UUID)
-  "title": "string",               # Required
-  "description": "string",         # Required
-  "amount": "decimal",             # Reward amount
-  "due_date": "date",              # Optional
-  "assignedTo": "uuid",            # Foreign key to Child
-  "assignedToName": "string",      # Child's display name (read-only)
-  "assignedToUsername": "string",  # Child's username (read-only)
-  "parentId": "uuid",              # Foreign key to User (parent)
-  "status": "string",              # 'pending', 'completed', 'missed'
+  "id": "uuid",                    // Primary key (UUID)
+  "title": "string",               // Required
+  "description": "string",         // Required
+  "amount": "decimal",             // Reward amount
+  "due_date": "date",              // Optional
+  "assignedTo": "uuid",            // Foreign key to Child
+  "assignedToName": "string",      // Child's display name (read-only)
+  "assignedToUsername": "string",  // Child's username (read-only)
+  "parentId": "uuid",              // Foreign key to User (parent)
+  "status": "string",              // 'pending', 'completed', 'missed'
   "createdAt": "datetime",
-  "completedAt": "datetime",       # Nullable
-  "category": "string"             # Optional
+  "completedAt": "datetime",       // Nullable
+  "category": "string"             // Optional
 }
 ```
 
 ### Wallet Model
-```python
+```javascript
 {
-  "id": "uuid",                    # Primary key (UUID)
-  "user": "uuid",                  # Foreign key to User (parent)
-  "balance": "decimal",            # Current balance
-  "currency": "string",            # Default: "NGN"
-  "pin": "string",                 # Wallet PIN (hashed), optional
+  "id": "uuid",                    // Primary key (UUID)
+  "user": "uuid",                  // Foreign key to User (parent)
+  "balance": "decimal",            // Current balance
+  "currency": "string",            // Default: "NGN"
+  "pin": "string",                 // Wallet PIN (hashed), optional
   "created_at": "datetime",
   "updated_at": "datetime"
 }
 ```
 
 ### Child Wallet Model
-```python
+```javascript
 {
-  "id": "uuid",                    # Primary key (UUID)
-  "child": "uuid",                 # Foreign key to Child
-  "parent_wallet": "uuid",         # Foreign key to Wallet
-  "balance": "decimal",            # Current balance
-  "total_earned": "decimal",       # Lifetime earnings
-  "total_spent": "decimal",        # Lifetime spending
+  "id": "uuid",                    // Primary key (UUID)
+  "child": "uuid",                 // Foreign key to Child
+  "parent_wallet": "uuid",         // Foreign key to Wallet
+  "balance": "decimal",            // Current balance
+  "total_earned": "decimal",       // Lifetime earnings
+  "total_spent": "decimal",        // Lifetime spending
   "created_at": "datetime",
   "updated_at": "datetime"
 }
 ```
 
 ### Transaction Model
-```python
+```javascript
 {
-  "id": "uuid",                    # Primary key (UUID)
-  "type": "string",                # 'credit', 'debit', 'transfer', 'reward'
-  "amount": "decimal",             # Transaction amount
-  "status": "string",              # 'pending', 'completed', 'cancelled', 'paid'
-  "description": "string",         # Transaction description
-  "child": "uuid",                 # Foreign key to Child, nullable
-  "child_name": "string",          # Child's display name (read-only)
-  "wallet": "uuid",                # Foreign key to Wallet
-  "chore": "uuid",                 # Foreign key to Chore, nullable
+  "id": "uuid",                    // Primary key (UUID)
+  "type": "string",                // 'credit', 'debit', 'transfer', 'reward'
+  "amount": "decimal",             // Transaction amount
+  "status": "string",              // 'pending', 'completed', 'cancelled', 'paid'
+  "description": "string",         // Transaction description
+  "child": "uuid",                 // Foreign key to Child, nullable
+  "child_name": "string",          // Child's display name (read-only)
+  "wallet": "uuid",                // Foreign key to Wallet
+  "chore": "uuid",                 // Foreign key to Chore, nullable
   "created_at": "datetime",
   "updated_at": "datetime"
 }
 ```
 
 ### Allowance Model
-```python
+```javascript
 {
-  "id": "uuid",                    # Primary key (UUID)
-  "parent_id": "uuid",             # Foreign key to User (parent)
-  "child_id": "uuid",              # Foreign key to Child
-  "amount": "decimal",             # Allowance amount
-  "frequency": "string",           # 'daily', 'weekly', 'monthly'
-  "status": "string",              # 'active', 'paused', 'cancelled'
+  "id": "uuid",                    // Primary key (UUID)
+  "parent_id": "uuid",             // Foreign key to User (parent)
+  "child_id": "uuid",              // Foreign key to Child
+  "amount": "decimal",             // Allowance amount
+  "frequency": "string",           // 'daily', 'weekly', 'monthly'
+  "status": "string",              // 'active', 'paused', 'cancelled'
   "created_at": "datetime",
-  "last_paid_at": "datetime",      # Nullable
-  "next_payment_date": "date"      # Nullable
+  "last_paid_at": "datetime",      // Nullable
+  "next_payment_date": "date"      // Nullable
 }
 ```
 
 ### MoneyMaze Concept Model
-```python
+```javascript
 {
-  "id": "uuid",                    # Primary key (UUID)
-  "title": "string",               # Concept title
-  "description": "string",         # Concept description
-  "level": "integer",              # Difficulty level
-  "order": "integer",              # Display order
-  "is_active": "boolean",          # Active status
+  "id": "uuid",                    // Primary key (UUID)
+  "title": "string",               // Concept title
+  "description": "string",         // Concept description
+  "level": "integer",              // Difficulty level
+  "order": "integer",              // Display order
+  "is_active": "boolean",          // Active status
   "created_at": "datetime"
 }
 ```
 
 ### Goal Model (GoalGetter)
-```python
+```javascript
 {
-  "id": "uuid",                    # Primary key (UUID)
-  "child": "uuid",                 # Foreign key to Child
-  "title": "string",               # Goal title
-  "description": "string",         # Goal description
-  "target_amount": "decimal",      # Target amount to save
-  "current_amount": "decimal",     # Current saved amount
-  "status": "string",              # 'in_progress', 'completed', 'cancelled'
+  "id": "uuid",                    // Primary key (UUID)
+  "child": "uuid",                 // Foreign key to Child
+  "title": "string",               // Goal title
+  "description": "string",         // Goal description
+  "target_amount": "decimal",      // Target amount to save
+  "current_amount": "decimal",     // Current saved amount
+  "status": "string",              // 'in_progress', 'completed', 'cancelled'
   "created_at": "datetime",
-  "completed_at": "datetime"       # Nullable
+  "completed_at": "datetime"       // Nullable
 }
 ```
 
@@ -2106,7 +2106,7 @@ This documentation provides a comprehensive guide for building the Waya backend 
 - Error handling guidelines
 - Best practices and security recommendations
 
-For any questions or clarifications, refer to the frontend implementation in the repository at `/home/runner/work/mentorled-waya/mentorled-waya`.
+For any questions or clarifications, refer to the frontend implementation in the GitHub repository at https://github.com/Daniel-T-Dada/mentorled-waya
 
 **Version**: 1.0  
 **Last Updated**: December 18, 2025  
