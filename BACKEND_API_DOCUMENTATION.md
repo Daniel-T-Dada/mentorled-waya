@@ -58,8 +58,10 @@ ALLOWED_HOSTS=your-domain.com
 # JWT Settings
 JWT_SECRET_KEY=your-jwt-secret
 JWT_ALGORITHM=HS256
-ACCESS_TOKEN_LIFETIME=60  // minutes
-REFRESH_TOKEN_LIFETIME=1440  // minutes (24 hours)
+# Access token lifetime in minutes
+ACCESS_TOKEN_LIFETIME=60
+# Refresh token lifetime in minutes (24 hours)
+REFRESH_TOKEN_LIFETIME=1440
 
 # Email Configuration
 EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
@@ -2109,6 +2111,6 @@ This documentation provides a comprehensive guide for building the Waya backend 
 For any questions or clarifications, refer to the frontend implementation in the GitHub repository at https://github.com/Daniel-T-Dada/mentorled-waya
 
 **Version**: 1.0  
-**Last Updated**: December 18, 2025  
+**Last Updated**: January 2025  
 **Backend URL**: https://waya-mentorled.onrender.com/api/
 
